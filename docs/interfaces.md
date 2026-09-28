@@ -90,6 +90,7 @@ The fields mean the same as in `ema-results`.
 
 - **Oracle output:** `oracle/out/ema_results.parquet` and `oracle/out/advisories.parquet`. Both are gitignored.
   - They use the same field names as the topics, without `maxIngestTs` and `emitTs`.
+  - Diagnostic columns follow those fields (e.g. the source file and line of each close); [`oracle/README.md`](../oracle/README.md) lists them. Select the D-18 fields by name.
   - They cover all symbols.
 - **Flink side:** a dump of `ema-results` and `advisories` from a run with a `["*"]` subscription.
 - **EMA check:** join on (`symbol`, `windowEnd`). A row is a mismatch if any of these holds:
