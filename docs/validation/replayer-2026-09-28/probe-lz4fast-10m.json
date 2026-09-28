@@ -1,0 +1,95 @@
+{
+  "runId" : "probe-lz4fast-10m",
+  "status" : "COMPLETE",
+  "mode" : "preload",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks-lz4fast",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : 10000000,
+    "limitReached" : true
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 10000013,
+    "complete" : false
+  } ],
+  "counts" : {
+    "lines" : 10000013,
+    "comments" : 12,
+    "headers" : 1,
+    "rejected" : 0,
+    "dataRows" : 10000000,
+    "excluded" : 0,
+    "attempted" : 10000000,
+    "acknowledged" : 10000000,
+    "failed" : 0,
+    "keyBytes" : 70522917,
+    "valueBytes" : 440047923,
+    "headerBytes" : 118888984
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 1264677,
+    "records" : 1264677
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 1270319,
+    "records" : 1270319
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 1138722,
+    "records" : 1138722
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 1037476,
+    "records" : 1037476
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 1110081,
+    "records" : 1110081
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 1114788,
+    "records" : 1114788
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 1453103,
+    "records" : 1453103
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 1610834,
+    "records" : 1610834
+  } ],
+  "timing" : {
+    "startedAt" : "2026-09-28T20:21:47.976Z",
+    "finishedAt" : "2026-09-28T20:21:56.866Z",
+    "durationMs" : 8890,
+    "flushMs" : 6,
+    "recordsPerSecond" : 1124765.34,
+    "payloadMegabytesPerSecond" : 70.8
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "probe-lz4fast-10m",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4",
+    "linger.ms" : "50",
+    "batch.size" : "1048576",
+    "compression.lz4.level" : "1"
+  }
+}

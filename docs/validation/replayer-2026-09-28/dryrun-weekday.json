@@ -1,0 +1,85 @@
+{
+  "runId" : "dryrun-weekday",
+  "status" : "COMPLETE",
+  "mode" : "preload",
+  "dryRun" : true,
+  "topic" : "ticks",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 53994567,
+    "complete" : true,
+    "md5" : "a08013f09a6b77355dae8b3ce141624d"
+  } ],
+  "counts" : {
+    "lines" : 53994567,
+    "comments" : 12,
+    "headers" : 1,
+    "rejected" : 0,
+    "dataRows" : 53994554,
+    "excluded" : 0,
+    "attempted" : 53994554,
+    "acknowledged" : 0,
+    "failed" : 0,
+    "keyBytes" : 386611778,
+    "valueBytes" : 2405601649,
+    "headerBytes" : 690818186
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 7033232
+  }, {
+    "partition" : 1,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 6703534
+  }, {
+    "partition" : 2,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 6786622
+  }, {
+    "partition" : 3,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 5438045
+  }, {
+    "partition" : 4,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 5588276
+  }, {
+    "partition" : 5,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 6279337
+  }, {
+    "partition" : 6,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 7590504
+  }, {
+    "partition" : 7,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 8575004
+  } ],
+  "timing" : {
+    "startedAt" : "2026-09-28T20:12:37.221Z",
+    "finishedAt" : "2026-09-28T20:13:01.532Z",
+    "durationMs" : 24311,
+    "flushMs" : 0,
+    "recordsPerSecond" : 2220959.2,
+    "payloadMegabytesPerSecond" : 143.27
+  }
+}

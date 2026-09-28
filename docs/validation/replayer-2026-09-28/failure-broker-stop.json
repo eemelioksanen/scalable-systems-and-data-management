@@ -1,0 +1,98 @@
+{
+  "runId" : "failure-broker-stop",
+  "status" : "FAILED",
+  "error" : "org.apache.kafka.common.errors.TimeoutException: Expiring 7350 record(s) for ticks-failure-0:15001 ms has passed since batch creation. The request has not been sent, or no server response has been received yet.",
+  "mode" : "preload",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks-failure",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 4605661,
+    "complete" : false
+  } ],
+  "counts" : {
+    "lines" : 4605661,
+    "comments" : 12,
+    "headers" : 1,
+    "rejected" : 0,
+    "dataRows" : 4605648,
+    "excluded" : 0,
+    "attempted" : 4605648,
+    "acknowledged" : 4493486,
+    "failed" : 112162,
+    "keyBytes" : 32867628,
+    "valueBytes" : 206475723,
+    "headerBytes" : 54156746
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 555543,
+    "records" : 555543
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 550545,
+    "records" : 550545
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 511860,
+    "records" : 511860
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 484789,
+    "records" : 484789
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 526301,
+    "records" : 526301
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 510682,
+    "records" : 510682
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 652270,
+    "records" : 652270
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 701496,
+    "records" : 701496
+  } ],
+  "timing" : {
+    "startedAt" : "2026-09-28T20:46:07.937Z",
+    "finishedAt" : "2026-09-28T20:46:26.986Z",
+    "durationMs" : 19049,
+    "flushMs" : 1,
+    "recordsPerSecond" : 235885.94,
+    "payloadMegabytesPerSecond" : 15.41
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "failure-broker-stop",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4",
+    "linger.ms" : "50",
+    "batch.size" : "1048576",
+    "delivery.timeout.ms" : "15000",
+    "request.timeout.ms" : "5000",
+    "max.block.ms" : "15000"
+  }
+}
