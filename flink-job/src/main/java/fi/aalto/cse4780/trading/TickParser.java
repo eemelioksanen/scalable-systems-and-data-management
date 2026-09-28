@@ -10,36 +10,47 @@ import java.time.ZoneOffset;
  *
  * <pre>ID,SecType,Date,Time,Last,Trading time,Trading date</pre>
  *
- * <p>Trading dates are {@code DD-MM-YYYY} and trading times {@code HH:MM:SS[.fraction]} with up to
- * nine fraction digits. They are local times at a fixed {@link ZoneOffset} (D-3). Any whole-hour
- * offset keeps 5-minute windows aligned to local midnight.
+ * <p>Event time is {@code Trading date} + {@code Trading time}. When {@code Trading date} is empty,
+ * as it is on about 92% of price rows, the system {@code Date} is used instead (D-25). Dates are
+ * {@code DD-MM-YYYY}. Times are {@code HH:MM:SS[.fraction]}. The source has milliseconds (D-22),
+ * and any finer digits are truncated. Timestamps are local times at a fixed {@link ZoneOffset}
+ * (D-3). Any whole-hour offset keeps 5-minute windows aligned to local midnight.
  *
  * <p>Not thread-safe: it caches the last parsed date. Use one instance per source reader.
  */
 public final class TickParser implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    /** How a record was classified. Only {@link #PRICE} records continue into the query. */
+    /** How a record was classified. Only price outcomes continue into the query. */
     public enum Outcome {
-        /** {@code Last} is set and the trading timestamp parses. */
+        /** A positive {@code Last} with a complete trading timestamp. */
         PRICE,
+        /** A positive {@code Last} whose empty {@code Trading date} was replaced by {@code Date} (D-25). */
+        PRICE_SYSTEM_DATE,
         /** {@code Last} is empty: a quote or housekeeping event (D-2). */
         NON_PRICE,
-        /** {@code Last} is set but the trading date or time is empty (D-10, provisionally dropped). */
+        /** {@code Last} is zero or negative, so not a trade (D-2). */
+        NON_POSITIVE_PRICE,
+        /** A positive {@code Last} without a {@code Trading time}, or with neither date field (D-10). */
         MISSING_TIMESTAMP,
         /** Wrong field count, empty symbol, or an unparsable price, date or time. */
-        MALFORMED
+        MALFORMED;
+
+        public boolean isPrice() {
+            return this == PRICE || this == PRICE_SYSTEM_DATE;
+        }
     }
 
     private static final int FIELD_COUNT = 7;
     private static final int ID = 0;
     private static final int SEC_TYPE = 1;
+    private static final int DATE = 2;
     private static final int LAST = 4;
     private static final int TRADING_TIME = 5;
     private static final int TRADING_DATE = 6;
 
-    private static final long NANOS_PER_SECOND = 1_000_000_000L;
+    private static final long MILLIS_PER_SECOND = 1_000L;
     private static final long SECONDS_PER_DAY = 86_400L;
     private static final long INVALID = Long.MIN_VALUE;
 
@@ -58,8 +69,8 @@ public final class TickParser implements Serializable {
     }
 
     /**
-     * Classifies {@code line}. For {@link Outcome#PRICE}, fills {@code symbol}, {@code secType},
-     * {@code price} and {@code eventTimeNanos} of {@code into}. Other outcomes leave it unchanged.
+     * Classifies {@code line}. For a price outcome, fills {@code symbol}, {@code secType},
+     * {@code price} and {@code eventTimeMillis} of {@code into}. Other outcomes leave it unchanged.
      */
     public Outcome parse(String line, Tick into) {
         String[] fields = line.split(",", -1);
@@ -79,22 +90,28 @@ public final class TickParser implements Serializable {
         if (!Double.isFinite(price)) {
             return Outcome.MALFORMED;
         }
-        if (fields[TRADING_DATE].isEmpty() || fields[TRADING_TIME].isEmpty()) {
+        if (price <= 0) {
+            return Outcome.NON_POSITIVE_PRICE;
+        }
+
+        boolean systemDate = fields[TRADING_DATE].isEmpty();
+        String date = systemDate ? fields[DATE] : fields[TRADING_DATE];
+        if (fields[TRADING_TIME].isEmpty() || date.isEmpty()) {
             return Outcome.MISSING_TIMESTAMP;
         }
 
-        long epochDay = parseEpochDay(fields[TRADING_DATE]);
-        long nanoOfDay = parseNanoOfDay(fields[TRADING_TIME]);
-        if (epochDay == INVALID || nanoOfDay == INVALID) {
+        long epochDay = parseEpochDay(date);
+        long millisOfDay = parseMillisOfDay(fields[TRADING_TIME]);
+        if (epochDay == INVALID || millisOfDay == INVALID) {
             return Outcome.MALFORMED;
         }
 
         into.symbol = fields[ID];
         into.secType = fields[SEC_TYPE];
         into.price = price;
-        into.eventTimeNanos =
-                (epochDay * SECONDS_PER_DAY - offsetSeconds) * NANOS_PER_SECOND + nanoOfDay;
-        return Outcome.PRICE;
+        into.eventTimeMillis =
+                (epochDay * SECONDS_PER_DAY - offsetSeconds) * MILLIS_PER_SECOND + millisOfDay;
+        return systemDate ? Outcome.PRICE_SYSTEM_DATE : Outcome.PRICE;
     }
 
     /** {@code DD-MM-YYYY} to days since 1970-01-01, or {@link #INVALID}. */
@@ -122,8 +139,11 @@ public final class TickParser implements Serializable {
         return epochDay;
     }
 
-    /** {@code HH:MM:SS[.fraction]} to nanoseconds since midnight, or {@link #INVALID}. */
-    private static long parseNanoOfDay(String time) {
+    /**
+     * {@code HH:MM:SS[.fraction]} with 1-9 fraction digits to milliseconds since midnight, or
+     * {@link #INVALID}. Digits beyond milliseconds are truncated.
+     */
+    private static long parseMillisOfDay(String time) {
         int length = time.length();
         if (length < 8 || time.charAt(2) != ':' || time.charAt(5) != ':') {
             return INVALID;
@@ -135,7 +155,7 @@ public final class TickParser implements Serializable {
             return INVALID;
         }
 
-        long fractionNanos = 0;
+        long millis = 0;
         if (length > 8) {
             int fractionDigits = length - 9;
             if (time.charAt(8) != '.' || fractionDigits < 1 || fractionDigits > 9) {
@@ -145,12 +165,15 @@ public final class TickParser implements Serializable {
             if (fraction < 0) {
                 return INVALID;
             }
-            fractionNanos = fraction;
-            for (int i = fractionDigits; i < 9; i++) {
-                fractionNanos *= 10;
+            millis = fraction;
+            for (int i = fractionDigits; i < 3; i++) {
+                millis *= 10;
+            }
+            for (int i = 3; i < fractionDigits; i++) {
+                millis /= 10;
             }
         }
-        return ((hours * 60L + minutes) * 60L + seconds) * NANOS_PER_SECOND + fractionNanos;
+        return ((hours * 60L + minutes) * 60L + seconds) * MILLIS_PER_SECOND + millis;
     }
 
     /** Parses {@code s[from, to)} as a non-negative decimal integer, or returns -1. */

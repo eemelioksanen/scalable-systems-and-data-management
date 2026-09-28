@@ -79,22 +79,12 @@ class EmaCalculatorTest {
 
     @Test
     void equalEventTimesGoToTheLaterArrival() throws Exception {
-        long eventTime = nanos("2021-11-08T09:03:00");
+        long eventTime = millis("2021-11-08T09:03:00");
         send(new Tick(SYMBOL, "E", 20.0, eventTime, 7, 0));
         send(new Tick(SYMBOL, "E", 10.0, eventTime, 5, 0));
         watermark("2021-11-08T09:05:00");
 
         assertEquals(20.0, single().close);
-    }
-
-    @Test
-    void subMillisecondPrecisionSelectsTheLatestTrade() throws Exception {
-        long eventTime = nanos("2021-11-08T09:03:00.1234");
-        send(new Tick(SYMBOL, "E", 10.0, eventTime + 100_000, 1, 0));
-        send(new Tick(SYMBOL, "E", 20.0, eventTime, 2, 0));
-        watermark("2021-11-08T09:05:00");
-
-        assertEquals(10.0, single().close);
     }
 
     @Test
@@ -200,8 +190,8 @@ class EmaCalculatorTest {
 
     @Test
     void resultCarriesSecTypeAndLatestIngestTimeOfTheWindow() throws Exception {
-        send(new Tick("CAC.FR", "I", 7000.0, nanos("2021-11-08T09:04:00"), 1, 1_000));
-        send(new Tick("CAC.FR", "I", 7001.0, nanos("2021-11-08T09:02:00"), 2, 3_000));
+        send(new Tick("CAC.FR", "I", 7000.0, millis("2021-11-08T09:04:00"), 1, 1_000));
+        send(new Tick("CAC.FR", "I", 7001.0, millis("2021-11-08T09:02:00"), 2, 3_000));
         long before = System.currentTimeMillis();
         watermark("2021-11-08T09:05:00");
 
@@ -223,11 +213,11 @@ class EmaCalculatorTest {
     }
 
     private void send(String symbol, String localDateTime, double price) throws Exception {
-        send(new Tick(symbol, "E", price, nanos(localDateTime), nextSourceOrder++, 0));
+        send(new Tick(symbol, "E", price, millis(localDateTime), nextSourceOrder++, 0));
     }
 
     private void send(Tick tick) throws Exception {
-        harness.processElement(tick, tick.eventTimeMillis());
+        harness.processElement(tick, tick.eventTimeMillis);
     }
 
     private void watermark(String localDateTime) throws Exception {
@@ -256,10 +246,5 @@ class EmaCalculatorTest {
 
     static long millis(String localDateTime) {
         return LocalDateTime.parse(localDateTime).toInstant(ZoneOffset.UTC).toEpochMilli();
-    }
-
-    static long nanos(String localDateTime) {
-        var instant = LocalDateTime.parse(localDateTime).toInstant(ZoneOffset.UTC);
-        return instant.getEpochSecond() * 1_000_000_000L + instant.getNano();
     }
 }
