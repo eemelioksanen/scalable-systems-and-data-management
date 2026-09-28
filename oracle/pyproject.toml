@@ -1,0 +1,11 @@
+[project]
+name = "ema-oracle"
+version = "1.0.0"
+description = "Batch reference implementation of the course project's EMA and crossover queries"
+requires-python = ">=3.11"
+dependencies = ["polars>=1.30,<2"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-p no:cacheprovider"
