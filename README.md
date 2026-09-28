@@ -123,6 +123,9 @@ This builds `.devcontainer/devcontainer.json`, runs Maven `clean verify` inside 
 
 ## Dataset profile
 
+The complete-day analysis and Monday checkpoint are documented in [analysis/README.md](analysis/README.md) and [docs/eda-monday.md](docs/eda-monday.md).
+Run one selected day with `bash analysis/daily.sh 2021-11-08`; it verifies the download, resumes from a parsed checkpoint, and regenerates the tables and figures in a 4 GiB container.
+
 The dataset is CC BY-NC-SA 4.0 and is never committed. `analysis/` downloads a
 reproducible sample of one weekday file and profiles it; the measured results and the
 data contract they justify are in [docs/data-contract.md](docs/data-contract.md).
