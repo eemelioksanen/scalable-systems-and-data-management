@@ -63,7 +63,7 @@ These decisions drive both correctness and the report. The Flink job and the ora
              → web dashboard                           → Grafana (throughput, latency, backpressure, CPU)
 ```
 
-- **Main operator:** one `KeyedProcessFunction` keyed by symbol (`EmaCalculator`). Out-of-order arrival can leave several windows open at once, so a `MapState` keeps one close candidate per open window end. A `ValueState` holds `ema38` and `ema100`. Each open window has an event-time timer on its last millisecond. When it fires, the operator computes Q1 (and later runs the Q2 check), emits, and drops that window's candidate.
+- **Main operator:** one `KeyedProcessFunction` keyed by symbol (`EmaCalculator`). Out-of-order arrival can leave several windows open at once, so a `MapState` keeps one close candidate per open window end. A `ValueState` holds `ema38` and `ema100`. Each open window has an event-time timer on its last millisecond. When it fires, the operator computes Q1 and the Q2 crossover check, emits, and drops that window's candidate. A keyed broadcast operator after it publishes only subscribed symbols (D-28).
 - **Alternative to benchmark:** the `TumblingEventTimeWindows` + `ProcessWindowFunction` pair, followed by a keyed EMA function.
 - **Latency measurement:** the replayer stamps each record with its ingest wall-clock time (the Kafka record timestamp). Each output carries (a) processing latency (emit time minus the arrival of the window's last event) and (b) watermark lag.
 - **Benchmark isolation:** in *preload* mode, the whole week is written into Kafka first and Flink then reads from the earliest offset. Throughput is then measured without the replayer as a bottleneck. Latency runs use *live replay*.

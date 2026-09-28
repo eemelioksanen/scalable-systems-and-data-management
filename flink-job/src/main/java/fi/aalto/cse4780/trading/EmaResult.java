@@ -1,6 +1,9 @@
 package fi.aalto.cse4780.trading;
 
-/** One Query 1 result, published to {@code ema-results} (D-16, docs/interfaces.md). */
+/**
+ * One evaluated window: the Query 1 result, published to {@code ema-results}, and its Query 2
+ * crossover, published to {@code advisories} (D-16, docs/interfaces.md).
+ */
 public class EmaResult {
 
     public String symbol;
@@ -18,6 +21,12 @@ public class EmaResult {
 
     /** Wall-clock time (epoch ms) when the result was emitted. */
     public long emitTs;
+
+    /**
+     * The window's crossover relative to the symbol's previous window, or null. Not part of the
+     * {@code ema-results} record; a non-null value is published as an {@code advisories} record.
+     */
+    public Crossover crossover;
 
     public EmaResult() {}
 
@@ -44,6 +53,6 @@ public class EmaResult {
     public String toString() {
         return "EmaResult{" + symbol + ' ' + secType + " windowEnd=" + windowEnd + " close=" + close
                 + " ema38=" + ema38 + " ema100=" + ema100 + " maxIngestTs=" + maxIngestTs
-                + " emitTs=" + emitTs + '}';
+                + " emitTs=" + emitTs + " crossover=" + crossover + '}';
     }
 }
