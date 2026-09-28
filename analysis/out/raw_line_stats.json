@@ -1,0 +1,37 @@
+{
+  "chunk_files": [
+    "chunk_00",
+    "chunk_01",
+    "chunk_02",
+    "chunk_03",
+    "chunk_04",
+    "chunk_05",
+    "chunk_06",
+    "chunk_07",
+    "chunk_08",
+    "chunk_09",
+    "chunk_10",
+    "chunk_11",
+    "chunk_12",
+    "chunk_13",
+    "chunk_14",
+    "chunk_15",
+    "chunk_16",
+    "chunk_17",
+    "chunk_18",
+    "chunk_19",
+    "chunk_20"
+  ],
+  "comment_lines": 12,
+  "header_lines": 1,
+  "data_lines": 11784671,
+  "field_count_histogram": {
+    "39": 1,
+    "40": 11784671
+  },
+  "lines_with_double_quote": 0,
+  "lines_with_crlf": 11,
+  "lines_with_lf_only": 11784673,
+  "malformed_lines": 0,
+  "rows_with_trailing_delimiter": 11784671
+}
