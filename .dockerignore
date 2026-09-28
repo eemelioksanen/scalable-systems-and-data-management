@@ -1,0 +1,7 @@
+# Keep the build context small: only Maven sources are needed.
+*
+!pom.xml
+!producer/pom.xml
+!producer/src/
+!flink-job/pom.xml
+!flink-job/src/

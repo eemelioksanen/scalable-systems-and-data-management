@@ -1,1 +1,28 @@
 .DS_Store
+
+# Raw dataset and large generated outputs
+data/
+oracle/out/
+bench/results/raw/
+
+# Java / Maven
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+
+# Python
+__pycache__/
+.venv/
+.ipynb_checkpoints/
+
+# LaTeX build artifacts
+report/*.aux
+report/*.bbl
+report/*.blg
+report/*.log
+report/*.out
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
