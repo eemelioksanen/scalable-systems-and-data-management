@@ -103,15 +103,20 @@ further. So an event the job rejects at bound B is also rejected by the model at
 The one exception is idleness: a partition marked idle is left out of the minimum, and an
 event arriving on it afterwards can be late in the job but not in the model.
 
-**How to compare.**
+**How to compare.** The full week does contain late events: a burst of 5,506 summary rows
+at the end of 10-11 with `Trading time` 01:00:00.000, which no streaming run admits
+([evidence](evidence/README.md#findings)). The admit-all output is therefore not what the
+job should produce.
 
-1. If `lateEventsByBoundMs` is 0 at the job's bound, and the job's `lateTicks` counter is
-   0, compare the job against the default (admit-all) oracle output directly.
-2. Otherwise, pass the job's late events to `--exclude-events` as `(sourceFile, sourceLine)`,
-   which reproduces exactly the set of events the job admitted. This needs the replayer to
-   carry source identity (#6).
-3. `--watermark-bound-ms` applies the model itself, as an estimate of what a run at that
-   bound loses when the job's own late events are not available.
+1. Run the oracle with `--watermark-bound-ms` set to the job's bound. At any bound from
+   264 ms to about 17.8 h the model rejects exactly those 5,506 events, and they are late
+   in the job too, because every partition has passed 01:05 by then.
+2. If the job's `lateTicks` count differs from the oracle's `lateRejected`, pass the job's
+   late events to `--exclude-events` as `(sourceFile, sourceLine)` instead. That reproduces
+   exactly the set the job admitted. It needs the replayer to carry source identity (#6).
+3. The admit-all output is the contract applied literally. It is the reference only if the
+   timestamp policy (D-10) comes to drop those rows in parsing, or for a bound large enough
+   to admit them.
 
 In every case the rejected events are in `rejected_events.parquet`, counted per file as
 `excluded` or `lateRejected`, and the comparer (#20) reports them beside the diff.
@@ -135,9 +140,9 @@ the same closes and reports:
   implementation could reach the opposite decision by rounding differently.
 
 The tolerance is absolute, and the largest index values reach about 1.1 × 10⁶, where one
-ulp is about 1.2 × 10⁻¹⁰, so 1e-9 is only about eight ulps there. On 08-11-21 the binary64
-recurrence stays within 24 ulps of exact, but that is 1.4 × 10⁻⁹ for the largest values,
-and 50 windows in 2 symbols exceed 1e-9 on drift alone. An implementation that evaluates the
+ulp is about 1.2 × 10⁻¹⁰, so 1e-9 is only about eight ulps there. Over the full week the
+binary64 recurrence stays within 33 ulps of exact, but that is 2.3 × 10⁻⁹ for the largest
+values, and 1,270 windows in 6 symbols exceed 1e-9 on drift alone. An implementation that evaluates the
 same formula in a different order can differ from the oracle by more than 1e-9 on those
 symbols without either being wrong. The comparer should show the magnitude of every EMA
 mismatch so that this case is recognisable.

@@ -1,0 +1,342 @@
+{
+  "tool": "ema_oracle",
+  "version": "1.0.0",
+  "git": {
+    "revision": "4a6dc6d95378447ebba8e6314b24944f6c4347ac",
+    "dirty": false
+  },
+  "command": [
+    "python",
+    "-m",
+    "ema_oracle",
+    "--out",
+    "/out/week-bound60s",
+    "--watermark-bound-ms",
+    "60000",
+    "/data/debs2022-gc-trading-day-08-11-21.csv",
+    "/data/debs2022-gc-trading-day-09-11-21.csv",
+    "/data/debs2022-gc-trading-day-10-11-21.csv",
+    "/data/debs2022-gc-trading-day-11-11-21.csv",
+    "/data/debs2022-gc-trading-day-12-11-21.csv",
+    "/data/debs2022-gc-trading-day-13-11-21.csv",
+    "/data/debs2022-gc-trading-day-14-11-21.csv"
+  ],
+  "createdUtc": "2026-09-28T19:11:22+00:00",
+  "environment": {
+    "python": "3.12.13",
+    "polars": "1.44.2",
+    "platform": "Linux-7.2.6-arch2-1-x86_64-with-glibc2.41"
+  },
+  "parameters": {
+    "zoneOffset": "Z",
+    "missingTradingDate": "system-date",
+    "watermarkBoundMs": 60000,
+    "excludeEvents": null,
+    "excludedEventsListed": 0,
+    "windowMs": 300000,
+    "alpha38": 0.05128205128205128,
+    "alpha100": 0.019801980198019802,
+    "initialEma": 0.0
+  },
+  "inputs": [
+    {
+      "file": "debs2022-gc-trading-day-08-11-21.csv",
+      "fileDate": "2021-11-08",
+      "bytes": 4672671094,
+      "md5": "a08013f09a6b77355dae8b3ce141624d"
+    },
+    {
+      "file": "debs2022-gc-trading-day-09-11-21.csv",
+      "fileDate": "2021-11-09",
+      "bytes": 5057964097,
+      "md5": "3e1b7a79c63c71e03f4cef82fbda94a2"
+    },
+    {
+      "file": "debs2022-gc-trading-day-10-11-21.csv",
+      "fileDate": "2021-11-10",
+      "bytes": 5512236266,
+      "md5": "bed2f79e124f68da54929500f115a820"
+    },
+    {
+      "file": "debs2022-gc-trading-day-11-11-21.csv",
+      "fileDate": "2021-11-11",
+      "bytes": 4790117848,
+      "md5": "943b8b04853c3fe70477b5aa1e5c6533"
+    },
+    {
+      "file": "debs2022-gc-trading-day-12-11-21.csv",
+      "fileDate": "2021-11-12",
+      "bytes": 4836178492,
+      "md5": "4d9d0529948879e581cbe047eb23bfb7"
+    },
+    {
+      "file": "debs2022-gc-trading-day-13-11-21.csv",
+      "fileDate": "2021-11-13",
+      "bytes": 3106841,
+      "md5": "64f57410de31c5753b848bf4eeee7bc4"
+    },
+    {
+      "file": "debs2022-gc-trading-day-14-11-21.csv",
+      "fileDate": "2021-11-14",
+      "bytes": 1905658,
+      "md5": "adfc75f72d9348209d602baa72af44b5"
+    }
+  ],
+  "counts": {
+    "total": {
+      "comment": 84,
+      "header": 7,
+      "blank": 0,
+      "malformedRow": 0,
+      "nonPrice": 229408756,
+      "malformedPrice": 0,
+      "nonPositivePrice": 316382,
+      "missingTimestamp": 0,
+      "malformedTimestamp": 0,
+      "accepted": 59391670,
+      "systemDateEvents": 54479627,
+      "staleTradingDateEvents": 0,
+      "lines": 289116899,
+      "dataRows": 289116808,
+      "excluded": 0,
+      "lateRejected": 5506,
+      "admitted": 59386164
+    },
+    "perFile": {
+      "debs2022-gc-trading-day-08-11-21.csv": {
+        "comment": 12,
+        "header": 1,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 42137822,
+        "malformedPrice": 0,
+        "nonPositivePrice": 62212,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 11794520,
+        "systemDateEvents": 10873721,
+        "staleTradingDateEvents": 0,
+        "lines": 53994567,
+        "dataRows": 53994554,
+        "excluded": 0,
+        "lateRejected": 0,
+        "admitted": 11794520
+      },
+      "debs2022-gc-trading-day-09-11-21.csv": {
+        "comment": 12,
+        "header": 1,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 46849511,
+        "malformedPrice": 0,
+        "nonPositivePrice": 62238,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 11900121,
+        "systemDateEvents": 10906107,
+        "staleTradingDateEvents": 0,
+        "lines": 58811883,
+        "dataRows": 58811870,
+        "excluded": 0,
+        "lateRejected": 0,
+        "admitted": 11900121
+      },
+      "debs2022-gc-trading-day-10-11-21.csv": {
+        "comment": 12,
+        "header": 1,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 52461331,
+        "malformedPrice": 0,
+        "nonPositivePrice": 62240,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 12068273,
+        "systemDateEvents": 10933690,
+        "staleTradingDateEvents": 0,
+        "lines": 64591857,
+        "dataRows": 64591844,
+        "excluded": 0,
+        "lateRejected": 5506,
+        "admitted": 12062767
+      },
+      "debs2022-gc-trading-day-11-11-21.csv": {
+        "comment": 12,
+        "header": 1,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 43650192,
+        "malformedPrice": 0,
+        "nonPositivePrice": 62251,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 11835403,
+        "systemDateEvents": 10915180,
+        "staleTradingDateEvents": 0,
+        "lines": 55547859,
+        "dataRows": 55547846,
+        "excluded": 0,
+        "lateRejected": 0,
+        "admitted": 11835403
+      },
+      "debs2022-gc-trading-day-12-11-21.csv": {
+        "comment": 12,
+        "header": 1,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 44255568,
+        "malformedPrice": 0,
+        "nonPositivePrice": 62262,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 11793353,
+        "systemDateEvents": 10850929,
+        "staleTradingDateEvents": 0,
+        "lines": 56111196,
+        "dataRows": 56111183,
+        "excluded": 0,
+        "lateRejected": 0,
+        "admitted": 11793353
+      },
+      "debs2022-gc-trading-day-13-11-21.csv": {
+        "comment": 12,
+        "header": 1,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 28219,
+        "malformedPrice": 0,
+        "nonPositivePrice": 5179,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 0,
+        "systemDateEvents": 0,
+        "staleTradingDateEvents": 0,
+        "lines": 33411,
+        "dataRows": 33398,
+        "excluded": 0,
+        "lateRejected": 0,
+        "admitted": 0
+      },
+      "debs2022-gc-trading-day-14-11-21.csv": {
+        "comment": 12,
+        "header": 1,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 26113,
+        "malformedPrice": 0,
+        "nonPositivePrice": 0,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 0,
+        "systemDateEvents": 0,
+        "staleTradingDateEvents": 0,
+        "lines": 26126,
+        "dataRows": 26113,
+        "excluded": 0,
+        "lateRejected": 0,
+        "admitted": 0
+      }
+    }
+  },
+  "admission": {
+    "model": "price events in source order, per-event watermark = max event time seen - bound - 1",
+    "eventsWithPositiveMinBound": 5858,
+    "smallestBoundWithNoLateEventsMs": 64265001,
+    "positiveMinBoundQuantilesMs": {
+      "0.5": 64265001,
+      "0.9": 64265001,
+      "0.99": 64265001,
+      "0.999": 64265001
+    },
+    "lateEventsByBoundMs": {
+      "0": 5858,
+      "1": 5646,
+      "10": 5596,
+      "100": 5523,
+      "250": 5520,
+      "500": 5506,
+      "1000": 5506,
+      "2000": 5506,
+      "5000": 5506,
+      "10000": 5506,
+      "30000": 5506,
+      "60000": 5506,
+      "300000": 5506,
+      "3600000": 5506
+    }
+  },
+  "results": {
+    "windows": 1855645,
+    "symbols": 4970,
+    "symbolsWithSeveralSecTypes": 0,
+    "advisories": {
+      "BUY": 7769,
+      "SELL": 3580
+    },
+    "firstWindowEnd": 1636355100000,
+    "lastWindowEnd": 1636756800000
+  },
+  "precision": {
+    "windows": 1855645,
+    "max_abs_error_ema38": 1.3969838619232178e-09,
+    "max_abs_error_ema100": 2.3283064365386963e-09,
+    "max_error_ulps": 33.0,
+    "worst_symbol": "A1EXY2.ETR",
+    "windows_over_tolerance": 1139,
+    "symbols_over_tolerance": 6,
+    "advisory_disagreements": 0,
+    "near_ties": 0
+  },
+  "outputs": {
+    "ema_results.parquet": {
+      "rows": 1855645,
+      "sha256": "829b9b2239e577a68f9e7a9fe0770c1e94cf3fb1739dba1556a522aff90448a5",
+      "contentSha256": "ca743e0ab33ebe6c38e8e7700f90ef0b35b6d3ff13f2643b6e58ff9e54ee6326"
+    },
+    "advisories.parquet": {
+      "rows": 11349,
+      "sha256": "31ee02cb6d920d8f0d0f4c91db3ca1d318fdaf51ea32e42fa5fbc3b45f144f78",
+      "contentSha256": "79d7b65314fa74e3e2e6aef00635d843ee4494a11d0b41edbce885ebee89f9f3"
+    },
+    "crossover_summary.parquet": {
+      "rows": 51,
+      "sha256": "3d0acb852de89795e39a2c2fc6a0def0535b18b681628604d3a861bd1e845030",
+      "contentSha256": "97beac15d97c8bc22b3556c555a16eb0e93e4ba33e44e0cadd0effbb76d3aca9"
+    },
+    "window_summary.parquet": {
+      "rows": 30,
+      "sha256": "550d647645edbffb4e6bf8047d2f58abb733a99ac2f275cb4400b6cabccaf38c",
+      "contentSha256": "1c44caa1a1963180db2dfebae133374c0939daaab1b5206182a38b10add6bfb4"
+    },
+    "symbol_summary.parquet": {
+      "rows": 4970,
+      "sha256": "6d1791408042cd1044acfb846c6e11a683a38f151c3b1a0bdc41128f7096d3c4",
+      "contentSha256": "51a5b52b2695801ca99f32a5000e089bf81fc8eabd90f23dae9048df10a6cdad"
+    },
+    "input_counts.parquet": {
+      "rows": 7,
+      "sha256": "9bc9ca72bdc17c626d3541223494f014e6abc2dd8b09db412114ca49edd85c29",
+      "contentSha256": "3f54de3d58eedd7c778e3a9b3d72eaa1e07a3806ed0fbc456613d535cadcf59c"
+    },
+    "rejected_events.parquet": {
+      "rows": 5506,
+      "sha256": "e89a326a97d83d963d0fc76f02b19d2e00605dd7946b2eee14484e561ec192de",
+      "contentSha256": "80cd8d6a091ead2f95ebfd2f90882cd5e9c33b948993a4298fbe5a464811ecf5"
+    }
+  },
+  "timingsSeconds": {
+    "read:debs2022-gc-trading-day-08-11-21.csv": 8.855,
+    "read:debs2022-gc-trading-day-09-11-21.csv": 9.351,
+    "read:debs2022-gc-trading-day-10-11-21.csv": 10.213,
+    "read:debs2022-gc-trading-day-11-11-21.csv": 8.834,
+    "read:debs2022-gc-trading-day-12-11-21.csv": 9.113,
+    "read:debs2022-gc-trading-day-13-11-21.csv": 0.013,
+    "read:debs2022-gc-trading-day-14-11-21.csv": 0.01,
+    "ema": 0.957,
+    "precisionCheck": 10.365,
+    "write": 0.595,
+    "inputChecksums": 26.942,
+    "total": 85.266
+  },
+  "peakAnonMemoryMb": 5427
+}
