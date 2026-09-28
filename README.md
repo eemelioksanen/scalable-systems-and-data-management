@@ -29,7 +29,11 @@ Scale out Flink:
 docker compose up -d --scale taskmanager=4
 ```
 
-Run the Maven tests:
+Run the Maven tests. `scripts/mvn.sh` runs Maven in a container with a cached dependency volume, which is faster for day-to-day work than a full image build:
+
+```bash
+scripts/mvn.sh test
+```
 
 ```bash
 docker build --target test .
@@ -48,11 +52,15 @@ docker compose down
 | Grafana | http://localhost:3000 |
 | Kafka from the host | `localhost:29092` |
 
-Submit the Flink job. The jar is baked into the image at `/opt/job/flink-job.jar`:
+Submit the Flink job (Query 1: `ticks` → `ema-results`). The jar is baked into the image at `/opt/job/flink-job.jar`. Rebuild with `docker compose up -d --build` after code changes.
 
 ```bash
-docker compose exec jobmanager flink run -d -c <MainClass> /opt/job/flink-job.jar
+docker compose exec jobmanager flink run -d -c fi.aalto.cse4780.trading.TradingTrendsJob /opt/job/flink-job.jar
 ```
+
+For a finite replay, add `--bounded`. The job then reads the offsets that exist at startup, evaluates every window including the last, and finishes. Other options, all provisional until the dataset analysis: `--watermark-bound-ms` (default 60000), `--idleness-ms` (30000, 0 = off) and `--zone-offset` (`Z`). They are documented in `TradingTrendsJob`.
+
+Parser counters (`priceEvents`, `nonPriceEvents`, `missingTimestampEvents`, `malformedEvents`) and `lateTicks` are exported to Prometheus under `flink_taskmanager_job_task_operator_*`.
 
 Run the replayer. It reads the CSVs from `./data`, mounted at `/data`:
 
