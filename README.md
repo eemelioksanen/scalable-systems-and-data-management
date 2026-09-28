@@ -78,7 +78,7 @@ docker compose exec jobmanager flink run -d -c fi.aalto.cse4780.trading.TradingT
 
 For a finite replay, add `--bounded`. The job then reads the offsets of `ticks` and `subscriptions` that exist at startup, evaluates every window including the last, and finishes. Other options, all provisional until the dataset analysis: `--watermark-bound-ms` (default 60000), `--idleness-ms` (30000, 0 = off) and `--zone-offset` (`Z`). They are documented in `TradingTrendsJob`. The subscription format, how changes take effect, and how to rerun are in [docs/interfaces.md](docs/interfaces.md).
 
-The job's counts are exported to Prometheus, and [docs/interfaces.md](docs/interfaces.md#counts-d-27) lists them. The parser's are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
+The job's counts are exported to Prometheus, and [docs/interfaces.md](docs/interfaces.md#counts-d-28) lists them. The parser's are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
 
 The producer uses the `tools` profile and is not built by the default start command. Build it explicitly:
 

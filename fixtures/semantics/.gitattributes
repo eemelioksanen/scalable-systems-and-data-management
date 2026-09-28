@@ -1,0 +1,2 @@
+# The CSVs mirror the real files byte for byte, CRLF comment lines included.
+*.csv -text

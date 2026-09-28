@@ -1,0 +1,859 @@
+{
+ "description": "Hand-derived expectations for the synthetic day files; see derivation.md.",
+ "zoneOffset": "Z",
+ "counts": {
+  "trading-day-08-11-21.csv": {
+   "lines": 47,
+   "comment": 13,
+   "header": 1,
+   "blank": 1,
+   "malformedRow": 2,
+   "nonPrice": 2,
+   "malformedPrice": 1,
+   "nonPositivePrice": 2,
+   "missingTimestamp": 2,
+   "malformedTimestamp": 2,
+   "accepted": 21,
+   "systemDateEvents": 1,
+   "staleTradingDateEvents": 0
+  },
+  "trading-day-09-11-21.csv": {
+   "lines": 63,
+   "comment": 12,
+   "header": 1,
+   "blank": 0,
+   "malformedRow": 0,
+   "nonPrice": 0,
+   "malformedPrice": 0,
+   "nonPositivePrice": 0,
+   "missingTimestamp": 0,
+   "malformedTimestamp": 0,
+   "accepted": 50,
+   "systemDateEvents": 0,
+   "staleTradingDateEvents": 1
+  }
+ },
+ "windows": [
+  {
+   "symbol": "DAY.NL",
+   "secType": "I",
+   "windowEnd": 1636392600000,
+   "close": 41.0,
+   "ema38": 2.1025641025641026,
+   "ema100": 0.8118811881188119,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 63,
+   "priceEvents": 2
+  },
+  {
+   "symbol": "DAY.NL",
+   "secType": "I",
+   "windowEnd": 1636448700000,
+   "close": 42.0,
+   "ema38": 4.148586456278764,
+   "ema100": 1.62748750122537,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 14,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "EDGE.NL",
+   "secType": "E",
+   "windowEnd": 1636365900000,
+   "close": 21.0,
+   "ema38": 1.0769230769230769,
+   "ema100": 0.4158415841584158,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 19,
+   "priceEvents": 2
+  },
+  {
+   "symbol": "EDGE.NL",
+   "secType": "E",
+   "windowEnd": 1636366200000,
+   "close": 31.0,
+   "ema38": 2.611439842209073,
+   "ema100": 1.0214684834820116,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 20,
+   "priceEvents": 2
+  },
+  {
+   "symbol": "EDGE.NL",
+   "secType": "E",
+   "windowEnd": 1636366500000,
+   "close": 40.0,
+   "ema38": 4.528801901582967,
+   "ema100": 1.7933205927199916,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 21,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "MISS.FR",
+   "secType": "E",
+   "windowEnd": 1636373100000,
+   "close": 51.0,
+   "ema38": 2.6153846153846154,
+   "ema100": 1.00990099009901,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 31,
+   "priceEvents": 3
+  },
+  {
+   "symbol": "MULTI.FR",
+   "secType": "E",
+   "windowEnd": 1636362300000,
+   "close": 12.0,
+   "ema38": 0.6153846153846154,
+   "ema100": 0.2376237623762376,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 15,
+   "priceEvents": 3
+  },
+  {
+   "symbol": "SAME.FR",
+   "secType": "E",
+   "windowEnd": 1636376700000,
+   "close": 100.0,
+   "ema38": 5.128205128205129,
+   "ema100": 1.9801980198019802,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 41,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SAME.NL",
+   "secType": "E",
+   "windowEnd": 1636376700000,
+   "close": 1.0,
+   "ema38": 0.05128205128205128,
+   "ema100": 0.019801980198019802,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 42,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SPARSE.ETR",
+   "secType": "E",
+   "windowEnd": 1636380300000,
+   "close": 8.0,
+   "ema38": 0.41025641025641024,
+   "ema100": 0.15841584158415842,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 43,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SPARSE.ETR",
+   "secType": "E",
+   "windowEnd": 1636380600000,
+   "close": 9.0,
+   "ema38": 0.8507560815253123,
+   "ema100": 0.3334967160082345,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 44,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SPARSE.ETR",
+   "secType": "E",
+   "windowEnd": 1636381800000,
+   "close": 10.0,
+   "ema38": 1.3199480773445271,
+   "ema100": 0.5249126226219328,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 45,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636463100000,
+   "close": 100.0,
+   "ema38": 5.128205128205129,
+   "ema100": 1.9801980198019802,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 15,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636463400000,
+   "close": 1.0,
+   "ema38": 4.916502301117686,
+   "ema100": 1.9607881580237232,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 16,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636463700000,
+   "close": 1.0,
+   "ema38": 4.715656029265497,
+   "ema100": 1.9417626499440455,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 17,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636464000000,
+   "close": 1.0,
+   "ema38": 4.525109566226241,
+   "ema100": 1.9231138845986189,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 18,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636464300000,
+   "close": 1.0,
+   "ema38": 4.344334716676177,
+   "ema100": 1.9048344017352798,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 19,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636464600000,
+   "close": 1.0,
+   "ema38": 4.172830372231244,
+   "ema100": 1.8869168888296308,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 20,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636464900000,
+   "close": 1.0,
+   "ema38": 4.010121122373232,
+   "ema100": 1.8693541781597371,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 21,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636465200000,
+   "close": 1.0,
+   "ema38": 3.8557559366105023,
+   "ema100": 1.852139243938752,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 22,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636465500000,
+   "close": 1.0,
+   "ema38": 3.70930691422022,
+   "ema100": 1.8352651995043214,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 23,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636465800000,
+   "close": 1.0,
+   "ema38": 3.570368098106363,
+   "ema100": 1.8187252945636418,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 24,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636466100000,
+   "close": 1.0,
+   "ema38": 3.4385543494855235,
+   "ema100": 1.8025129124930745,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 25,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636466400000,
+   "close": 1.0,
+   "ema38": 3.3135002802811377,
+   "ema100": 1.7866215676912316,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 26,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636466700000,
+   "close": 1.0,
+   "ema38": 3.1948592402667204,
+   "ema100": 1.7710449029844746,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 27,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636467000000,
+   "close": 1.0,
+   "ema38": 3.0823023561504783,
+   "ema100": 1.7557766870837919,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 28,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636467300000,
+   "close": 1.0,
+   "ema38": 2.975517619937633,
+   "ema100": 1.7408108120920336,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 29,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636467600000,
+   "close": 1.0,
+   "ema38": 2.8742090240433957,
+   "ema100": 1.7261412910605083,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 30,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636467900000,
+   "close": 1.0,
+   "ema38": 2.778095740759119,
+   "ema100": 1.7117622555939636,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 31,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636468200000,
+   "close": 1.0,
+   "ema38": 2.686911343797113,
+   "ema100": 1.697667953502994,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 32,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636468500000,
+   "close": 1.0,
+   "ema38": 2.6004030697562355,
+   "ema100": 1.6838527465029347,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 33,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636468800000,
+   "close": 1.0,
+   "ema38": 2.518331117461044,
+   "ema100": 1.670311107958322,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 34,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636469100000,
+   "close": 1.0,
+   "ema38": 2.4404679832322724,
+   "ema100": 1.6570376206720185,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 35,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636469400000,
+   "close": 1.0,
+   "ema38": 2.366597830246002,
+   "ema100": 1.6440269747181173,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 36,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636469700000,
+   "close": 1.0,
+   "ema38": 2.2965158902333864,
+   "ema100": 1.6312739653177586,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 37,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636470000000,
+   "close": 1.0,
+   "ema38": 2.2300278958624435,
+   "ema100": 1.6187734907570108,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 38,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636470300000,
+   "close": 1.0,
+   "ema38": 2.166949542228472,
+   "ema100": 1.606520550345981,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 39,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636470600000,
+   "close": 1.0,
+   "ema38": 2.107105975960345,
+   "ema100": 1.5945102424183377,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 40,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636470900000,
+   "close": 1.0,
+   "ema38": 2.0503313105264813,
+   "ema100": 1.58273776237045,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 41,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636471200000,
+   "close": 1.0,
+   "ema38": 1.9964681663969184,
+   "ema100": 1.5711984007393518,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 42,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636471500000,
+   "close": 1.0,
+   "ema38": 1.9453672347868198,
+   "ema100": 1.5598875413187705,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 43,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636471800000,
+   "close": 1.0,
+   "ema38": 1.8968868637721112,
+   "ema100": 1.5488006593124584,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 44,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636472100000,
+   "close": 1.0,
+   "ema38": 1.8508926656299516,
+   "ema100": 1.5379333195240927,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 45,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636472400000,
+   "close": 1.0,
+   "ema38": 1.8072571443155951,
+   "ema100": 1.5272811745830217,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 46,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636472700000,
+   "close": 1.0,
+   "ema38": 1.7658593420430004,
+   "ema100": 1.5168399632051401,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 47,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636473000000,
+   "close": 1.0,
+   "ema38": 1.7265845039895134,
+   "ema100": 1.5066055084882066,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 48,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636473300000,
+   "close": 1.0,
+   "ema38": 1.6893237601951794,
+   "ema100": 1.4965737162409154,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 49,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636473600000,
+   "close": 1.0,
+   "ema38": 1.6539738237749138,
+   "ema100": 1.4867405733450556,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 50,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636473900000,
+   "close": 1.0,
+   "ema38": 1.6204367046069694,
+   "ema100": 1.4771021461501042,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 51,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636474200000,
+   "close": 1.0,
+   "ema38": 1.588619437704048,
+   "ema100": 1.467654578899607,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 52,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636474500000,
+   "close": 1.0,
+   "ema38": 1.5584338255140968,
+   "ema100": 1.4583940921887237,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 53,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636474800000,
+   "close": 1.0,
+   "ema38": 1.5297961934364508,
+   "ema100": 1.4493169814523132,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 54,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636475100000,
+   "close": 1.0,
+   "ema38": 1.5026271578756072,
+   "ema100": 1.4404196154829605,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 55,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636475400000,
+   "close": 1.0,
+   "ema38": 1.4768514061896785,
+   "ema100": 1.4316984349783475,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 56,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636475700000,
+   "close": 1.0,
+   "ema38": 1.4523974879235413,
+   "ema100": 1.4231499511173902,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 57,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636476000000,
+   "close": 1.0,
+   "ema38": 1.429197616747975,
+   "ema100": 1.4147707441645705,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 58,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636476300000,
+   "close": 1.0,
+   "ema38": 1.407187482555771,
+   "ema100": 1.4065574621019057,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 59,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636476600000,
+   "close": 1.0,
+   "ema38": 1.3863060731939367,
+   "ema100": 1.3985068192880066,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 60,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636476900000,
+   "close": 1.0,
+   "ema38": 1.3664955053378374,
+   "ema100": 1.3906155951436896,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 61,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636477200000,
+   "close": 100.0,
+   "ema38": 6.424623940961538,
+   "ema100": 3.343276672467577,
+   "closeSourceFile": "trading-day-09-11-21.csv",
+   "closeSourceLine": 62,
+   "priceEvents": 1
+  },
+  {
+   "symbol": "TIE.ETR",
+   "secType": "I",
+   "windowEnd": 1636369500000,
+   "close": 6.0,
+   "ema38": 0.3076923076923077,
+   "ema100": 0.1188118811881188,
+   "closeSourceFile": "trading-day-08-11-21.csv",
+   "closeSourceLine": 24,
+   "priceEvents": 4
+  }
+ ],
+ "advisories": [
+  {
+   "symbol": "DAY.NL",
+   "secType": "I",
+   "windowEnd": 1636392600000,
+   "type": "BUY",
+   "ema38": 2.1025641025641026,
+   "ema100": 0.8118811881188119
+  },
+  {
+   "symbol": "EDGE.NL",
+   "secType": "E",
+   "windowEnd": 1636365900000,
+   "type": "BUY",
+   "ema38": 1.0769230769230769,
+   "ema100": 0.4158415841584158
+  },
+  {
+   "symbol": "MISS.FR",
+   "secType": "E",
+   "windowEnd": 1636373100000,
+   "type": "BUY",
+   "ema38": 2.6153846153846154,
+   "ema100": 1.00990099009901
+  },
+  {
+   "symbol": "MULTI.FR",
+   "secType": "E",
+   "windowEnd": 1636362300000,
+   "type": "BUY",
+   "ema38": 0.6153846153846154,
+   "ema100": 0.2376237623762376
+  },
+  {
+   "symbol": "SAME.FR",
+   "secType": "E",
+   "windowEnd": 1636376700000,
+   "type": "BUY",
+   "ema38": 5.128205128205129,
+   "ema100": 1.9801980198019802
+  },
+  {
+   "symbol": "SAME.NL",
+   "secType": "E",
+   "windowEnd": 1636376700000,
+   "type": "BUY",
+   "ema38": 0.05128205128205128,
+   "ema100": 0.019801980198019802
+  },
+  {
+   "symbol": "SPARSE.ETR",
+   "secType": "E",
+   "windowEnd": 1636380300000,
+   "type": "BUY",
+   "ema38": 0.41025641025641024,
+   "ema100": 0.15841584158415842
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636463100000,
+   "type": "BUY",
+   "ema38": 5.128205128205129,
+   "ema100": 1.9801980198019802
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636476600000,
+   "type": "SELL",
+   "ema38": 1.3863060731939367,
+   "ema100": 1.3985068192880066
+  },
+  {
+   "symbol": "SWING.FR",
+   "secType": "I",
+   "windowEnd": 1636477200000,
+   "type": "BUY",
+   "ema38": 6.424623940961538,
+   "ema100": 3.343276672467577
+  },
+  {
+   "symbol": "TIE.ETR",
+   "secType": "I",
+   "windowEnd": 1636369500000,
+   "type": "BUY",
+   "ema38": 0.3076923076923077,
+   "ema100": 0.1188118811881188
+  }
+ ],
+ "minBoundMs": {
+  "trading-day-08-11-21.csv:19": 1,
+  "trading-day-09-11-21.csv:63": 84450001
+ },
+ "variants": {
+  "watermarkBound0": {
+   "rejected": [
+    [
+     "trading-day-08-11-21.csv",
+     19
+    ],
+    [
+     "trading-day-09-11-21.csv",
+     63
+    ]
+   ],
+   "closes": [
+    [
+     "EDGE.NL",
+     1636365900000,
+     20,
+     "trading-day-08-11-21.csv",
+     17
+    ],
+    [
+     "DAY.NL",
+     1636392600000,
+     40,
+     "trading-day-08-11-21.csv",
+     46
+    ]
+   ]
+  },
+  "watermarkBound1": {
+   "rejected": [
+    [
+     "trading-day-09-11-21.csv",
+     63
+    ]
+   ]
+  },
+  "missingDateDrop": {
+   "closes": [
+    [
+     "MISS.FR",
+     1636373100000,
+     53,
+     "trading-day-08-11-21.csv",
+     33
+    ]
+   ],
+   "countChanges": {
+    "trading-day-08-11-21.csv": {
+     "accepted": 20,
+     "missingTimestamp": 3,
+     "systemDateEvents": 0
+    }
+   }
+  }
+ }
+}
