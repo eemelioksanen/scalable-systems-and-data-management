@@ -10,8 +10,13 @@ import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 /**
- * Turns {@code ticks} records into {@link Tick}s. Only price events are emitted; every other record
- * is counted per {@link TickParser.Outcome} and dropped here, before the keyed calculation.
+ * Turns {@code ticks} records into {@link Tick}s. Only price events are emitted. Every other
+ * record is counted and dropped here, before the keyed calculation.
+ *
+ * <p>These counters partition all records: {@code priceEvents}, {@code nonPriceEvents},
+ * {@code nonPositivePriceEvents}, {@code missingTimestampEvents} and {@code malformedEvents}.
+ * {@code systemDateEvents} counts the price events dated from {@code Date} (D-25), a subset of
+ * {@code priceEvents}.
  *
  * <p>The record offset becomes {@link Tick#sourceOrder} and the record timestamp becomes
  * {@link Tick#ingestTimeMillis}.
@@ -23,7 +28,9 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
     private final TickParser parser;
 
     private transient Counter priceEvents;
+    private transient Counter systemDateEvents;
     private transient Counter nonPriceEvents;
+    private transient Counter nonPositivePriceEvents;
     private transient Counter missingTimestampEvents;
     private transient Counter malformedEvents;
 
@@ -35,7 +42,9 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
     public void open(DeserializationSchema.InitializationContext context) {
         MetricGroup ticks = context.getMetricGroup().addGroup("ticks");
         priceEvents = ticks.counter("priceEvents");
+        systemDateEvents = ticks.counter("systemDateEvents");
         nonPriceEvents = ticks.counter("nonPriceEvents");
+        nonPositivePriceEvents = ticks.counter("nonPositivePriceEvents");
         missingTimestampEvents = ticks.counter("missingTimestampEvents");
         malformedEvents = ticks.counter("malformedEvents");
     }
@@ -47,14 +56,20 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
             return;
         }
         Tick tick = new Tick();
-        switch (parser.parse(new String(record.value(), StandardCharsets.UTF_8), tick)) {
-            case PRICE -> {
+        TickParser.Outcome outcome =
+                parser.parse(new String(record.value(), StandardCharsets.UTF_8), tick);
+        switch (outcome) {
+            case PRICE, PRICE_SYSTEM_DATE -> {
+                if (outcome == TickParser.Outcome.PRICE_SYSTEM_DATE) {
+                    systemDateEvents.inc();
+                }
                 tick.sourceOrder = record.offset();
                 tick.ingestTimeMillis = record.timestamp();
                 priceEvents.inc();
                 out.collect(tick);
             }
             case NON_PRICE -> nonPriceEvents.inc();
+            case NON_POSITIVE_PRICE -> nonPositivePriceEvents.inc();
             case MISSING_TIMESTAMP -> missingTimestampEvents.inc();
             case MALFORMED -> malformedEvents.inc();
         }

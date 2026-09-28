@@ -45,6 +45,19 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-26: Query 1 job follows the data contract (2026-09-28, Leo Immonen, issue #7)
+Context: #16 merged before the data contract (#18). Its parser dropped every price row without a `Trading date`, which is 92.1% of them, and it accepted `Last` = 0.
+Decision: the Flink parser now applies:
+- **D-2 (refined):** `Last` ≤ 0 is not a price event. It is counted as `nonPositivePriceEvents`.
+- **D-25:** an empty `Trading date` is replaced by `Date`. Those price events are also counted as `systemDateEvents`.
+- **D-22:** event time is epoch ms. Any fraction digits beyond milliseconds are truncated. This replaces D-19's nanosecond clause; the tie-break stays the Kafka offset (D-23).
+
+A price row is `missingTimestamp` only when `Trading time` is empty or neither date field is set.
+Consequences:
+- `GoldenFixturesTest` replays `fixtures/golden/{synthetic,real}.json` through the operator within the D-18 tolerance, and both sequences match.
+- A real-format replay through Kafka reconciled all 9 records across the counters.
+- D-25 is still only proposed. The oracle (#5) must apply the same rule, or the two will disagree on nearly every row.
+
 ### D-25: `Date` substitutes for a missing `Trading date` (2026-09-28)
 Context: `Trading date` is absent on 92.1% of price rows in the profiled sample.
 Decision: build the date part of event time from `Trading date` when present, otherwise from the system `Date`. The time part is always `Trading time`, which is never missing on a price row.
