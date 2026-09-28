@@ -42,7 +42,7 @@ public class EmaResultSerializer implements KafkaRecordSerializationSchema<EmaRe
                 .toString();
     }
 
-    private static String quote(String s) {
+    static String quote(String s) {
         if (s == null) {
             return "null";
         }
