@@ -1,0 +1,116 @@
+Local stack verification, 2026-09-28
+Run: 2026-09-28T16:44:47Z to 2026-09-28T16:47:33Z
+Selected output from the successful run. Local paths are replaced with
+<repo>, <devcontainer-cli>, and <validation-work>; ANSI formatting is removed.
+Omitted output includes image build progress, service logs, and container inspection.
+Metric samples retain the original labels, values, and timestamps.
+
+Checker transcript
+Evidence: <validation-work>/rebased-run
+Disposable project: trading-trends-check-caffca10367b
++ git rev-parse HEAD
++ git status --short
++ docker version
++ docker compose version
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b config
++ docker build --progress=plain --target test --no-cache-filter test -t trading-trends-check-caffca10367b/test:dev .
++ docker run --rm --mount type=bind,source=<repo>/scripts/validation/LoggingCheck.java,target=/tmp/LoggingCheck.java,readonly trading-trends-check-caffca10367b/test:dev java -cp /src/producer/target/producer.jar /tmp/LoggingCheck.java
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b build jobmanager producer
+PASS container-build: "both runtime images, Maven clean verify, and packaged producer logging"
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b up -d --no-build --scale taskmanager=1
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b wait kafka-init
+PASS kafka-topics: {"partitions": {"stats": 1, "advisories": 8, "ema-results": 8, "ticks": 8, "subscriptions": 1}, "subscriptions": "compact", "brokers": [{"broker_id": 1, "host": "localhost", "port": 57248, "rack": null, "is_fenced": false}]}
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b exec -T kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic stack-check-in --from-beginning --max-messages 1 --timeout-ms 30000
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b exec -T kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic stack-check-in
+PASS kafka-roundtrip: "host and container clients produced and consumed the same records"
+PASS capacity-1: {"taskmanagers": 1, "slots-total": 2, "slots-available": 2, "jobs-running": 0, "jobs-finished": 0, "jobs-cancelled": 0, "jobs-failed": 0, "flink-version": "2.2.1", "flink-commit": "450c63e"}
+PASS metrics-1: "2 healthy targets; Flink samples via Prometheus and Grafana"
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b exec -T jobmanager sh -c 'cat > /tmp/verify.sql && /opt/flink/bin/sql-client.sh -f /tmp/verify.sql'
+PASS flink-kafka-connector: "packaged connector read and wrote both synthetic records on the running cluster"
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b up -d --no-build --scale taskmanager=2
+PASS capacity-2: {"taskmanagers": 2, "slots-total": 4, "slots-available": 4, "jobs-running": 0, "jobs-finished": 1, "jobs-cancelled": 0, "jobs-failed": 0, "flink-version": "2.2.1", "flink-commit": "450c63e"}
+PASS metrics-2: "3 healthy targets; Flink samples via Prometheus and Grafana"
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b logs --no-color
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b stop
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b start --wait
+PASS stop-start: "Kafka records retained"
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b down --volumes
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b up -d --no-build --scale taskmanager=1
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b wait kafka-init
+PASS reset: "synthetic topics and data removed; five application topics recreated"
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b down --volumes
++ <devcontainer-cli> up --workspace-folder <repo> --id-label stack-verification=trading-trends-check-caffca10367b --mount-workspace-git-root false
++ <devcontainer-cli> exec --workspace-folder <repo> --id-label stack-verification=trading-trends-check-caffca10367b mvn -B -ntp clean verify
++ <devcontainer-cli> exec --workspace-folder <repo> --id-label stack-verification=trading-trends-check-caffca10367b docker version
++ <devcontainer-cli> exec --workspace-folder <repo> --id-label stack-verification=trading-trends-check-caffca10367b docker compose version
+PASS devcontainer: "Maven clean verify and Docker/Compose access inside the configured container"
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b ps -a
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b logs --no-color
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b down --volumes
++ docker ps -aq --filter label=stack-verification=trading-trends-check-caffca10367b
++ docker rm -f -v 28a1e81dad6a
++ docker image rm trading-trends-check-caffca10367b/test:dev trading-trends-check-caffca10367b/flink-job:dev trading-trends-check-caffca10367b/producer:dev
+PASS local stack. Evidence: <validation-work>/rebased-run
+
+Selected tool output, grouped by command
++ docker compose version
+Docker Compose version v5.5.1
+
++ docker build --progress=plain --target test --no-cache-filter test -t trading-trends-check-caffca10367b/test:dev .
+#12 38.37 [INFO] Reactor Summary for Trading Trends (CS-E4780 course project) 0.1.0-SNAPSHOT:
+#12 38.37 [INFO] Trading Trends (CS-E4780 course project) ........... SUCCESS [  0.001 s]
+#12 38.37 [INFO] Producer: CSV tick-data replayer to Kafka .......... SUCCESS [ 15.418 s]
+#12 38.37 [INFO] Flink job: Query 1 (EMA) + Query 2 (crossover advisories) SUCCESS [ 21.950 s]
+#12 38.37 [INFO] BUILD SUCCESS
+#13 1.754 [INFO] No tests to run.
+#13 4.712 [INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.060 s -- in fi.aalto.cse4780.trading.TickParserTest
+#13 4.955 [INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.247 s -- in fi.aalto.cse4780.trading.EmaCalculatorTest
+#13 5.837 [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.880 s -- in fi.aalto.cse4780.trading.TradingTrendsJobTest
+#13 5.840 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in fi.aalto.cse4780.trading.EmaResultSerializerTest
+#13 5.843 [INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in fi.aalto.cse4780.trading.TickDeserializerTest
+#13 5.858 [INFO] Tests run: 47, Failures: 0, Errors: 0, Skipped: 0
+#13 7.187 [INFO] Reactor Summary for Trading Trends (CS-E4780 course project) 0.1.0-SNAPSHOT:
+#13 7.187 [INFO] Trading Trends (CS-E4780 course project) ........... SUCCESS [  1.066 s]
+#13 7.187 [INFO] Producer: CSV tick-data replayer to Kafka .......... SUCCESS [  1.512 s]
+#13 7.187 [INFO] Flink job: Query 1 (EMA) + Query 2 (crossover advisories) SUCCESS [  4.110 s]
+#13 7.187 [INFO] BUILD SUCCESS
+
++ docker run --rm --mount type=bind,source=<repo>/scripts/validation/LoggingCheck.java,target=/tmp/LoggingCheck.java,readonly trading-trends-check-caffca10367b/test:dev java -cp /src/producer/target/producer.jar /tmp/LoggingCheck.java
+[main] INFO LoggingCheck - Producer logging works
+
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b exec -T kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic stack-check-in --from-beginning --max-messages 1 --timeout-ms 30000
+VERIFY.NL,E,08-11-2021,09:00:01.1234,19.2800,09:00:01.1000,08-11-2021
+Processed a total of 1 messages
+
++ docker compose --project-directory <repo> -f <repo>/docker-compose.yml -p trading-trends-check-caffca10367b exec -T jobmanager sh -c 'cat > /tmp/verify.sql && /opt/flink/bin/sql-client.sh -f /tmp/verify.sql'
+Flink SQL> [INFO] Complete execution of the SQL update statement.
+
++ <devcontainer-cli> exec --workspace-folder <repo> --id-label stack-verification=trading-trends-check-caffca10367b mvn -B -ntp clean verify
+[INFO] No tests to run.
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.474 s -- in fi.aalto.cse4780.trading.EmaCalculatorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in fi.aalto.cse4780.trading.TickDeserializerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in fi.aalto.cse4780.trading.EmaResultSerializerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.240 s -- in fi.aalto.cse4780.trading.TradingTrendsJobTest
+[INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in fi.aalto.cse4780.trading.TickParserTest
+[INFO] Tests run: 47, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Reactor Summary for Trading Trends (CS-E4780 course project) 0.1.0-SNAPSHOT:
+[INFO] Trading Trends (CS-E4780 course project) ........... SUCCESS [  0.841 s]
+[INFO] Producer: CSV tick-data replayer to Kafka .......... SUCCESS [ 15.238 s]
+[INFO] Flink job: Query 1 (EMA) + Query 2 (crossover advisories) SUCCESS [ 24.931 s]
+[INFO] BUILD SUCCESS
+
++ <devcontainer-cli> exec --workspace-folder <repo> --id-label stack-verification=trading-trends-check-caffca10367b docker compose version
+Docker Compose version v5.5.1
+
+
+Additional default-command check (separate fresh project)
+Used localhost:29092, produced and consumed plain-down-probe in
+default-path-probe, then checked that plain down removed that topic.
++ docker compose up -d --build
++ docker compose wait kafka-init
+PASS default startup: {'taskmanagers': 1, 'slots-total': 2, 'slots-available': 2, 'jobs-running': 0, 'jobs-finished': 0, 'jobs-cancelled': 0, 'jobs-failed': 0, 'flink-version': '2.2.1', 'flink-commit': '450c63e'}
++ docker compose down
++ docker compose up -d
++ docker compose wait kafka-init
+PASS plain down removed Kafka topic and records; recreated topics: ['advisories', 'subscriptions', 'stats', 'ticks', 'ema-results']
++ docker compose down --volumes

@@ -45,6 +45,19 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-20: Local stack verification and dependency corrections (2026-09-28, Emilia)
+
+The repeatable checker uses a disposable Compose project, separate image tags and host ports, and synthetic Kafka topics.
+Kafka keeps its existing temporary storage: stop/start retains records, while removing the container resets them.
+Emilia confirmed these choices before implementation.
+
+Runtime validation found that the producer's transitive SLF4J API 1.7.36 could not load its 2.0.20 provider.
+Manage the API at the existing `slf4j.version` so logging works in the packaged jar.
+The dev-container Docker feature also required `moby: false` because its Moby packages are unavailable on the current Debian trixie base.
+D-11 and D-12 otherwise remain unchanged.
+
+[Validation evidence](local-stack-validation.md) records the builds, Kafka and Flink roundtrip, scaling, metrics, storage lifecycle, and dev-container checks.
+
 ### D-19: Query 1 operator implementation (2026-09-28, Leo Immonen, issue #7)
 
 Context: implementing Query 1 in Flink before the EDA (#4) and the oracle (#5) exist.
