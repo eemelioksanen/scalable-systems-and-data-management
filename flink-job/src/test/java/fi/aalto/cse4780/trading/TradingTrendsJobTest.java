@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
@@ -17,7 +19,7 @@ import org.apache.flink.util.CloseableIterator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-/** Runs the Query 1 pipeline (watermarks → keyBy → EmaCalculator) on a Flink mini cluster. */
+/** Runs the pipeline (watermarks → keyBy → EmaCalculator → subscription filter) on a mini cluster. */
 class TradingTrendsJobTest {
 
     @RegisterExtension
@@ -62,6 +64,76 @@ class TradingTrendsJobTest {
                 new String[] {"09:05", "09:15"},
                 new double[] {1.5384615384615385, 3.1518737672583828},
                 new double[] {0.594059405940594, 1.2357611998823645});
+    }
+
+    @Test
+    void publishesOnlySubscribedSymbolsWithTheirCrossovers() throws Exception {
+        List<EmaResult> published = runWithSubscriptions();
+
+        Map<String, List<EmaResult>> bySymbol =
+                published.stream().collect(Collectors.groupingBy(r -> r.symbol));
+        assertEquals(Set.of("AAA.FR", "CCC.ETR"), bySymbol.keySet());
+        assertWindows(bySymbol.get("AAA.FR"),
+                new String[] {"09:05", "09:10", "09:15"},
+                new double[] {1.0256410256410255, 2.0499671268902038, 3.073045735767629},
+                new double[] {0.39603960396039606, 0.8040388197235565, 1.223760823293387});
+        assertEquals(Arrays.asList(Crossover.BUY, null, null),
+                bySymbol.get("AAA.FR").stream().map(r -> r.crossover).collect(Collectors.toList()));
+        assertEquals(List.of(Crossover.BUY),
+                bySymbol.get("CCC.ETR").stream().map(r -> r.crossover).collect(Collectors.toList()));
+    }
+
+    @Test
+    void aCleanRerunPublishesTheSameResults() throws Exception {
+        assertEquals(comparable(runWithSubscriptions()), comparable(runWithSubscriptions()));
+    }
+
+    /**
+     * Three symbols on three exchanges. BBB.NL's only subscriber is removed before the snapshot
+     * ends and trader-3 subscribes to nothing, so AAA.FR and CCC.ETR are published.
+     */
+    private static List<EmaResult> runWithSubscriptions() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(2);
+
+        List<Tick> input = List.of(
+                tick("AAA.FR", "2021-11-08T09:01:00", 20.0, 0),
+                tick("BBB.NL", "2021-11-08T09:02:00", 30.0, 1),
+                tick("CCC.ETR", "2021-11-08T09:03:00", 40.0, 2),
+                tick("AAA.FR", "2021-11-08T09:07:00", 21.0, 3),
+                tick("AAA.FR", "2021-11-08T09:13:00", 22.0, 4),
+                tick("BBB.NL", "2021-11-08T09:14:00", 33.0, 5));
+        DataStream<Tick> ticks = env
+                .fromData(input, TypeInformation.of(Tick.class))
+                .assignTimestampsAndWatermarks(
+                        TradingTrendsJob.watermarks(Duration.ZERO, Duration.ZERO))
+                .setParallelism(1);
+        List<SubscriptionUpdate> updates = List.of(
+                new SubscriptionUpdate("trader-1", new String[] {"AAA.FR"}, 0, 0),
+                new SubscriptionUpdate("trader-2", new String[] {"AAA.FR", "CCC.ETR"}, 0, 1),
+                new SubscriptionUpdate("trader-3", new String[0], 0, 2),
+                new SubscriptionUpdate("trader-4", new String[] {"BBB.NL"}, 0, 3),
+                new SubscriptionUpdate("trader-4", null, 0, 4));
+        DataStream<SubscriptionUpdate> subscriptions = env
+                .fromData(updates, TypeInformation.of(SubscriptionUpdate.class))
+                .setParallelism(1);
+
+        List<EmaResult> results = new ArrayList<>();
+        try (CloseableIterator<EmaResult> it = TradingTrendsJob.published(
+                TradingTrendsJob.emaResults(ticks), subscriptions, Map.of(0, 5L))
+                .executeAndCollect()) {
+            it.forEachRemaining(results::add);
+        }
+        return results;
+    }
+
+    /** Every published field except the wall-clock emit time, in a stable order. */
+    private static List<String> comparable(List<EmaResult> results) {
+        return results.stream()
+                .map(r -> r.symbol + ' ' + r.secType + ' ' + r.windowEnd + ' ' + r.close + ' '
+                        + r.ema38 + ' ' + r.ema100 + ' ' + r.maxIngestTs + ' ' + r.crossover)
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     private static void assertWindows(
