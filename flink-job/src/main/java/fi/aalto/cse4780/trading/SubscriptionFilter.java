@@ -27,7 +27,7 @@ import org.apache.flink.util.Collector;
  * <p><b>Readiness.</b> Results are held back until the filter has read the topic up to its end
  * offsets at job submission, then released against that state. So every result is judged against
  * at least the subscriptions that existed at startup, whichever source starts first. Tests and
- * correctness runs preload the topic before submitting the job (D-27).
+ * correctness runs preload the topic before submitting the job (D-28).
  *
  * <p><b>Cutover.</b> After that, an update applies to every result this operator processes after
  * the update. Results already published are not withdrawn and earlier windows are not replayed.

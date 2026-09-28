@@ -13,7 +13,7 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 | `ema-results` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `advisories` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `subscriptions` | subscription generator | Flink job (broadcast) | trader ID | JSON, or a tombstone | 1, compacted |
-| `stats` | not written yet: counts are Flink metrics (D-27, [Counts](#counts)) | – | – | – | 1 |
+| `stats` | not written yet: counts are Flink metrics (D-28, [Counts](#counts-d-28)) | – | – | – | 1 |
 
 All keys and string values are UTF-8. Partition counts are revisited for the cloud runs.
 
@@ -95,13 +95,13 @@ The fields mean the same as in `ema-results`.
 - Writers must not use Kafka transactions: the job treats the record at a partition's end offset − 1 as the last one to wait for (below), and a transaction marker there would hold results back forever.
 - The Flink job emits each result once per symbol, not once per trader. Delivering results to individual traders is the visualization backend's job.
 
-**Startup (D-27).** At submission the job reads the topic's end offsets. Until it has read the topic up to them, it holds every result back; then it publishes the held results that the subscriptions allow. So everything is judged against at least the subscriptions that existed at submission, whichever input the job happens to read first. To get deterministic output, write the subscriptions **before** submitting the job. The `subscriptionsReady` gauge is 1 once this has happened.
+**Startup (D-28).** At submission the job reads the topic's end offsets. Until it has read the topic up to them, it holds every result back; then it publishes the held results that the subscriptions allow. So everything is judged against at least the subscriptions that existed at submission, whichever input the job happens to read first. To get deterministic output, write the subscriptions **before** submitting the job. The `subscriptionsReady` gauge is 1 once this has happened.
 
 **Changes while running.** A change applies to every result the subscription filter processes after it. Results already published are not withdrawn, and a new subscription does not replay earlier windows: its first result is the symbol's next evaluated window. Because ticks and subscriptions are separate inputs, which window that is depends on timing.
 
 **Finite replay.** With `--bounded`, the job reads `subscriptions` only up to the end offsets at submission, like `ticks`. Later changes are ignored.
 
-## Counts (D-27)
+## Counts (D-28)
 
 The job's counts are Flink metrics, exported to Prometheus (see the README). Nothing writes the `stats` topic yet.
 
@@ -117,7 +117,7 @@ The job's counts are Flink metrics, exported to Prometheus (see the README). Not
 
 A finished `--bounded` job's metrics disappear with it. Prometheus keeps what it last scraped, every 5 s, so read the final counts from the Flink UI or REST API before the job ends if they have to be exact.
 
-## Restart and replay (D-27)
+## Restart and replay (D-28)
 
 Checkpointing is not enabled, so the job does not recover from a failure: it fails. The supported way to run again is a **clean replay**:
 
@@ -130,6 +130,7 @@ Both inputs are read from the earliest offset, so the same `ticks` and a preload
 
 - **Oracle output:** `oracle/out/ema_results.parquet` and `oracle/out/advisories.parquet`. Both are gitignored.
   - They use the same field names as the topics, without `maxIngestTs` and `emitTs`.
+  - Diagnostic columns follow those fields (e.g. the source file and line of each close); [`oracle/README.md`](../oracle/README.md) lists them. Select the D-18 fields by name.
   - They cover all symbols.
 - **Flink side:** a dump of `ema-results` and `advisories` from a run with a `["*"]` subscription.
 - **EMA check:** join on (`symbol`, `windowEnd`). A row is a mismatch if any of these holds:
