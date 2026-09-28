@@ -26,3 +26,7 @@ report/*.out
 report/*.fls
 report/*.fdb_latexmk
 report/*.synctex.gz
+
+# Analysis virtualenv (the container in analysis/Dockerfile is canonical)
+analysis/.venv/
+analysis/out/.tmp/
