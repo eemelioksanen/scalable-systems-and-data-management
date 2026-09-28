@@ -1,5 +1,8 @@
 # Interfaces
 
+> Measured evidence for these formats, and the corrections D-21 to D-25 make to
+> them, are in [data-contract.md](data-contract.md).
+
 These are the contracts between the replayer (`producer/`), the Flink job (`flink-job/`), the oracle (`oracle/`) and the visualization (`viz/`). Change them only through a new entry in [decisions.md](decisions.md) (D-13 to D-18 cover this document), so nobody codes against a stale format.
 
 ## Kafka topics
@@ -20,7 +23,7 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
 
 - **One record per CSV data row**, including non-price and housekeeping rows. Comment lines (`#…`) and any header row are skipped.
 - **Key:** the `ID` column, as-is. The default Kafka partitioner is used.
-- **Value:** 7 fields copied verbatim from the CSV in this order. Fields are comma-separated, an empty field means null, and there is no quoting:
+- **Value:** a projection of 7 of the CSV's 39 columns, in this order (D-24). Fields are comma-separated, an empty field means null, and there is no quoting. Note the source rows carry 40 fields, the last one empty (D-21):
 
   ```
   ID,SecType,Date,Time,Last,Trading time,Trading date
@@ -29,8 +32,8 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
   Illustrative examples, first a price event and then a quote or housekeeping event:
 
   ```
-  RDSA.NL,E,08-11-2021,09:00:01.1234,19.2800,09:00:01.1000,08-11-2021
-  RDSA.NL,E,08-11-2021,09:00:01.4567,,,
+  RDSA.NL,E,08-11-2021,09:00:01.123,19.280000,09:00:01.100,08-11-2021
+  RDSA.NL,E,08-11-2021,09:00:01.456,,,
   ```
 
 - **Record timestamp:** the wall-clock time (epoch ms) when the replayer sent the record. This is the ingest time used for latency measurements.

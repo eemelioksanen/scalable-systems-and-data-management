@@ -31,7 +31,7 @@ These decisions drive both correctness and the report. The Flink job and the ora
 |---|---|---|
 | Symbol key | `ID` column as-is, e.g. `RDSA.NL`. Derive `exchange` from the suffix. | Confirm the format in EDA. |
 | Price event | A row whose `Last` is non-null. Every other row is a quote or housekeeping event. | Count those per type. Drop them before `keyBy`. |
-| Event time | `Trading date` (DD-MM-YYYY) + `Trading time` (HH:MM:SS.ssss), parsed into epoch ms. | Pick one timezone interpretation and use it everywhere. Whole-hour offsets keep 5-min windows aligned to midnight. |
+| Event time | `Trading date` (DD-MM-YYYY) + `Trading time` (HH:MM:SS.mmm), parsed into epoch ms. | Measured as millisecond precision, so epoch ms is lossless (D-22). `Trading date` is absent on 92.1% of price rows; `Date` substitutes (D-25). Pick one timezone interpretation and use it everywhere. Whole-hour offsets keep 5-min windows aligned to midnight. |
 | Close | The price with the **latest event time** in the window, not the last one to arrive. Break ties by arrival order. | This matters because order is not guaranteed across exchanges. |
 | Window firing | Fire when the event-time watermark passes the window end. Use a bounded-out-of-orderness watermark with idleness. | Set the bound from the disorder measured in EDA. Send late events to a side output and count them. |
 | Empty windows | If a symbol has no price event in a window, skip it: EMA unchanged, no output, no crossover check. | Document it. The alternative (carry the last close forward) is an ablation. |
