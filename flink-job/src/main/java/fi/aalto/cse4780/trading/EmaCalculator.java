@@ -9,12 +9,16 @@ import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.metrics.Counter;
+import org.apache.flink.metrics.MetricGroup;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
 /**
- * Query 1: per symbol, picks each 5-minute window's close and updates EMA38 and EMA100.
+ * Query 1: per symbol, picks each 5-minute window's close and updates EMA38 and EMA100. Query 2:
+ * compares them with the symbol's previous EMAs and attaches any {@link Crossover} to the result.
+ *
+ * <p>Both run for every symbol. Subscriptions only decide what is published, downstream (D-9).
  *
  * <p>Keyed by symbol. Out-of-order arrival can leave several windows open at once, so close
  * candidates are kept per window end. Each open window has an event-time timer on its last
@@ -22,7 +26,8 @@ import org.apache.flink.util.OutputTag;
  * (7)). Flink fires a key's timers in timestamp order, so windows are evaluated chronologically.
  *
  * <p>A window with no price events gets no timer, so it produces no result and leaves the EMAs
- * unchanged (D-6). EMA state is never reset, so it carries over across days (D-8).
+ * unchanged (D-6). It is not a crossover check's previous window either. EMA state is never reset,
+ * so it carries over across days (D-8).
  */
 public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult> {
 
@@ -39,6 +44,9 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
     private transient MapState<Long, CloseCandidate> openWindows;
     private transient ValueState<EmaState> emas;
     private transient Counter lateTicks;
+    private transient Counter evaluatedWindows;
+    private transient Counter buyCrossovers;
+    private transient Counter sellCrossovers;
 
     @Override
     public void open(OpenContext openContext) {
@@ -46,7 +54,11 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
                 "open-windows", Types.LONG, TypeInformation.of(CloseCandidate.class)));
         emas = getRuntimeContext().getState(
                 new ValueStateDescriptor<>("emas", TypeInformation.of(EmaState.class)));
-        lateTicks = getRuntimeContext().getMetricGroup().counter("lateTicks");
+        MetricGroup metrics = getRuntimeContext().getMetricGroup();
+        lateTicks = metrics.counter("lateTicks");
+        evaluatedWindows = metrics.counter("evaluatedWindows");
+        buyCrossovers = metrics.counter("buyCrossovers");
+        sellCrossovers = metrics.counter("sellCrossovers");
     }
 
     @Override
@@ -80,11 +92,13 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
         if (state == null) {
             state = new EmaState();
         }
+        double previousEma38 = state.ema38;
+        double previousEma100 = state.ema100;
         state.ema38 = close.price * ALPHA_38 + state.ema38 * (1 - ALPHA_38);
         state.ema100 = close.price * ALPHA_100 + state.ema100 * (1 - ALPHA_100);
         emas.update(state);
 
-        out.collect(new EmaResult(
+        EmaResult result = new EmaResult(
                 ctx.getCurrentKey(),
                 close.secType,
                 windowEnd,
@@ -92,7 +106,16 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
                 state.ema38,
                 state.ema100,
                 close.maxIngestTimeMillis,
-                System.currentTimeMillis()));
+                System.currentTimeMillis());
+        result.crossover =
+                Crossover.detect(previousEma38, previousEma100, state.ema38, state.ema100);
+        evaluatedWindows.inc();
+        if (result.crossover == Crossover.BUY) {
+            buyCrossovers.inc();
+        } else if (result.crossover == Crossover.SELL) {
+            sellCrossovers.inc();
+        }
+        out.collect(result);
     }
 
     /** Exclusive end of the 5-minute window containing {@code eventTimeMillis}. */

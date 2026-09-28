@@ -18,7 +18,7 @@ The Flink job (`flink-job/`) and the oracle (`oracle/`) must implement exactly t
 | D-6 | Empty windows | No price event in a window: EMA unchanged, no output, no crossover check. | proposed | The carry-forward alternative is an ablation. |
 | D-7 | EMA init | EMA₀ = 0 exactly as the spec says. | proposed | Causes a BUY in every symbol's first window. Flag it in the viz and report. |
 | D-8 | Day boundaries | EMA state carries over across days and the weekend. | proposed | |
-| D-9 | Subscriptions | EMAs are computed for all symbols. Results are emitted only for subscribed symbols, via a compacted `subscriptions` topic and broadcast state. | proposed | |
+| D-9 | Subscriptions | EMAs are computed for all symbols. Results are emitted only for subscribed symbols, via a compacted `subscriptions` topic and broadcast state. | proposed | Implemented as D-28. |
 | D-10 | Missing or stale timestamps | Drop them, or fall back to `Date`+`Time`? | open | Measured: `Trading time` is never missing on a price row; `Trading date` is missing on **2,201,703 / 2,389,887 (92.1%)**, and where present **always equals `Date`** (0 disagreements). That evidences the D-25 fallback, but the policy stays open pending the fuller EDA. |
 
 ## Stack and infrastructure
@@ -44,6 +44,38 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 ## Log
 
 Add later decisions below, newest first.
+
+### D-28: Query 2 and subscriptions (2026-09-28, Leo Immonen, issue #8)
+Context: Query 2 and D-9/D-17 left open where crossovers are computed, how subscriptions reach the job at startup, when a change takes effect, where counts go and what a rerun guarantees.
+Decision:
+- **Crossovers:** `EmaCalculator` runs the check when a window fires, from the EMAs before and after it, for every symbol. The result carries the crossover (`EmaResult.crossover`). BUY needs previous EMA₃₈ ≤ EMA₁₀₀ and current EMA₃₈ > EMA₁₀₀; SELL the mirror image. Equal current EMAs produce no advisory.
+- **Filter:** a separate `SubscriptionFilter` (keyed by symbol, `subscriptions` as broadcast state) sits after the EMA operator. It keeps each trader's list and, per symbol, how many list entries name it, so a lookup is two map reads whatever the number of traders. Results pass it once; `ema-results` and `advisories` are both written from its output, so they agree at every change.
+- **Readiness:** at submission the job reads the topic's end offsets. The filter holds results in keyed state until it has read up to them, then releases them against that state. Malformed records count towards this.
+- **Cutover:** after that, a change applies to results the filter processes after it. Nothing is withdrawn or replayed.
+- **Finite replay:** `--bounded` also stops `subscriptions` at its end offsets from submission.
+- **Counts:** Flink metrics only (listed in interfaces.md). The `stats` topic stays unwritten.
+- **Reruns:** no checkpointing, so the supported path is a clean replay into recreated output topics.
+
+Alternatives considered:
+- Filtering inside `EmaCalculator` (a keyed broadcast function): saves an operator, but puts every tick through a two-input operator and mixes publication into the calculation.
+- No readiness wait: results that beat the subscriptions into the filter are dropped, differently on every run.
+- Passing the startup snapshot in the job graph: broadcast state can only be written from the broadcast input, so the snapshot and restored state would have to be merged by hand.
+- Per-trader output: rejected by D-17.
+
+Consequences / measurements:
+- A trailing transaction marker in `subscriptions` would hold results back forever, so writers must not use transactions. The `subscriptionsReady` gauge shows it.
+- Which window a live change first affects depends on timing, since ticks and subscriptions are separate inputs. Correctness runs use a preloaded `["*"]`, which is deterministic.
+- A finished bounded job's metrics vanish with it; Prometheus keeps the last 5 s scrape.
+- 82 unit and mini-cluster tests pass. They cover the golden fixtures' BUY and SELL, a SELL across empty windows, readiness, overlapping and changed lists, and restoring held results from a snapshot.
+- End to end on the local stack, against an independent Python reference of the same rules: six symbols of 08.11.2021, two per exchange, 1,090,752 rows.
+  - Bounded, with preloaded subscriptions (overlapping lists, an empty list, a removed trader, a malformed last record): exactly the three subscribed symbols were published, all 311 windows with the reference's closes and EMAs (difference 0), and their 3 BUYs. A second clean run gave identical records apart from `emitTs`.
+  - Live, one `ticks` partition, changed at 13:00: `ORA.FR` lost its only subscriber and stopped after 12:55. `RAND.NL` was subscribed and started at 13:00, with EMAs equal to the full-history reference. `lateTicks` = 0, and `evaluatedWindows` 621 = 311 published + 310 suppressed.
+- One real day gives each symbol only its warm-up BUY (D-7), so the week is needed for real SELLs. Full week against the oracle (D-27, run on all seven files): ten symbols across FR, NL and ETR, equities and indices, 1,823,412 rows.
+  - With `["*"]`: all 5,932 windows and 96 advisories (51 BUY, 45 SELL) equal the oracle's, EMAs bit for bit.
+  - Under a subscription schedule: exactly the subscribed symbols were published, equal to the oracle. A second clean run was identical apart from `emitTs`.
+  - Live, one `ticks` partition, changed between Wednesday and Thursday: `GET.FR` stopped after Wednesday. `UBI.FR` and `A1EXV6.ETR` started on Thursday, with EMAs and advisories equal to the oracle's full-week values.
+- The matching oracle run is the one admitting every event, not the 60 s-bound one. The job counted 0 late ticks: it admitted the 8 summary rows of 10-11 in these symbols (`Trading time` 01:00, sent about 18 h late) that the oracle's 60 s model rejects. In a preload the job's watermark trails far behind what it reads, so whether those rows are late depends on replay speed, not only on the bound. This qualifies D-27, which expects a streaming job to reject them at any bound under about 17.8 h: that holds when the watermark keeps up with the input, as in a live replay, not in a preload. The correctness gate (#9) has to choose its reference from the job's own late count, as the oracle's README describes.
+- Finding for D-5: the same live run on 8 partitions lost 209 ticks as late, although the data's own maximum lateness is 283 ms. The pause before the afternoon ticks outlasted the 30 s idleness, so every partition went idle. When ticks resumed, the first partition to catch up advanced the watermark on its own. Live replays need no pauses longer than the idleness timeout.
 
 ### D-27: Oracle implementation (2026-09-28, Leo Immonen, issue #5)
 Context: D-18 needs a reference that shares no code with the Flink job.

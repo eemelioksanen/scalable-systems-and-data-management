@@ -13,7 +13,7 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 | `ema-results` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `advisories` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `subscriptions` | subscription generator | Flink job (broadcast) | trader ID | JSON, or a tombstone | 1, compacted |
-| `stats` | Flink job | (open: decision on event counts) | – | – | 1 |
+| `stats` | not written yet: counts are Flink metrics (D-28, [Counts](#counts-d-28)) | – | – | – | 1 |
 
 All keys and string values are UTF-8. Partition counts are revisited for the cloud runs.
 
@@ -66,10 +66,14 @@ The last two fields support the latency definitions still under consideration. W
 
 ## `advisories` (D-16)
 
-The Flink job emits one JSON record per detected crossover:
+The Flink job emits one JSON record per detected crossover of a subscribed symbol:
 
-- `BUY` when equations (1) and (2) of the spec hold (EMA₃₈ crosses above EMA₁₀₀).
-- `SELL` when equations (3) and (4) hold (EMA₃₈ crosses below).
+- `BUY` when equations (1) and (2) of the spec hold (EMA₃₈ crosses above EMA₁₀₀): previous EMA₃₈ ≤ EMA₁₀₀ and current EMA₃₈ > EMA₁₀₀.
+- `SELL` when equations (3) and (4) hold (EMA₃₈ crosses below): previous EMA₃₈ ≥ EMA₁₀₀ and current EMA₃₈ < EMA₁₀₀.
+
+"Previous" is the symbol's last window with a price event, since empty windows are skipped (D-6). Before the first window both EMAs are 0 (D-7), so every symbol's first window is a `BUY`. Equal current EMAs produce no advisory.
+
+Crossovers are computed for every symbol, subscribed or not, so a symbol's first advisory after a subscription is still measured against its unpublished history. Every advisory has an `ema-results` record for the same (`symbol`, `windowEnd`) with the same EMAs: the two are filtered together.
 
 ```json
 {"symbol":"RDSA.NL","secType":"E","windowEnd":1636362300000,"type":"BUY","ema38":19.2712,"ema100":19.2655,"maxIngestTs":1790000000123,"emitTs":1790000000456}
@@ -81,10 +85,46 @@ The fields mean the same as in `ema-results`.
 
 - **Key:** the trader ID, e.g. `trader-0042`.
 - **Value:** `{"trader":"trader-0042","symbols":["RDSA.NL"]}`. This replaces that trader's previous list.
+  - `trader` may be omitted. If present, it must equal the key.
   - `"symbols":["*"]` subscribes to every symbol. Correctness runs use this.
+  - `"symbols":[]` subscribes to nothing. Listing a symbol twice is harmless.
   - A **tombstone** (null value) removes the trader.
+  - Any other value, or a record without a key, is counted as `malformedSubscriptions` and ignored.
+- A symbol is published while at least one trader lists it (or `*`).
 - Compaction keeps the latest list per trader. A (re)started job reads the topic from the beginning to rebuild the current subscription state.
+- Writers must not use Kafka transactions: the job treats the record at a partition's end offset − 1 as the last one to wait for (below), and a transaction marker there would hold results back forever.
 - The Flink job emits each result once per symbol, not once per trader. Delivering results to individual traders is the visualization backend's job.
+
+**Startup (D-28).** At submission the job reads the topic's end offsets. Until it has read the topic up to them, it holds every result back; then it publishes the held results that the subscriptions allow. So everything is judged against at least the subscriptions that existed at submission, whichever input the job happens to read first. To get deterministic output, write the subscriptions **before** submitting the job. The `subscriptionsReady` gauge is 1 once this has happened.
+
+**Changes while running.** A change applies to every result the subscription filter processes after it. Results already published are not withdrawn, and a new subscription does not replay earlier windows: its first result is the symbol's next evaluated window. Because ticks and subscriptions are separate inputs, which window that is depends on timing.
+
+**Finite replay.** With `--bounded`, the job reads `subscriptions` only up to the end offsets at submission, like `ticks`. Later changes are ignored.
+
+## Counts (D-28)
+
+The job's counts are Flink metrics, exported to Prometheus (see the README). Nothing writes the `stats` topic yet.
+
+| Operator | Metrics | Meaning |
+|---|---|---|
+| `ticks` source | `priceEvents`, `nonPriceEvents`, `nonPositivePriceEvents`, `missingTimestampEvents`, `malformedEvents` | Split every `ticks` record: each counts in exactly one. |
+| | `systemDateEvents` | Price events dated from `Date` (D-25), a subset of `priceEvents`. |
+| `q1-ema` | `lateTicks` | Price events whose window had already been evaluated. |
+| | `evaluatedWindows`, `buyCrossovers`, `sellCrossovers` | Windows and crossovers of every symbol, subscribed or not. |
+| `subscriptions` source | `subscriptionUpdates`, `subscriptionTombstones`, `malformedSubscriptions` | Split every `subscriptions` record. |
+| `subscription-filter` | `publishedResults`, `publishedAdvisories`, `suppressedResults` | At the end of a run, `publishedResults` + `suppressedResults` = `evaluatedWindows`. |
+| | `subscriptionsReady` (gauge) | 1 once the startup subscriptions have been read. |
+
+A finished `--bounded` job's metrics disappear with it. Prometheus keeps what it last scraped, every 5 s, so read the final counts from the Flink UI or REST API before the job ends if they have to be exact.
+
+## Restart and replay (D-28)
+
+Checkpointing is not enabled, so the job does not recover from a failure: it fails. The supported way to run again is a **clean replay**:
+
+1. Recreate `ema-results` and `advisories`, or write to new topics with `--ema-topic` and `--advisories-topic`.
+2. Submit the job again.
+
+Both inputs are read from the earliest offset, so the same `ticks` and a preloaded `subscriptions` give the same records apart from `emitTs`. Without step 1 the outputs hold a second copy of every record. The sinks are at-least-once, so a checkpoint restore would also be able to duplicate records if checkpointing were turned on later.
 
 ## Oracle output and correctness check (D-18)
 
