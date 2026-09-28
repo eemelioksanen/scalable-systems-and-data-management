@@ -214,4 +214,4 @@ Expected values follow the hand-worked sequences in
 |---|---|
 | Watermark bound | Needs the disorder distribution over a full day, not a sample, and the §6 anomaly resolved first. D-5 stays **proposed**. |
 | Missing / stale timestamp policy | The 92.1% missing `Trading date` is measured and the `Date` fallback is evidenced, but D-10 stays **open** pending the fuller EDA, as the ticket requires. |
-| Empty-window, overnight-state, late-event and final-window semantics | Interpretation of the spec, not properties of the data. Drafted as questions for the course staff. |
+| Empty-window, overnight-state, late-event and final-window semantics | Interpretation of the spec, not properties of the data. Tracked as D-5, D-6, D-8 and D-19 in [`decisions.md`](decisions.md). |
