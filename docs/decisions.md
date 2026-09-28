@@ -12,14 +12,14 @@ The Flink job (`flink-job/`) and the oracle (`oracle/`) must implement exactly t
 |---|---|---|---|---|
 | D-1 | Symbol key | `ID` column as-is (e.g. `RDSA.NL`). `exchange` is derived from the suffix. | **accepted** | Confirmed: 11,784,671 rows / 5,493 symbols all match `^[A-Za-z0-9]+\.[A-Za-z]+$`, zero exceptions. Symbols may be fully numeric (`846741.ETR`), so never parse a key as a number. |
 | D-2 | Price event | A row whose `Last` is non-empty **and > 0**. All other rows are quote or housekeeping events: counted, then dropped before `keyBy`. | **accepted (refined)** | 20.28% of rows are price events. 17,593 rows carry `Last` = `0.000000`; these are excluded, since feeding a zero into the EMA would drag the average down. The original wording ("non-null") would have included them. |
-| D-3 | Event time | `Trading date` + `Trading time` parsed to epoch ms, with `Date` substituted when `Trading date` is absent (D-25). One timezone interpretation, used everywhere. | **accepted, timezone open** | `Trading time` is `HH:MM:SS.mmm` on 100% of price rows, so epoch ms is lossless (D-22). The spec says CEST, but every date in the dataset falls in CET (UTC+1), so the offset is still to be fixed; any whole-hour offset preserves window alignment, so it shifts published `windowEnd` values but not which trades share a window. |
+| D-3 | Event time | `Trading date` + `Trading time`, using `Date` only when trading date is absent. Interpret recorded times at fixed UTC+2, literal CEST, with a configurable offset. | **accepted** | Emilia selected the literal course wording on 2026-09-28. This is an interpretation of the brief, not an inference from the November calendar. See D-29. |
 | D-4 | Close | The price with the latest event time in the window. Ties broken by source position (D-23). | **accepted** | Load-bearing, not a formality: **11.06%** of consecutive per-symbol price pairs (257,149 / 2,325,956) run *backward* in `Trading time` within file order, so "latest event time" and "last to arrive" genuinely differ. 9,981 same-millisecond groups carry **differing** prices, so a tie-break is required for determinism. |
-| D-5 | Window firing | Fire when the event-time watermark passes the window end. Bounded out-of-orderness with idleness. Late events go to a side output and are counted. | proposed | Bound still unset. Deliberately not derived from this sample: it needs a full day rather than 21.7% of one, and the unexplained `Time` − `Trading time` anomaly (p50 **−310 ms**, 87% negative) must be resolved first. |
-| D-6 | Empty windows | No price event in a window: EMA unchanged, no output, no crossover check. | proposed | The carry-forward alternative is an ablation. |
+| D-5 | Window firing | Discard and count events for closed windows; flush remaining windows at finite-input completion. Evaluate bounded out-of-orderness and idleness settings separately. | **late/EOF policy accepted; bound and idleness open** | Emilia selected the late/EOF policy on 2026-09-28. The bound targets zero changed closes; faster bounds are ablations. Monday alone cannot settle the full-week bound, and D-28 shows replay timing and idleness matter. See D-29. |
+| D-6 | Empty windows | No price event in a window: EMA unchanged, no output, no crossover check. | **accepted** | Emilia selected skip on 2026-09-28. The carry-forward alternative is an ablation. |
 | D-7 | EMA init | EMA₀ = 0 exactly as the spec says. | proposed | Causes a BUY in every symbol's first window. Flag it in the viz and report. |
-| D-8 | Day boundaries | EMA state carries over across days and the weekend. | proposed | |
+| D-8 | Day boundaries | EMA state carries over across days and the weekend. | **accepted** | Emilia selected carry-over on 2026-09-28. |
 | D-9 | Subscriptions | EMAs are computed for all symbols. Results are emitted only for subscribed symbols, via a compacted `subscriptions` topic and broadcast state. | proposed | Implemented as D-28. |
-| D-10 | Missing or stale timestamps | Drop them, or fall back to `Date`+`Time`? | open | Measured: `Trading time` is never missing on a price row; `Trading date` is missing on **2,201,703 / 2,389,887 (92.1%)**, and where present **always equals `Date`** (0 disagreements). That evidences the D-25 fallback, but the policy stays open pending the fuller EDA. |
+| D-10 | Missing or stale timestamps | Substitute system `Date` only for a missing `Trading date`. Exclude and count missing or unparseable event timestamps. Preserve valid explicit dates, including mismatches with system date. | **accepted; summary-row interpretation open** | Emilia selected this policy on 2026-09-28. Do not substitute system arrival time for a supplied trading timestamp. Wednesday's summary-like rows remain included under D-2; any future exclusion requires a separate decision. See D-29. |
 
 ## Stack and infrastructure
 
@@ -44,6 +44,26 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 ## Log
 
 Add later decisions below, newest first.
+
+### D-29: Daily analysis interpretations and the Monday checkpoint (2026-09-28, Emilia Repo, issue #4)
+
+Emilia selected these rules in the issue #4 working session: fixed UTC+2 for literal CEST; skip empty windows; carry EMA state over nights and weekends; discard and count events for closed windows; flush at finite-input completion; fill only a missing trading date from system Date; exclude unparseable event timestamps; preserve valid explicit dates.
+These choices settle our interpretation without waiting for course-staff clarification.
+Existing zero initialization, latest-event-time closes and source-position ties remain unchanged.
+
+The watermark target is zero changed closes against the admit-all reference, with faster bounds measured as ablations.
+This does not authorize removing inconvenient events to make a short bound pass.
+The full-week summary-row question raised in [the issue discussion](https://github.com/eemelioksanen/scalable-systems-and-data-management/issues/4#issuecomment-5877151366) remains open: under the selected rules those rows are still price events at their supplied time.
+D-28's runtime findings qualify the source-order estimates in D-27: actual admission depends on periodic watermark emission, replay pace and idleness.
+
+The authorized run is Monday only, followed by human review before another day's download.
+It produces independent dataset summaries and close comparisons, using the [daily analysis method](../analysis/README.md).
+The full-week oracle already supplies reference totals and anomaly evidence; these are cross-checks, not a substitute for processing the remaining days in this analysis.
+See [Monday's results](eda-monday.md).
+
+This issue changes analysis and recorded decisions only.
+The parser alignment previously identified as missing has already landed in D-26; no duplicate parser fix is needed.
+Flink and oracle default timezone changes remain separate implementation work; existing runtime defaults are still `Z`.
 
 ### D-28: Query 2 and subscriptions (2026-09-28, Leo Immonen, issue #8)
 Context: Query 2 and D-9/D-17 left open where crossovers are computed, how subscriptions reach the job at startup, when a change takes effect, where counts go and what a rerun guarantees.
@@ -111,7 +131,7 @@ Consequences:
 Context: `Trading date` is absent on 92.1% of price rows in the profiled sample.
 Decision: build the date part of event time from `Trading date` when present, otherwise from the system `Date`. The time part is always `Trading time`, which is never missing on a price row.
 Alternatives considered: dropping rows without a `Trading date` would discard 92% of all trades. Using `Date` unconditionally was rejected only for lack of evidence, not merit — the two never disagree where both are present.
-Consequences: **proposed**, not accepted; it is the concrete form D-10 will take if the fuller EDA agrees. The oracle and the Flink job must apply it identically or they diverge on nearly every row.
+Consequences: **accepted by Emilia on 2026-09-28**, as part of D-29. It is the missing-date rule in D-10. The oracle and the Flink job must apply it identically or they diverge on nearly every row.
 
 ### D-24: `ticks` carries a projection, not the raw line (2026-09-28)
 Context: D-13 says the replayer forwards "7 fields copied verbatim from the CSV", which reads as though the file had 7 columns.
