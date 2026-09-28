@@ -3,13 +3,12 @@ package fi.aalto.cse4780.trading;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Jackson reaches the classpath through flink-connector-kafka. Declaring it here as a test
-// dependency would drop it from the job jar, which the connector needs at runtime.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.streaming.util.KeyedOneInputStreamOperatorTestHarness;
 import org.apache.flink.streaming.util.ProcessFunctionTestHarnesses;
@@ -30,7 +29,7 @@ class GoldenFixturesTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"synthetic.json", "real.json"})
-    void reproducesTheHandWorkedEmas(String file) throws Exception {
+    void reproducesTheHandWorkedEmasAndAdvisories(String file) throws Exception {
         Path path = GOLDEN.resolve(file);
         assertTrue(Files.exists(path), () -> "missing fixture " + path.toAbsolutePath());
         JsonNode golden = new ObjectMapper().readTree(path.toFile());
@@ -71,6 +70,20 @@ class GoldenFixturesTest {
                 assertEquals(secType, actual.secType, at);
                 assertEquals(expected.get("windowEnd").asLong(), actual.windowEnd, at);
                 assertEquals(expected.get("close").asDouble(), actual.close, at);
+                assertEquals(expected.get("ema38").asDouble(), actual.ema38, TOLERANCE, at);
+                assertEquals(expected.get("ema100").asDouble(), actual.ema100, TOLERANCE, at);
+            }
+
+            List<EmaResult> crossovers =
+                    results.stream().filter(r -> r.crossover != null).collect(Collectors.toList());
+            JsonNode advisories = golden.get("advisories");
+            assertEquals(advisories.size(), crossovers.size(), () -> file + ": " + crossovers);
+            for (int i = 0; i < advisories.size(); i++) {
+                JsonNode expected = advisories.get(i);
+                EmaResult actual = crossovers.get(i);
+                String at = file + " advisory " + (i + 1);
+                assertEquals(expected.get("windowEnd").asLong(), actual.windowEnd, at);
+                assertEquals(expected.get("type").asText(), actual.crossover.name(), at);
                 assertEquals(expected.get("ema38").asDouble(), actual.ema38, TOLERANCE, at);
                 assertEquals(expected.get("ema100").asDouble(), actual.ema100, TOLERANCE, at);
             }
