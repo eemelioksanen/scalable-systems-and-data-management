@@ -64,18 +64,21 @@ docker compose up -d --build
 
 Kafka has no persistent data volume. `stop` retains data in its container; `down`, including without `--volumes`, removes that container and loses its topics, records, subscriptions, and consumer offsets. On the next start, `kafka-init` recreates the five empty application topics. `--volumes` also removes anonymous volumes used by the monitoring images.
 
-Submit the Flink job (Query 1: `ticks` → `ema-results`). The jar is baked into the image at `/opt/job/flink-job.jar`. Rebuild with `docker compose up -d --build` after code changes.
+The Flink job computes both queries for every symbol (`ticks` → `ema-results` and `advisories`), but publishes only symbols that some trader subscribes to. Write the subscriptions first: at startup the job holds its results back until it has read the `subscriptions` topic as it was at submission. This subscribes to every symbol:
+
+```bash
+echo 'all|{"trader":"all","symbols":["*"]}' | docker compose exec -T kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic subscriptions --reader-property parse.key=true --reader-property key.separator='|'
+```
+
+Then submit the job. The jar is baked into the image at `/opt/job/flink-job.jar`. Rebuild with `docker compose up -d --build` after code changes.
 
 ```bash
 docker compose exec jobmanager flink run -d -c fi.aalto.cse4780.trading.TradingTrendsJob /opt/job/flink-job.jar
 ```
 
-For a finite replay, add `--bounded`. The job then reads the offsets that exist at startup, evaluates every window including the last, and finishes. Other options, all provisional until the dataset analysis: `--watermark-bound-ms` (default 60000), `--idleness-ms` (30000, 0 = off) and `--zone-offset` (`Z`). They are documented in `TradingTrendsJob`.
+For a finite replay, add `--bounded`. The job then reads the offsets of `ticks` and `subscriptions` that exist at startup, evaluates every window including the last, and finishes. Other options, all provisional until the dataset analysis: `--watermark-bound-ms` (default 60000), `--idleness-ms` (30000, 0 = off) and `--zone-offset` (`Z`). They are documented in `TradingTrendsJob`. The subscription format, how changes take effect, and how to rerun are in [docs/interfaces.md](docs/interfaces.md).
 
-The parser's counters are exported to Prometheus under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, and `lateTicks` under `flink_taskmanager_job_task_operator_*`.
-
-- These five split every record: `priceEvents`, `nonPriceEvents`, `nonPositivePriceEvents`, `missingTimestampEvents` and `malformedEvents`.
-- `systemDateEvents` counts the price events dated from `Date` (D-25). It's a subset of `priceEvents`.
+The job's counts are exported to Prometheus, and [docs/interfaces.md](docs/interfaces.md#counts-d-27) lists them. The parser's are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
 
 The producer uses the `tools` profile and is not built by the default start command. Build it explicitly:
 
