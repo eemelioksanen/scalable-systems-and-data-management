@@ -151,7 +151,7 @@ unchanged across such a gap and no crossover is evaluated, which is decision D-6
 on real data rather than asserted.
 
 **The close is chosen by event time, not by arrival.** Each window's close is
-`max by (event_time, source_position)` over that window's trades — the rule D-4 and D-21
+`max by (event_time, source_position)` over that window's trades — the rule D-4 and D-23
 fix, and the reason `profile.py` records a source position at all.
 
 Regenerate with `analysis/run.sh analysis/src/golden.py`. The symbol is whichever has the

@@ -1,6 +1,6 @@
 # Interfaces
 
-> Measured evidence for these formats, and the corrections D-19 to D-23 make to
+> Measured evidence for these formats, and the corrections D-21 to D-25 make to
 > them, are in [data-contract.md](data-contract.md).
 
 These are the contracts between the replayer (`producer/`), the Flink job (`flink-job/`), the oracle (`oracle/`) and the visualization (`viz/`). Change them only through a new entry in [decisions.md](decisions.md) (D-13 to D-18 cover this document), so nobody codes against a stale format.
@@ -23,7 +23,7 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
 
 - **One record per CSV data row**, including non-price and housekeeping rows. Comment lines (`#…`) and any header row are skipped.
 - **Key:** the `ID` column, as-is. The default Kafka partitioner is used.
-- **Value:** a projection of 7 of the CSV's 39 columns, in this order (D-22). Fields are comma-separated, an empty field means null, and there is no quoting. Note the source rows carry 40 fields, the last one empty (D-19):
+- **Value:** a projection of 7 of the CSV's 39 columns, in this order (D-24). Fields are comma-separated, an empty field means null, and there is no quoting. Note the source rows carry 40 fields, the last one empty (D-21):
 
   ```
   ID,SecType,Date,Time,Last,Trading time,Trading date
