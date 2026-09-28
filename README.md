@@ -72,7 +72,10 @@ docker compose exec jobmanager flink run -d -c fi.aalto.cse4780.trading.TradingT
 
 For a finite replay, add `--bounded`. The job then reads the offsets that exist at startup, evaluates every window including the last, and finishes. Other options, all provisional until the dataset analysis: `--watermark-bound-ms` (default 60000), `--idleness-ms` (30000, 0 = off) and `--zone-offset` (`Z`). They are documented in `TradingTrendsJob`.
 
-Parser counters (`priceEvents`, `nonPriceEvents`, `missingTimestampEvents`, `malformedEvents`) and `lateTicks` are exported to Prometheus under `flink_taskmanager_job_task_operator_*`.
+The parser's counters are exported to Prometheus under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, and `lateTicks` under `flink_taskmanager_job_task_operator_*`.
+
+- These five split every record: `priceEvents`, `nonPriceEvents`, `nonPositivePriceEvents`, `missingTimestampEvents` and `malformedEvents`.
+- `systemDateEvents` counts the price events dated from `Date` (D-25). It's a subset of `priceEvents`.
 
 The producer uses the `tools` profile and is not built by the default start command. Build it explicitly:
 
