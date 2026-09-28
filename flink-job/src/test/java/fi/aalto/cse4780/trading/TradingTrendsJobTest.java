@@ -1,0 +1,82 @@
+package fi.aalto.cse4780.trading;
+
+import static fi.aalto.cse4780.trading.EmaCalculatorTest.millis;
+import static fi.aalto.cse4780.trading.EmaCalculatorTest.nanos;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.test.junit5.MiniClusterExtension;
+import org.apache.flink.util.CloseableIterator;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+/** Runs the Query 1 pipeline (watermarks → keyBy → EmaCalculator) on a Flink mini cluster. */
+class TradingTrendsJobTest {
+
+    @RegisterExtension
+    static final MiniClusterExtension MINI_CLUSTER = new MiniClusterExtension(
+            new MiniClusterResourceConfiguration.Builder()
+                    .setNumberTaskManagers(1)
+                    .setNumberSlotsPerTaskManager(2)
+                    .build());
+
+    @Test
+    void finiteInputEvaluatesEveryWindowIncludingTheLast() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(2);
+
+        List<Tick> input = List.of(
+                tick("AAA.FR", "2021-11-08T09:01:00", 20.0, 0),
+                tick("BBB.NL", "2021-11-08T09:02:00", 30.0, 1),
+                tick("AAA.FR", "2021-11-08T09:07:00", 21.0, 2),
+                tick("AAA.FR", "2021-11-08T09:13:00", 22.0, 3),
+                tick("BBB.NL", "2021-11-08T09:14:00", 33.0, 4));
+        DataStream<Tick> ticks = env
+                .fromData(input, TypeInformation.of(Tick.class))
+                .assignTimestampsAndWatermarks(
+                        TradingTrendsJob.watermarks(Duration.ZERO, Duration.ZERO))
+                .setParallelism(1);
+
+        List<EmaResult> results = new ArrayList<>();
+        try (CloseableIterator<EmaResult> it =
+                TradingTrendsJob.emaResults(ticks).executeAndCollect()) {
+            it.forEachRemaining(results::add);
+        }
+
+        // The 09:10-09:15 windows are only complete at end of input, when the watermark jumps to
+        // the maximum. Per-symbol output order is chronological.
+        Map<String, List<EmaResult>> bySymbol =
+                results.stream().collect(Collectors.groupingBy(r -> r.symbol));
+        assertWindows(bySymbol.get("AAA.FR"),
+                new String[] {"09:05", "09:10", "09:15"},
+                new double[] {1.0256410256410255, 2.0499671268902038, 3.073045735767629},
+                new double[] {0.39603960396039606, 0.8040388197235565, 1.223760823293387});
+        assertWindows(bySymbol.get("BBB.NL"),
+                new String[] {"09:05", "09:15"},
+                new double[] {1.5384615384615385, 3.1518737672583828},
+                new double[] {0.594059405940594, 1.2357611998823645});
+    }
+
+    private static void assertWindows(
+            List<EmaResult> results, String[] windowEnds, double[] ema38, double[] ema100) {
+        assertEquals(windowEnds.length, results.size(), () -> "results: " + results);
+        for (int i = 0; i < windowEnds.length; i++) {
+            EmaResult r = results.get(i);
+            assertEquals(millis("2021-11-08T" + windowEnds[i] + ":00"), r.windowEnd);
+            assertEquals(ema38[i], r.ema38, 1e-12);
+            assertEquals(ema100[i], r.ema100, 1e-12);
+        }
+    }
+
+    private static Tick tick(String symbol, String localDateTime, double price, long order) {
+        return new Tick(symbol, "E", price, nanos(localDateTime), order, 0);
+    }
+}
