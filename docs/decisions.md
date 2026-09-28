@@ -45,6 +45,22 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-27: Oracle implementation (2026-09-28, Leo Immonen, issue #5)
+Context: D-18 needs a reference that shares no code with the Flink job.
+Decision: `oracle/` is a Polars batch job built only from the data contract, this log and `interfaces.md`. Details in [`oracle/README.md`](../oracle/README.md).
+- **Source position** (D-23) is (file date from the `DD-MM-YY` in the file name, physical line number). Comment and blank lines keep their line numbers.
+- **Open policies are flags:** `--zone-offset` (D-3, as the job's flag) and `--missing-trading-date system-date|drop` (D-10, D-25). Settling them in #4 means a re-run.
+- **Arithmetic:** EMAs in binary64 with the spec's formula as written. Every run also recomputes them in 50-digit decimal and reports the drift.
+- **Late events:** the oracle admits every event. For each event it records the smallest watermark bound that admits it when events arrive one at a time in source order. The job's watermark never runs ahead of this model except through idleness, so a bound the model says rejects nothing also rejects nothing in the job. To match a run that did reject events, `--exclude-events` takes the job's late events by source file and line (needs #6).
+- **Outputs:** the D-18 fields, followed by diagnostic columns (e.g. the source file and line of each close).
+
+Consequences / measurements, on the #4 sample and the full 08-11-21 file (`oracle/evidence/`):
+- The sample counts match the EDA profile exactly: 2,389,887 price events, 17,593 with `Last` = 0 and 2,201,703 without `Trading date`.
+- The full day has 11,794,520 price events, 4,840 symbols and 373,126 windows. It yields 4,840 BUY and 0 SELL: every advisory is the zero-start BUY of D-7. From zero, EMA38 stays above EMA100 unless the price falls by about the gap between them, which is still 11% after one day of windows.
+- **Evidence for D-5, not a decision:** in source order only 79 events arrive after the maximum event time has passed their window's end, and 25 ms admits all of them.
+- **Precision against D-18:** binary64 stays within 24 ulps of exact, but prices reach 1.1e6, so that is up to 1.4e-9. On drift alone, 50 windows in 2 symbols exceed the 1e-9 tolerance. An implementation that orders the same arithmetic differently can therefore fail the check on these symbols without being wrong. D-18 is unchanged; the comparer (#20) should report mismatch magnitudes so this case is visible, and a relative tolerance may be needed.
+- The advisories do not depend on arithmetic precision: decimal and binary64 agree on every decision, and no window has `|EMA38 − EMA100|` ≤ 1e-9.
+
 ### D-26: Query 1 job follows the data contract (2026-09-28, Leo Immonen, issue #7)
 Context: #16 merged before the data contract (#18). Its parser dropped every price row without a `Trading date`, which is 92.1% of them, and it accepted `Last` = 0.
 Decision: the Flink parser now applies:
