@@ -9,6 +9,7 @@ CS-E4780 Scalable Systems and Data Management course project (Aalto, 2026). This
 - Grading: `Evaluation_Criteria_26.pdf`
 - Plan: [docs/ROADMAP.md](docs/ROADMAP.md)
 - Decisions: [docs/decisions.md](docs/decisions.md)
+- Interfaces (topic formats, oracle comparison): [docs/interfaces.md](docs/interfaces.md)
 
 ## Requirements
 
