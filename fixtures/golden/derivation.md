@@ -33,8 +33,7 @@ SELL  when  EMA38(n-1) >= EMA100(n-1)  and  EMA38(n) <  EMA100(n)
 
 The non-strict inequality on the previous window is what makes the zero-initialised first
 window fire: `EMA38(0) = EMA100(0) = 0` satisfies `<=`, so any positive close produces a
-BUY. That is a consequence of the spec, not a modelling choice — see question 3 in the
-draft questions for the course staff.
+BUY. That is a consequence of the spec, not a modelling choice (D-7).
 
 ## Sequence 1: synthetic (`synthetic.json`)
 
