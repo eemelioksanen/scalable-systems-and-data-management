@@ -1,7 +1,6 @@
 package fi.aalto.cse4780.trading;
 
 import static fi.aalto.cse4780.trading.EmaCalculatorTest.millis;
-import static fi.aalto.cse4780.trading.EmaCalculatorTest.nanos;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
@@ -77,6 +76,6 @@ class TradingTrendsJobTest {
     }
 
     private static Tick tick(String symbol, String localDateTime, double price, long order) {
-        return new Tick(symbol, "E", price, nanos(localDateTime), order, 0);
+        return new Tick(symbol, "E", price, millis(localDateTime), order, 0);
     }
 }

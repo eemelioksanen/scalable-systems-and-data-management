@@ -74,7 +74,7 @@ public class TradingTrendsJob {
     /** Event time from the trading timestamp, with bounded out-of-orderness and optional idleness. */
     static WatermarkStrategy<Tick> watermarks(Duration outOfOrderness, Duration idleness) {
         WatermarkStrategy<Tick> strategy = WatermarkStrategy.<Tick>forBoundedOutOfOrderness(outOfOrderness)
-                .withTimestampAssigner((tick, recordTimestamp) -> tick.eventTimeMillis());
+                .withTimestampAssigner((tick, recordTimestamp) -> tick.eventTimeMillis);
         return idleness.isZero() ? strategy : strategy.withIdleness(idleness);
     }
 
