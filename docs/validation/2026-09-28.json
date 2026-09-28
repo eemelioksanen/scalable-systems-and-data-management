@@ -1,0 +1,66 @@
+{
+  "project": "trading-trends-check-caffca10367b",
+  "started": "2026-09-28T16:44:47Z",
+  "ports": {
+    "kafka": 57248,
+    "flink": 57249,
+    "prometheus": 57250,
+    "grafana": 57251
+  },
+  "checks": {
+    "container-build": "both runtime images, Maven clean verify, and packaged producer logging",
+    "kafka-topics": {
+      "partitions": {
+        "stats": 1,
+        "advisories": 8,
+        "ema-results": 8,
+        "ticks": 8,
+        "subscriptions": 1
+      },
+      "subscriptions": "compact",
+      "brokers": [
+        {
+          "broker_id": 1,
+          "host": "localhost",
+          "port": 57248,
+          "rack": null,
+          "is_fenced": false
+        }
+      ]
+    },
+    "kafka-roundtrip": "host and container clients produced and consumed the same records",
+    "capacity-1": {
+      "taskmanagers": 1,
+      "slots-total": 2,
+      "slots-available": 2,
+      "jobs-running": 0,
+      "jobs-finished": 0,
+      "jobs-cancelled": 0,
+      "jobs-failed": 0,
+      "flink-version": "2.2.1",
+      "flink-commit": "450c63e"
+    },
+    "metrics-1": "2 healthy targets; Flink samples via Prometheus and Grafana",
+    "flink-kafka-connector": "packaged connector read and wrote both synthetic records on the running cluster",
+    "capacity-2": {
+      "taskmanagers": 2,
+      "slots-total": 4,
+      "slots-available": 4,
+      "jobs-running": 0,
+      "jobs-finished": 1,
+      "jobs-cancelled": 0,
+      "jobs-failed": 0,
+      "flink-version": "2.2.1",
+      "flink-commit": "450c63e"
+    },
+    "metrics-2": "3 healthy targets; Flink samples via Prometheus and Grafana",
+    "stop-start": "Kafka records retained",
+    "reset": "synthetic topics and data removed; five application topics recreated",
+    "devcontainer": "Maven clean verify and Docker/Compose access inside the configured container"
+  },
+  "devcontainer": "passed",
+  "status": "passed",
+  "revision": "487493633638d6a9f14c079221583f988803e64f",
+  "worktree": "A  .devcontainer/devcontainer-lock.json\nM  .devcontainer/devcontainer.json\nM  README.md\nM  docker-compose.yml\nM  docs/decisions.md\nA  docs/local-stack-validation.md\nA  docs/validation/2026-09-28-commands.txt\nA  docs/validation/2026-09-28-metrics.json\nA  docs/validation/2026-09-28.json\nM  pom.xml\nA  scripts/validation/LoggingCheck.java\nA  scripts/validation/kafka-roundtrip.sql\nA  scripts/validation/requirements.txt\nA  scripts/verify-local-stack.py",
+  "finished": "2026-09-28T16:47:33Z"
+}
