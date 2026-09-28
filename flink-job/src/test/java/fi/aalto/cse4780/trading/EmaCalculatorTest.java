@@ -203,6 +203,32 @@ class EmaCalculatorTest {
     }
 
     @Test
+    void crossoversCompareWithThePreviousWindowThatHadATrade() throws Exception {
+        // The golden synthetic sequence (fixtures/golden/derivation.md): 24 windows closing at 100,
+        // then 22 at 5, after which EMA38 is below EMA100. Here an empty window follows each of
+        // the last 22, which must not move the SELL.
+        long start = millis("2021-11-08T00:00:00");
+        int slot = 0;
+        for (int i = 0; i < 24; i++) {
+            send(new Tick(SYMBOL, "E", 100.0, start + slot++ * EmaCalculator.WINDOW_MILLIS,
+                    nextSourceOrder++, 0));
+        }
+        for (int i = 0; i < 22; i++) {
+            send(new Tick(SYMBOL, "E", 5.0, start + slot * EmaCalculator.WINDOW_MILLIS,
+                    nextSourceOrder++, 0));
+            slot += 2;
+        }
+        harness.processWatermark(Long.MAX_VALUE);
+
+        List<EmaResult> results = harness.extractOutputValues();
+        assertEquals(46, results.size());
+        for (int i = 0; i < results.size(); i++) {
+            Crossover expected = i == 0 ? Crossover.BUY : i == 45 ? Crossover.SELL : null;
+            assertEquals(expected, results.get(i).crossover, "window " + (i + 1));
+        }
+    }
+
+    @Test
     void evaluatedWindowsReleaseTheirTimers() throws Exception {
         send(SYMBOL, "2021-11-08T09:01:00", 100.0);
         send(SYMBOL, "2021-11-08T09:06:00", 101.0);
