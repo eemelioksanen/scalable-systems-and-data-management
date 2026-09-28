@@ -16,6 +16,8 @@ COPY flink-job/ flink-job/
 RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp package -DskipTests
 
 FROM build AS test
+# Hand-worked EMA sequences used by GoldenFixturesTest.
+COPY fixtures/golden/ fixtures/golden/
 RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp clean verify
 
 # Flink image with the job jar baked in; used for both JobManager and TaskManagers.

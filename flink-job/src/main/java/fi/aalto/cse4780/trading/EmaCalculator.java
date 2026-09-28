@@ -51,7 +51,7 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
 
     @Override
     public void processElement(Tick tick, Context ctx, Collector<EmaResult> out) throws Exception {
-        long windowEnd = windowEnd(tick.eventTimeMillis());
+        long windowEnd = windowEnd(tick.eventTimeMillis);
         long lastMillis = windowEnd - 1;
         if (lastMillis <= ctx.timerService().currentWatermark()) {
             lateTicks.inc();

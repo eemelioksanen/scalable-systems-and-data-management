@@ -1,6 +1,6 @@
 package fi.aalto.cse4780.trading;
 
-import static fi.aalto.cse4780.trading.EmaCalculatorTest.nanos;
+import static fi.aalto.cse4780.trading.EmaCalculatorTest.millis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.StandardCharsets;
@@ -64,28 +64,41 @@ class TickDeserializerTest {
     @Test
     void emitsPriceEventsWithOffsetAndIngestTime() {
         deserialize(42, 1_790_000_000_123L,
-                "RDSA.NL,E,08-11-2021,09:00:01.2345,19.28,09:00:01.1000,08-11-2021");
+                "RDSA.NL,E,08-11-2021,09:00:01.234,19.280000,09:00:01.100,08-11-2021");
 
         assertEquals(1, emitted.size());
         Tick tick = emitted.get(0);
         assertEquals("RDSA.NL", tick.symbol);
         assertEquals(19.28, tick.price);
-        assertEquals(nanos("2021-11-08T09:00:01.1"), tick.eventTimeNanos);
+        assertEquals(millis("2021-11-08T09:00:01.100"), tick.eventTimeMillis);
         assertEquals(42, tick.sourceOrder);
         assertEquals(1_790_000_000_123L, tick.ingestTimeMillis);
         assertEquals(1, counters.get("priceEvents").getCount());
+        assertEquals(0, counters.get("systemDateEvents").getCount());
+    }
+
+    @Test
+    void countsPriceEventsDatedFromTheSystemDate() {
+        deserialize(7, 0, "RDSA.NL,E,08-11-2021,09:00:01.234,19.280000,09:00:01.100,");
+
+        assertEquals(1, emitted.size());
+        assertEquals(millis("2021-11-08T09:00:01.100"), emitted.get(0).eventTimeMillis);
+        assertEquals(1, counters.get("priceEvents").getCount());
+        assertEquals(1, counters.get("systemDateEvents").getCount());
     }
 
     @Test
     void dropsAndCountsEveryOtherRecord() {
-        deserialize(1, 0, "RDSA.NL,E,08-11-2021,09:00:01.4567,,,");
-        deserialize(2, 0, "RDSA.NL,E,08-11-2021,09:00:01,19.28,,");
-        deserialize(3, 0, "RDSA.NL,E");
-        deserialize(4, 0, null);
+        deserialize(1, 0, "RDSA.NL,E,08-11-2021,09:00:01.456,,,");
+        deserialize(2, 0, "RDSA.NL,E,08-11-2021,09:00:01.456,0.000000,09:00:01.100,");
+        deserialize(3, 0, "RDSA.NL,E,08-11-2021,09:00:01,19.28,,");
+        deserialize(4, 0, "RDSA.NL,E");
+        deserialize(5, 0, null);
 
         assertEquals(0, emitted.size());
         assertEquals(0, counters.get("priceEvents").getCount());
         assertEquals(1, counters.get("nonPriceEvents").getCount());
+        assertEquals(1, counters.get("nonPositivePriceEvents").getCount());
         assertEquals(1, counters.get("missingTimestampEvents").getCount());
         assertEquals(2, counters.get("malformedEvents").getCount());
     }

@@ -1,30 +1,30 @@
 package fi.aalto.cse4780.trading;
 
 /**
- * A price event: a {@code ticks} record whose {@code Last} field is set (D-2).
+ * A price event: a {@code ticks} record whose {@code Last} is a positive price (D-2).
  *
  * <p>Public fields and a no-arg constructor let Flink use its POJO serializer.
  */
 public class Tick {
 
-    /** Symbol key, e.g. {@code RDSA.NL} (D-1). */
+    /** Symbol key, e.g. {@code RDSA.NL} (D-1). May be fully numeric, e.g. {@code 846741.ETR}. */
     public String symbol;
 
     /** Security type: {@code E} (equity) or {@code I} (index). */
     public String secType;
 
-    /** The {@code Last} trade price. */
+    /** The {@code Last} trade price, always > 0. */
     public double price;
 
     /**
-     * {@code Trading date} + {@code Trading time} as epoch nanoseconds (D-3). Kept at the source's
-     * sub-millisecond precision so the close is the latest trade even within one millisecond (D-4).
+     * Trading timestamp in epoch ms (D-3, D-25). The source has millisecond resolution, so this
+     * loses nothing (D-22). Equal times are ordered by {@link #sourceOrder} (D-23).
      */
-    public long eventTimeNanos;
+    public long eventTimeMillis;
 
     /**
-     * Arrival order within the symbol's Kafka partition, i.e. the record offset (D-15). Breaks ties
-     * between equal event times (D-4).
+     * Arrival order within the symbol's Kafka partition, i.e. the record offset (D-15, D-23). Breaks
+     * ties between equal event times (D-4).
      */
     public long sourceOrder;
 
@@ -37,25 +37,21 @@ public class Tick {
             String symbol,
             String secType,
             double price,
-            long eventTimeNanos,
+            long eventTimeMillis,
             long sourceOrder,
             long ingestTimeMillis) {
         this.symbol = symbol;
         this.secType = secType;
         this.price = price;
-        this.eventTimeNanos = eventTimeNanos;
+        this.eventTimeMillis = eventTimeMillis;
         this.sourceOrder = sourceOrder;
         this.ingestTimeMillis = ingestTimeMillis;
     }
 
-    /** Event time in epoch milliseconds, used for Flink timestamps, watermarks and windows. */
-    public long eventTimeMillis() {
-        return Math.floorDiv(eventTimeNanos, 1_000_000L);
-    }
-
     @Override
     public String toString() {
-        return "Tick{" + symbol + ' ' + secType + " price=" + price + " eventTimeNanos=" + eventTimeNanos
-                + " sourceOrder=" + sourceOrder + " ingestTimeMillis=" + ingestTimeMillis + '}';
+        return "Tick{" + symbol + ' ' + secType + " price=" + price + " eventTimeMillis="
+                + eventTimeMillis + " sourceOrder=" + sourceOrder + " ingestTimeMillis="
+                + ingestTimeMillis + '}';
     }
 }

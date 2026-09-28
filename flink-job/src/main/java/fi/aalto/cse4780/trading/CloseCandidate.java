@@ -2,12 +2,12 @@ package fi.aalto.cse4780.trading;
 
 /**
  * The best close seen so far for one symbol and one still-open window: the price event with the
- * latest event time, ties going to the later arrival (D-4).
+ * latest event time, ties going to the later source position (D-4, D-23).
  */
 public class CloseCandidate {
 
     public double price;
-    public long eventTimeNanos;
+    public long eventTimeMillis;
     public long sourceOrder;
     public String secType;
 
@@ -18,7 +18,7 @@ public class CloseCandidate {
 
     public CloseCandidate(Tick first) {
         price = first.price;
-        eventTimeNanos = first.eventTimeNanos;
+        eventTimeMillis = first.eventTimeMillis;
         sourceOrder = first.sourceOrder;
         secType = first.secType;
         maxIngestTimeMillis = first.ingestTimeMillis;
@@ -28,11 +28,11 @@ public class CloseCandidate {
     public void offer(Tick tick) {
         maxIngestTimeMillis = Math.max(maxIngestTimeMillis, tick.ingestTimeMillis);
         boolean later =
-                tick.eventTimeNanos > eventTimeNanos
-                        || (tick.eventTimeNanos == eventTimeNanos && tick.sourceOrder > sourceOrder);
+                tick.eventTimeMillis > eventTimeMillis
+                        || (tick.eventTimeMillis == eventTimeMillis && tick.sourceOrder > sourceOrder);
         if (later) {
             price = tick.price;
-            eventTimeNanos = tick.eventTimeNanos;
+            eventTimeMillis = tick.eventTimeMillis;
             sourceOrder = tick.sourceOrder;
             secType = tick.secType;
         }
