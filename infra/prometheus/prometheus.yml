@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  # Docker DNS returns one A record per container, so scaled TaskManagers are
+  # discovered automatically.
+  - job_name: flink
+    dns_sd_configs:
+      - names: [jobmanager, taskmanager]
+        type: A
+        port: 9249
+        refresh_interval: 10s
