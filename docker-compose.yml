@@ -1,10 +1,3 @@
-# Local development stack.
-#   docker compose up -d --build                     # Kafka, Flink (1 TM), Prometheus, Grafana
-#   docker compose up -d --scale taskmanager=4       # more TaskManagers
-#   docker compose run --rm producer <MainClass> …   # replayer (profile "tools")
-#
-# UIs: Flink http://localhost:8081 · Prometheus http://localhost:9090 · Grafana http://localhost:3000
-# Kafka from the host: localhost:29092 (inside the network: kafka:9092)
 name: trading-trends
 
 x-flink-env: &flink-env
@@ -23,12 +16,12 @@ services:
   kafka:
     image: apache/kafka:4.3.1
     ports:
-      - "29092:29092"
+      - "${KAFKA_HOST_PORT:-29092}:29092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:${KAFKA_HOST_PORT:-29092}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
@@ -64,15 +57,15 @@ services:
 
   jobmanager:
     build: *flink-build
-    image: trading-trends/flink-job:dev
+    image: ${COMPOSE_PROJECT_NAME}/flink-job:dev
     command: jobmanager
     ports:
-      - "8081:8081"
+      - "${FLINK_HOST_PORT:-8081}:8081"
     environment: *flink-env
 
   taskmanager:
     build: *flink-build
-    image: trading-trends/flink-job:dev
+    image: ${COMPOSE_PROJECT_NAME}/flink-job:dev
     command: taskmanager
     depends_on:
       - jobmanager
@@ -82,7 +75,7 @@ services:
     build:
       context: .
       target: producer
-    image: trading-trends/producer:dev
+    image: ${COMPOSE_PROJECT_NAME}/producer:dev
     profiles: ["tools"]
     depends_on:
       kafka-init:
@@ -95,14 +88,14 @@ services:
   prometheus:
     image: prom/prometheus:v3.11.2
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_HOST_PORT:-9090}:9090"
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   grafana:
     image: grafana/grafana:12.2
     ports:
-      - "3000:3000"
+      - "${GRAFANA_HOST_PORT:-3000}:3000"
     environment:
       # Local development only: no login.
       GF_AUTH_ANONYMOUS_ENABLED: "true"

@@ -1,0 +1,201 @@
+{
+  "project": "trading-trends-check-caffca10367b",
+  "stages": [
+    {
+      "taskManagers": 1,
+      "targets": [
+        {
+          "labels": {
+            "instance": "172.18.0.4:9249",
+            "job": "flink"
+          },
+          "health": "up",
+          "lastScrape": "2026-09-28T16:46:00.220828214Z"
+        },
+        {
+          "labels": {
+            "instance": "172.18.0.6:9249",
+            "job": "flink"
+          },
+          "health": "up",
+          "lastScrape": "2026-09-28T16:45:59.328589213Z"
+        }
+      ],
+      "samples": {
+        "prometheus:flink_jobmanager_numRegisteredTaskManagers": [
+          {
+            "metric": {
+              "__name__": "flink_jobmanager_numRegisteredTaskManagers",
+              "host": "jobmanager",
+              "instance": "172.18.0.4:9249",
+              "job": "flink"
+            },
+            "value": [
+              1790613961.267,
+              "1"
+            ]
+          }
+        ],
+        "grafana:flink_jobmanager_numRegisteredTaskManagers": [
+          {
+            "metric": {
+              "__name__": "flink_jobmanager_numRegisteredTaskManagers",
+              "host": "jobmanager",
+              "instance": "172.18.0.4:9249",
+              "job": "flink"
+            },
+            "value": [
+              1790613961.273,
+              "1"
+            ]
+          }
+        ],
+        "prometheus:flink_taskmanager_Status_JVM_Memory_Heap_Used": [
+          {
+            "metric": {
+              "__name__": "flink_taskmanager_Status_JVM_Memory_Heap_Used",
+              "host": "172_18_0_6",
+              "instance": "172.18.0.6:9249",
+              "job": "flink",
+              "tm_id": "172_18_0_6:38939_9dc888"
+            },
+            "value": [
+              1790613961.274,
+              "38715616"
+            ]
+          }
+        ],
+        "grafana:flink_taskmanager_Status_JVM_Memory_Heap_Used": [
+          {
+            "metric": {
+              "__name__": "flink_taskmanager_Status_JVM_Memory_Heap_Used",
+              "host": "172_18_0_6",
+              "instance": "172.18.0.6:9249",
+              "job": "flink",
+              "tm_id": "172_18_0_6:38939_9dc888"
+            },
+            "value": [
+              1790613961.277,
+              "38715616"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "taskManagers": 2,
+      "targets": [
+        {
+          "labels": {
+            "instance": "172.18.0.4:9249",
+            "job": "flink"
+          },
+          "health": "up",
+          "lastScrape": "2026-09-28T16:46:15.218790751Z"
+        },
+        {
+          "labels": {
+            "instance": "172.18.0.6:9249",
+            "job": "flink"
+          },
+          "health": "up",
+          "lastScrape": "2026-09-28T16:46:19.328589213Z"
+        },
+        {
+          "labels": {
+            "instance": "172.18.0.7:9249",
+            "job": "flink"
+          },
+          "health": "up",
+          "lastScrape": "2026-09-28T16:46:18.687996625Z"
+        }
+      ],
+      "samples": {
+        "prometheus:flink_jobmanager_numRegisteredTaskManagers": [
+          {
+            "metric": {
+              "__name__": "flink_jobmanager_numRegisteredTaskManagers",
+              "host": "jobmanager",
+              "instance": "172.18.0.4:9249",
+              "job": "flink"
+            },
+            "value": [
+              1790613979.831,
+              "2"
+            ]
+          }
+        ],
+        "grafana:flink_jobmanager_numRegisteredTaskManagers": [
+          {
+            "metric": {
+              "__name__": "flink_jobmanager_numRegisteredTaskManagers",
+              "host": "jobmanager",
+              "instance": "172.18.0.4:9249",
+              "job": "flink"
+            },
+            "value": [
+              1790613979.837,
+              "2"
+            ]
+          }
+        ],
+        "prometheus:flink_taskmanager_Status_JVM_Memory_Heap_Used": [
+          {
+            "metric": {
+              "__name__": "flink_taskmanager_Status_JVM_Memory_Heap_Used",
+              "host": "172_18_0_6",
+              "instance": "172.18.0.6:9249",
+              "job": "flink",
+              "tm_id": "172_18_0_6:38939_9dc888"
+            },
+            "value": [
+              1790613979.839,
+              "151961824"
+            ]
+          },
+          {
+            "metric": {
+              "__name__": "flink_taskmanager_Status_JVM_Memory_Heap_Used",
+              "host": "172_18_0_7",
+              "instance": "172.18.0.7:9249",
+              "job": "flink",
+              "tm_id": "172_18_0_7:38185_97a5e5"
+            },
+            "value": [
+              1790613979.839,
+              "38773664"
+            ]
+          }
+        ],
+        "grafana:flink_taskmanager_Status_JVM_Memory_Heap_Used": [
+          {
+            "metric": {
+              "__name__": "flink_taskmanager_Status_JVM_Memory_Heap_Used",
+              "host": "172_18_0_6",
+              "instance": "172.18.0.6:9249",
+              "job": "flink",
+              "tm_id": "172_18_0_6:38939_9dc888"
+            },
+            "value": [
+              1790613979.841,
+              "151961824"
+            ]
+          },
+          {
+            "metric": {
+              "__name__": "flink_taskmanager_Status_JVM_Memory_Heap_Used",
+              "host": "172_18_0_7",
+              "instance": "172.18.0.7:9249",
+              "job": "flink",
+              "tm_id": "172_18_0_7:38185_97a5e5"
+            },
+            "value": [
+              1790613979.841,
+              "38773664"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -31,7 +31,7 @@ These decisions drive both correctness and the report. The Flink job and the ora
 |---|---|---|
 | Symbol key | `ID` column as-is, e.g. `RDSA.NL`. Derive `exchange` from the suffix. | Confirm the format in EDA. |
 | Price event | A row whose `Last` is non-null. Every other row is a quote or housekeeping event. | Count those per type. Drop them before `keyBy`. |
-| Event time | `Trading date` (DD-MM-YYYY) + `Trading time` (HH:MM:SS.mmm), parsed into epoch ms. | Measured as millisecond precision, so epoch ms is lossless (D-20). `Trading date` is absent on 92.1% of price rows; `Date` substitutes (D-23). Pick one timezone interpretation and use it everywhere. Whole-hour offsets keep 5-min windows aligned to midnight. |
+| Event time | `Trading date` (DD-MM-YYYY) + `Trading time` (HH:MM:SS.mmm), parsed into epoch ms. | Measured as millisecond precision, so epoch ms is lossless (D-22). `Trading date` is absent on 92.1% of price rows; `Date` substitutes (D-25). Pick one timezone interpretation and use it everywhere. Whole-hour offsets keep 5-min windows aligned to midnight. |
 | Close | The price with the **latest event time** in the window, not the last one to arrive. Break ties by arrival order. | This matters because order is not guaranteed across exchanges. |
 | Window firing | Fire when the event-time watermark passes the window end. Use a bounded-out-of-orderness watermark with idleness. | Set the bound from the disorder measured in EDA. Send late events to a side output and count them. |
 | Empty windows | If a symbol has no price event in a window, skip it: EMA unchanged, no output, no crossover check. | Document it. The alternative (carry the last close forward) is an ablation. |
@@ -63,7 +63,7 @@ These decisions drive both correctness and the report. The Flink job and the ora
              → web dashboard                           → Grafana (throughput, latency, backpressure, CPU)
 ```
 
-- **Main operator:** one `KeyedProcessFunction` per symbol. Its `ValueState` holds the current window's close and timestamp plus `ema38`, `ema100` and the previous EMAs. It registers an event-time timer at the window end. When the timer fires it computes Q1, runs the Q2 check, and emits.
+- **Main operator:** one `KeyedProcessFunction` keyed by symbol (`EmaCalculator`). Out-of-order arrival can leave several windows open at once, so a `MapState` keeps one close candidate per open window end. A `ValueState` holds `ema38` and `ema100`. Each open window has an event-time timer on its last millisecond. When it fires, the operator computes Q1 (and later runs the Q2 check), emits, and drops that window's candidate.
 - **Alternative to benchmark:** the `TumblingEventTimeWindows` + `ProcessWindowFunction` pair, followed by a keyed EMA function.
 - **Latency measurement:** the replayer stamps each record with its ingest wall-clock time (the Kafka record timestamp). Each output carries (a) processing latency (emit time minus the arrival of the window's last event) and (b) watermark lag.
 - **Benchmark isolation:** in *preload* mode, the whole week is written into Kafka first and Flink then reads from the earliest offset. Throughput is then measured without the replayer as a bottleneck. Latency runs use *live replay*.
@@ -195,6 +195,6 @@ Everyone keeps notes in `docs/decisions.md` and on PRs. From those, each member 
 Only Docker is needed on the host. Python 3 covers the oracle and the EDA.
 
 - **Build:** `docker compose build` runs Maven inside the `maven:3.9-eclipse-temurin-17` image (stage `build` of the root `Dockerfile`). A BuildKit cache mount keeps `~/.m2` between builds, so dependencies download only once.
-- **Run tests:** `docker build --target test .` runs `mvn verify`.
+- **Run tests:** `scripts/mvn.sh test` runs Maven in a container with a cached dependency volume. `docker build --target test .` runs `mvn verify` in a clean build.
 - **IDE:** open the repo in the dev container (`.devcontainer/`). VS Code uses "Reopen in Container"; IntelliJ uses "Remote Development → Dev Containers". The IDE then gets JDK 17 + Maven inside the container.
 - **Disk:** check the size on Zenodo before downloading. 289M rows is likely tens of GB uncompressed, and a full-week Kafka preload needs roughly the same again. Keep `data/` and the Docker volumes on a disk with ≥ 100 GB free, or work from a per-day or per-exchange sample locally and run full-week experiments on the cloud VMs.
