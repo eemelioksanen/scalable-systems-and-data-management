@@ -8,22 +8,23 @@ how to run it, what a finished replay reports, and the measurements behind its d
 ## Running it
 
 The replayer runs in the `producer` image (`docker compose build producer`), which Compose starts with
-`data/` mounted read-only at `/data`. Use `run -T`, so the JSON report on stdout stays separate from
-the progress log on stderr.
+`data/` mounted read-only at `/data`. The examples replay `data/daily/`, where the analysis downloads the
+day files (`analysis/src/fetch_day.py`); a directory input does not descend into subdirectories. Use
+`run -T`, so the JSON report on stdout stays separate from the progress log on stderr.
 
 ```bash
-# Preload the whole week (every *.csv in data/, in day order) and keep the report.
-docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data > bench/results/raw/preload.json
+# Preload the whole week (every *.csv in data/daily/, in day order) and keep the report.
+docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily > bench/results/raw/preload.json
 
 # Live replay at ten times real time, starting the clock at the open; rows before 09:00 go unpaced.
-docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data \
+docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily \
   --mode realtime --rate 10 --pace-from 2021-11-08T09:00 > bench/results/raw/live-10x.json
 
 # One exchange, as fast as possible, while the Flink job runs.
-docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data --mode max --exchanges NL
+docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily --mode max --exchanges NL
 
 # Read and project without Kafka: the replayer's own ceiling, and the partition load for 16 partitions.
-docker compose run --rm -T --no-deps producer fi.aalto.cse4780.replay.Replayer --input /data --dry-run --partitions 16
+docker compose run --rm -T --no-deps producer fi.aalto.cse4780.replay.Replayer --input /data/daily --dry-run --partitions 16
 ```
 
 `--help` lists every option. The main ones:

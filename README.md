@@ -86,11 +86,11 @@ The producer uses the `tools` profile and is not built by the default start comm
 docker compose build producer
 ```
 
-The producer image contains the replayer in `/app/producer.jar`. Compose mounts `data/` read-only at `/data`, so put the day files there (see [Dataset](#dataset)). This preloads every day file in `data/` into `ticks`, in day order, and keeps the JSON report in the gitignored `bench/results/raw/`:
+The producer image contains the replayer in `/app/producer.jar`. Compose mounts `data/` read-only at `/data`, and the analysis downloads day files into `data/daily/` (see [Dataset profile](#dataset-profile)). This preloads every day file there into `ticks`, in day order, and keeps the JSON report in the gitignored `bench/results/raw/`:
 
 ```bash
 mkdir -p bench/results/raw
-docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data > bench/results/raw/replay.json
+docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily > bench/results/raw/replay.json
 ```
 
 The report says whether the replay completed and which offsets it wrote. Progress goes to stderr. `--mode realtime --rate 10` paces the rows at ten times real time instead, and `--exchanges`, `--symbols` and `--limit` select a subset. [docs/replayer.md](docs/replayer.md) covers the modes, the report, how to verify a replay against Kafka and the source files, and how to reset `ticks`.
