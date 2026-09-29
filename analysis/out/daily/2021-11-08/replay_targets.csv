@@ -1,0 +1,7 @@
+label,multiplier,offered_events_per_second
+system_time_p99,1,4317
+system_time_p99,10,43170
+system_time_p99,100,431700
+system_time_peak,1,22537
+system_time_peak,10,225370
+system_time_peak,100,2253700

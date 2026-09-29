@@ -1,0 +1,243 @@
+{
+  "day": "2021-11-10",
+  "input": "/data/debs2022-gc-trading-day-10-11-21.csv",
+  "identity": {
+    "input_sha256": "1aa5c894fed9fb52d35cb7b00de4be893c2f44644fbcbae80291c5bea5fb293b",
+    "input_bytes": 5512236266,
+    "parser_sha256": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+    "polars": "1.44.2",
+    "zone_offset": "+02:00"
+  },
+  "provenance": {
+    "source_url": "https://zenodo.org/records/6382482",
+    "download_url": "https://zenodo.org/records/6382482/files/debs2022-gc-trading-day-10-11-21.csv?download=1",
+    "doi": "10.5281/zenodo.6382482",
+    "license": "CC-BY-NC-SA-4.0",
+    "attribution": "Frischbier, Tahir, Doblander, Hormann, Mayer, Jacobsen (2022), DEBS 2022 Grand Challenge Data Set: Trading Data",
+    "day": "2021-11-10",
+    "file": "debs2022-gc-trading-day-10-11-21.csv",
+    "size_bytes": 5512236266,
+    "published_checksum": "md5:bed2f79e124f68da54929500f115a820",
+    "sha256": "1aa5c894fed9fb52d35cb7b00de4be893c2f44644fbcbae80291c5bea5fb293b",
+    "verified_utc": "2026-09-29T09:35:42.666585+00:00",
+    "sampling": "complete daily file",
+    "published_week_bytes": 24874180296
+  },
+  "zone_offset": "+02:00",
+  "memory_limit_duckdb": "2GB",
+  "counts": {
+    "other": 1349010,
+    "header": 1,
+    "price_zero": 62240,
+    "price": 12068273,
+    "quote": 18150108,
+    "empty_payload": 32962213,
+    "comment": 12,
+    "accepted_price_events": 12068273,
+    "windows": 373987
+  },
+  "wall_seconds": 130.6,
+  "peak_rss_bytes": 2994749440,
+  "checkpoint_reused": false,
+  "parse_metrics": {
+    "wall_seconds": 72.367,
+    "peak_rss_bytes": 574816256,
+    "polars_threads": 2,
+    "batch_lines": 100000,
+    "row_group_size": 50000
+  },
+  "python": "3.12.14",
+  "duckdb": "1.5.6",
+  "polars": "1.44.2",
+  "revision": "c406b7338f6ea1c2235c5f20b5daa819c9d28d07",
+  "worktree_status": "?? analysis/out/daily/2021-11-13/\n?? analysis/out/daily/2021-11-14/",
+  "source_sha256": {
+    "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+    "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+    "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+    "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae",
+    "golden.py": "c88021d0e78b372a549606192fbfd2e85814901c5f572a77a87e3acd82c99601",
+    "profile.py": "b2e780d0273327530c330070694cd1059a70d08439b83c6959235df18cf67642",
+    "week.py": "aa324f8a68c933b3272f1c446816f413107792255600b52332e7da974c747be4",
+    "week_plot.py": "9a154ce12ac93deb168d92d6353a7119c78e306f01b272f76d99d06c4894db29"
+  },
+  "dependencies": {
+    "duckdb": "1.5.6",
+    "polars": "1.44.2",
+    "numpy": "2.5.3",
+    "matplotlib": "3.11.2"
+  },
+  "command": [
+    "/src/daily.py",
+    "/data/debs2022-gc-trading-day-10-11-21.csv",
+    "--day",
+    "2021-11-10",
+    "--cache",
+    "/cache",
+    "--out",
+    "/out"
+  ],
+  "artifacts": {
+    "activity_spikes.csv": {
+      "bytes": 752,
+      "sha256": "864145f9cbb1f0b83b5fc71fc317dc413a5a1ea0fb3970a23ae1d3888d89cf5f"
+    },
+    "arrival_rates.png": {
+      "bytes": 189907,
+      "sha256": "7faa68070003dbc77067a58d21b160073e22a23c00045f8dcb9485d9abf4332a"
+    },
+    "arrival_rates.svg": {
+      "bytes": 140431,
+      "sha256": "4479a8511ee8172044ffbb3ef06e37321cfb52684389b94e752eb0da9e34ed7b"
+    },
+    "coverage.csv": {
+      "bytes": 286,
+      "sha256": "4eb18fa792c7124012026e111b9b9d7ae80f28d5ab52771b34bc0bc3279d67df"
+    },
+    "field_counts.csv": {
+      "bytes": 29,
+      "sha256": "d1cba3bcf77e8db7affaef80d37612b12530f061de5330da482668d9ec5f65c7"
+    },
+    "gap_outliers.csv": {
+      "bytes": 410139,
+      "sha256": "464f43d7f5dc588fd1fc30b1c1d98409f5359c582d2c39d050b46f9b9cc79b33"
+    },
+    "partition_disorder.csv": {
+      "bytes": 3273,
+      "sha256": "98b3396e55cddf17a0337d7e6f029813d2ed89aaa6508c243b5154c782cf0acb"
+    },
+    "partition_load.csv": {
+      "bytes": 1616,
+      "sha256": "e2947de89c598d59a7e9712358be8c8c98034ac17bf4a52ac12a976d042b90f2"
+    },
+    "partition_load.png": {
+      "bytes": 165541,
+      "sha256": "8e8e9d5ebaed996b38082f87c4ea9fe1dca12eb13d35185c4e716ff986dbc020"
+    },
+    "partition_load.svg": {
+      "bytes": 64823,
+      "sha256": "0d9b5ee135bc0b9a8e36482ed5d1a5330c658d2745140b10a3084e8959e07411"
+    },
+    "partition_timestamp_quality.csv": {
+      "bytes": 1624,
+      "sha256": "758179d624c7b70c5a3ae2f66934a7479acc119bb41bc88ab5474e02fbebf659"
+    },
+    "peak_seconds.csv": {
+      "bytes": 744,
+      "sha256": "533f28ae9c07309856532539a48b887bece2d2546f5c89e73927a1c9fdbfd6fe"
+    },
+    "quality.csv": {
+      "bytes": 552,
+      "sha256": "b04f39684c7fce35b88cfa5dfd4d10e45a21cb4938966b03a97677d9932172e5"
+    },
+    "rates_minute.csv": {
+      "bytes": 89670,
+      "sha256": "15ec75cf6f1784ca35ae5aa901a236c1f6a036331dd29775f1fa6e0d01a719aa"
+    },
+    "rates_summary.csv": {
+      "bytes": 538,
+      "sha256": "4ffa0587dac41dcea04d749e1154cdf58089ea634c26e681f0468152ccbca602"
+    },
+    "replay_targets.csv": {
+      "bytes": 199,
+      "sha256": "c5f3ec05b40031df5d233eee9bd6742f0f99b2608b5507d98fef167874258e34"
+    },
+    "row_reconciliation.csv": {
+      "bytes": 118,
+      "sha256": "78b736ad5b5f36502a40eb78ee00ed34ae60b5c5461fb7414a7d832582a8a0a1"
+    },
+    "skew.csv": {
+      "bytes": 724,
+      "sha256": "a5bafcf5a2b0088cd9f82a2291245dc8c99026bb99ac3bbb1f63e02f8e228ef9"
+    },
+    "suspicious_timestamp_examples.csv": {
+      "bytes": 7710,
+      "sha256": "0b2b81f3e569d7b25e5ceb5eecbbafddac188b4b4e6a9f1a45dce8a85deb0817"
+    },
+    "symbol_disorder.csv": {
+      "bytes": 151862,
+      "sha256": "9acadbd0c6c4d320fc9a5fc5db7eaeca3bafa2a4a2231464b0b105d3bf37b6e9"
+    },
+    "symbol_skew.png": {
+      "bytes": 88295,
+      "sha256": "a13737a803280b1dcd1696625b5ffcfb880501a89c11287549736667f23de343"
+    },
+    "symbol_skew.svg": {
+      "bytes": 73997,
+      "sha256": "e1ed1586d63d685ee7c47b387efa24467df85391dbd5288f7ec509b17eaf20a8"
+    },
+    "symbols.csv": {
+      "bytes": 212796,
+      "sha256": "b366db601040407e5aba911838a2987eeaee7f0993c468920c6cb316fdfd28b2"
+    },
+    "system_timestamp_quality.csv": {
+      "bytes": 643,
+      "sha256": "c60554354391f35d08d1060cbbb73b99c0771477f890e03f2c8ed6c938072d9c"
+    },
+    "taxonomy.csv": {
+      "bytes": 590,
+      "sha256": "c4991fb6467723fe5ca293eb12277ab82e701f97fa5eccb2fa0bfeaa215b6fda"
+    },
+    "timestamp_gap_histogram.csv": {
+      "bytes": 13085,
+      "sha256": "a869754e6091b5939bed1e61bc0f5376dc7f9132b227a70b77a9683d10960f70"
+    },
+    "timestamp_gaps.csv": {
+      "bytes": 510,
+      "sha256": "75ccf8e785fea20b8c846dfe6c5508f6de602f94e81076bbd791574080550d4d"
+    },
+    "timestamp_precision.csv": {
+      "bytes": 91,
+      "sha256": "6152a6a766e926d72f219294d8d8a26ee9632958ebc08c4ba1850b38fbbfbf0a"
+    },
+    "timestamp_quality.png": {
+      "bytes": 116141,
+      "sha256": "d39f3a6df55e1c8c9521a3d2bb410906c04c92e370d54252ea99b8d16e879187"
+    },
+    "timestamp_quality.svg": {
+      "bytes": 190779,
+      "sha256": "e721dca5f5fd9db07536f21d4d19187581f04893535277e6615fdd8894f544b9"
+    },
+    "timestamp_residues.csv": {
+      "bytes": 18931,
+      "sha256": "a8dd0f46ff9172fcc669d212c69230d7a6c6dd9ef5006da5b7cacc425ba47ef7"
+    },
+    "trading_rates_minute.csv": {
+      "bytes": 51381,
+      "sha256": "7b86f3f39ae407d3dd89cc172bfc1307f982a731b70e1cd37b95781aa7a8414b"
+    },
+    "trading_rates_summary.csv": {
+      "bytes": 535,
+      "sha256": "2e07cf8671ab453f10120c6735908acb1f8733c5e8d3778feea6e9e49c09090e"
+    },
+    "watermark_bounds.csv": {
+      "bytes": 1587,
+      "sha256": "08ca46bfd0564846dac13a19a6f76deb2c9f68d4181550d033c706f4ad779208"
+    },
+    "window_density.png": {
+      "bytes": 74543,
+      "sha256": "d7f908d1604094cde7510d1a5a7342bbbc69ecfa60cb96440164565c82f26e6c"
+    },
+    "window_density.svg": {
+      "bytes": 124087,
+      "sha256": "66986f55715b2405fa967b4e45d6180ac195dcd41050c37bbe74012f71e30a2a"
+    },
+    "window_event_histogram.csv": {
+      "bytes": 3555,
+      "sha256": "e4c9d05a0edb28b7e5d8f8581daf57f02b3f519c583bf71e53b0129ad4f23c96"
+    },
+    "window_statistics.csv": {
+      "bytes": 506885,
+      "sha256": "cab1938aed711cb63f4091bc19204a96b813b005b53443ff015423cbd5fe50aa"
+    }
+  },
+  "checkpoint": "/cache/2021-11-10",
+  "limits": [
+    "One day only; no full-week policy claim",
+    "Partition-local aggressive watermark envelope; active partitions only",
+    "Replay scheduling, periodic watermark emission, and idleness require runtime verification",
+    "Observed exchange span is a dataset interval, not an official trading calendar",
+    "System timestamp is a recorded last-update time, not verified feed arrival time",
+    "Changed-close counts describe each model, not a bound over all replay schedules"
+  ]
+}

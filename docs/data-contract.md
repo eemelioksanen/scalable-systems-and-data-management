@@ -1,5 +1,7 @@
 # Data contract
 
+The original sample evidence below is preserved. [Monday's complete-day analysis](eda-monday.md) extends it, and [D-29](decisions.md#d-29-daily-analysis-interpretations-and-the-monday-checkpoint-2026-09-28-emilia-repo-issue-4) records the subsequently accepted UTC+2 interpretation, date fallback and window policies.
+
 What the replayer (`producer/`), the Flink job (`flink-job/`) and the oracle (`oracle/`)
 must all agree on about the input data, and the evidence for each claim.
 
@@ -208,10 +210,11 @@ windowEnd, close, ema38, ema100, maxIngestTs, emitTs`; `advisories` carries the 
 Expected values follow the hand-worked sequences in
 [`fixtures/golden/derivation.md`](../fixtures/golden/derivation.md).
 
-## 10. Still open
+## 10. Follow-up after the sample
 
 | Topic | Why it is not settled here |
 |---|---|
-| Watermark bound | Needs the disorder distribution over a full day, not a sample, and the §6 anomaly resolved first. D-5 stays **proposed**. |
-| Missing / stale timestamp policy | The 92.1% missing `Trading date` is measured and the `Date` fallback is evidenced, but D-10 stays **open** pending the fuller EDA, as the ticket requires. |
-| Empty-window, overnight-state, late-event and final-window semantics | Interpretation of the spec, not properties of the data. Tracked as D-5, D-6, D-8 and D-19 in [`decisions.md`](decisions.md). |
+| Watermark bound and idleness | Runtime setting still open after the [full-week analysis](eda-week.md). D-30 demonstrates a sufficient 64,265,001 ms source-order bound; 264 ms and 60 s lose 1,812 windows. D-28 still requires paced/idleness runtime verification. |
+| Missing / stale timestamp policy | D-29 accepts the missing-date fallback, excludes unparseable event timestamps, and preserves valid explicit dates. The interpretation of Wednesday's summary-like rows remains open. |
+
+D-29 accepts the skip-empty-window, carry-over, late-event and finite-input policies as interpretations of the spec.

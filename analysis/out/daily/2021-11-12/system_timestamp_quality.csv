@@ -1,0 +1,16 @@
+exchange,category,rows,missing_or_invalid_system_time,backward_steps_from_previous_file_row,largest_step_from_previous_file_row_ms
+ETR,empty_payload,266818,0,1818,86360000
+ETR,other,83010,2371,17,57682910
+ETR,price,6352407,0,1656,30651096
+ETR,price_zero,59281,0,807,63864500
+ETR,quote,3305064,0,641,63359840
+FR,empty_payload,17473392,0,2446,18670000
+FR,other,687704,7036,210,41459000
+FR,price,4242152,0,65,1000
+FR,price_zero,2407,0,802,66641000
+FR,quote,7607031,0,572,61126392
+NL,empty_payload,10014766,0,770,1002
+NL,other,371183,2025,75,31299000
+NL,price,1198794,0,19,1000
+NL,price_zero,574,0,164,61424067
+NL,quote,4446600,0,308,33037068
