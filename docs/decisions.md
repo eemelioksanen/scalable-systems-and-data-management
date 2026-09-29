@@ -56,7 +56,8 @@ This does not authorize removing inconvenient events to make a short bound pass.
 The full-week summary-row question raised in [the issue discussion](https://github.com/eemelioksanen/scalable-systems-and-data-management/issues/4#issuecomment-5877151366) remains open: under the selected rules those rows are still price events at their supplied time.
 D-28's runtime findings qualify the source-order estimates in D-27: actual admission depends on periodic watermark emission, replay pace and idleness.
 
-The authorized run is Monday only, followed by human review before another day's download.
+The initial authorized run was Monday only, followed by human review before another day's download.
+After that checkpoint merged in [PR #30](https://github.com/eemelioksanen/scalable-systems-and-data-management/pull/30), Emilia authorized analysis of the remaining six days on 2026-09-29.
 It produces independent dataset summaries and close comparisons, using the [daily analysis method](../analysis/README.md).
 The full-week oracle already supplies reference totals and anomaly evidence; these are cross-checks, not a substitute for processing the remaining days in this analysis.
 See [Monday's results](eda-monday.md).
