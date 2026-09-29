@@ -1,7 +1,7 @@
 # Daily dataset analysis
 
-Issue [#4](https://github.com/eemelioksanen/scalable-systems-and-data-management/issues/4), starting with the complete Monday file.
-The first run stops after Monday for review; the full week is still pending.
+Issue [#4](https://github.com/eemelioksanen/scalable-systems-and-data-management/issues/4), with independent daily checkpoints and a continuous full-week comparison.
+The initial Monday checkpoint was reviewed and merged separately; the remaining days were authorized on 29 September 2026.
 
 ```bash
 bash analysis/daily.sh 2021-11-08
@@ -55,7 +55,7 @@ Unparseable event timestamps are excluded and counted; valid explicit dates are 
 Finer-than-millisecond fractions are truncated, matching D-26; precision distributions remain visible.
 The five-minute close maximizes `(event_ms, physical source line)` within a symbol/window.
 Empty windows produce no update, EMA state carries across day boundaries, late events are discarded and counted, and finite input flushes remaining windows.
-This analysis calculates closes, not EMAs or advisories. The independent oracle owns those calculations.
+Daily analysis calculates closes. The full-week comparison calls the existing oracle's EMA and advisory function to measure downstream effects; it does not independently validate that function.
 
 The course brief labels `Time` as system time of the last received update and `Trading time` as the time of the last bid/ask/trade update.
 Rates by `Date`/`Time` are therefore recorded-system-time rates, a proxy for arrival rates, not measured network ingestion rates.
@@ -108,6 +108,37 @@ The eventual correctness comparison must use the events actually admitted by the
 
 Each day is an independent diagnostic run, starting with no previous partition maxima.
 Combining daily summaries is not a full-week ordering simulation: cross-file watermark progress and windows receiving events from multiple files still require a continuous full-week analysis.
+
+## Continuous full-week comparison
+
+After all seven daily commands complete, run `bash analysis/week.sh`.
+It verifies each parsed checkpoint and published daily artifact, then uses the same 4 GiB container limit to build `analysis/out/week/`.
+The daily calculation scripts and dependency versions must match across days; unrelated commits may differ and remain recorded in the weekly manifest.
+The raw files are not loaded together; DuckDB scans the verified Parquet checkpoints and spills to disk under its 2 GB buffer limit.
+Recorded-system-time rates are re-derived from those verified rows, including aggregation across files before calculating p99.
+The full-week p99 includes the quiet weekend intervals; `replay_targets.csv` also retains the busiest daily p99 and the observed peak at 1×, 10× and 100× offered load.
+
+File order is the calendar order of the seven files, followed by physical line order.
+The internal ordering key is `file_index * 2^32 + physical_line`, matching the parser's UInt32 line index without collisions.
+Detailed weekly event tables retain the source day and physical line; the ignored `late_candidates_8.parquet` uses the internal key.
+Watermark maxima carry across file boundaries, and close ties use event time followed by that global source position.
+The full-week calendar denominator is 2,016 windows per observed symbol, including the weekend; explicitly dated windows outside the week remain in total counts but not that denominator.
+
+`watermark_bounds.csv` compares closes for the tested bounds and partition counts.
+The data-derived bound admitting every event is included as a sufficient no-loss bound; the grid does not establish the smallest possible bound preserving every close.
+`scenario_effects.csv` uses the oracle's unchanged `compute` function on the admit-all closes and selected alternative close sets, carrying EMA state across the week.
+EMA differences use the existing 1e-9 absolute tolerance, and advisory additions/removals compare `(symbol, windowEnd, type)`.
+Missing windows are reported separately from changed existing closes and EMAs.
+The eight-partition data-derived no-loss bound is included in the EMA comparisons too.
+`oracle_crosscheck.json` compares the complete admit-all results and advisories with the recorded full-week oracle content hashes after shifting timestamps to its `Z` offset and matching its column order.
+That comparison independently checks close selection, event counts and source identities; the EMA function itself is shared with the oracle.
+The 60-second single-partition model is also compared with the recorded 60-second oracle run, which uses the same global-maximum admission rule.
+Eight-partition results remain separate because partition-local admission can differ from that global model.
+
+The summary-row exclusion experiment removes price events with security type `I`, literal trading time `01:00:00.000`, and `Last` equal to at least one of `Open`, `Day's high` or `Day's low`.
+This is an observed-pattern ablation, not an accepted parser rule.
+Its complete candidate list and per-symbol counts are published, and it is compared against the preserve-all baseline without changing that baseline.
+The narrower full-week bound models still assume active partitions; actual runtime admission and idleness require separate runtime verification.
 
 ## Sources
 
