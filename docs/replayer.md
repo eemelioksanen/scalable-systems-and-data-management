@@ -1,8 +1,8 @@
 # Replayer
 
 `producer/` replays DEBS 2022 day files into the Kafka `ticks` topic, one record per CSV data row.
-The record format is in [interfaces.md](interfaces.md#ticks-d-13-d-14-d-15-d-29), and the design
-decisions are D-13 to D-15, D-23, D-24 and D-29 in [decisions.md](decisions.md). This page covers
+The record format is in [interfaces.md](interfaces.md#ticks-d-13-d-14-d-15-d-31), and the design
+decisions are D-13 to D-15, D-23, D-24 and D-31 in [decisions.md](decisions.md). This page covers
 how to run it, what a finished replay reports, and the measurements behind its defaults.
 
 ## Running it
