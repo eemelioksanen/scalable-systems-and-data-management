@@ -214,7 +214,7 @@ Expected values follow the hand-worked sequences in
 
 | Topic | Why it is not settled here |
 |---|---|
-| Watermark bound and idleness | Still open after the [Monday analysis](eda-monday.md). D-29 accepts late-event and EOF handling; D-28's runtime findings and the Wednesday summary burst prevent a full-week bound from being inferred from Monday. |
+| Watermark bound and idleness | Runtime setting still open after the [full-week analysis](eda-week.md). D-30 demonstrates a sufficient 64,265,001 ms source-order bound; 264 ms and 60 s lose 1,812 windows. D-28 still requires paced/idleness runtime verification. |
 | Missing / stale timestamp policy | D-29 accepts the missing-date fallback, excludes unparseable event timestamps, and preserves valid explicit dates. The interpretation of Wednesday's summary-like rows remains open. |
 
 D-29 accepts the skip-empty-window, carry-over, late-event and finite-input policies as interpretations of the spec.

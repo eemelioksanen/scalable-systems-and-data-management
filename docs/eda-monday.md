@@ -1,5 +1,7 @@
 # Monday dataset analysis
 
+This is the historical first-day checkpoint. The subsequent [full-week analysis](eda-week.md) covers the remaining files and continuous week.
+
 The complete 8 November 2021 file contains **53,994,554 data rows**, including **11,794,520 accepted price events** and **373,126 nonempty five-minute windows**.
 All three counts match the independently implemented oracle's [weekday evidence](../oracle/evidence/2026-09-28-weekday-08-11-21.json).
 The input's MD5 matches Zenodo, `a08013f09a6b77355dae8b3ce141624d`.
