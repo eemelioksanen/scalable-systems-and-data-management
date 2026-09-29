@@ -137,6 +137,7 @@ Eight-partition results remain separate because partition-local admission can di
 
 The summary-row exclusion experiment removes price events with security type `I`, literal trading time `01:00:00.000`, and `Last` equal to at least one of `Open`, `Day's high` or `Day's low`.
 This is an observed-pattern ablation, not an accepted parser rule.
+The complete index-at-01:00 list is published separately from the narrower signature matches.
 Its complete candidate list and per-symbol counts are published, and it is compared against the preserve-all baseline without changing that baseline.
 The narrower full-week bound models still assume active partitions; actual runtime admission and idleness require separate runtime verification.
 

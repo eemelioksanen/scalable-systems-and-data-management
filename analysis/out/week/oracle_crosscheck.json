@@ -1,0 +1,19 @@
+{
+  "reference": "/oracle/evidence/2026-09-28-week.json",
+  "reference_sha256": "24542e357c7982e29745c77e1b49967cd79f9da57fc24891114b8cc9d6a9e7a2",
+  "normalization": "Shift UTC+2 timestamps by +7200000 ms to compare with the recorded Z run",
+  "checks": [
+    {
+      "artifact": "ema_results.parquet",
+      "expected_content_sha256": "21e0b6c52c3b98113407c66ca1a980a85c064300114161b5ae3edad6890fdbe4",
+      "actual_content_sha256": "21e0b6c52c3b98113407c66ca1a980a85c064300114161b5ae3edad6890fdbe4",
+      "matches": true
+    },
+    {
+      "artifact": "advisories.parquet",
+      "expected_content_sha256": "812231053e54935b725f8df65c852b486ae288296babee040dec4553afc667d4",
+      "actual_content_sha256": "812231053e54935b725f8df65c852b486ae288296babee040dec4553afc667d4",
+      "matches": true
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+label,multiplier,offered_events_per_second
+busiest_daily_p99,1,4777
+busiest_daily_p99,10,47770
+busiest_daily_p99,100,477700
+week_observed_p99,1,4216
+week_observed_p99,10,42160
+week_observed_p99,100,421600
+week_observed_peak,1,23016
+week_observed_peak,10,230160
+week_observed_peak,100,2301600

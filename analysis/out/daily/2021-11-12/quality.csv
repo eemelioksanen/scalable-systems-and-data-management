@@ -1,0 +1,7 @@
+exchange,sec_type,price_rows,missing_trading_date,missing_trading_time,missing_all_dates,date_mismatch,malformed_ask,malformed_bid,unexpected_symbol,invalid_event_timestamp,invalid_system_timestamp,accepted_price_events,trading_at_0100,at_0100_matching_summary
+ETR,E,1032938,1032938,0,0,0,0,0,0,0,0,1032938,0,0
+ETR,I,5319469,5319469,0,0,0,0,0,0,0,0,5319469,0,0
+FR,E,604179,90,0,0,0,0,0,0,0,0,604179,0,0
+FR,I,3637973,3637973,0,0,0,0,0,0,0,0,3637973,0,0
+NL,E,338389,54,0,0,0,0,0,0,0,0,338389,0,0
+NL,I,860405,860405,0,0,0,0,0,0,0,0,860405,0,0

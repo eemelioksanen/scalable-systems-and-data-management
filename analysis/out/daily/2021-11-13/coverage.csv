@@ -1,0 +1,4 @@
+exchange,first_system_ms,last_system_ms,first_trading_ms,last_trading_ms,invalid_system_rows
+ETR,1636754400000,1636822805000,,,2265
+FR,1636754400000,1636821042000,,,2544
+NL,1636754400000,1636820012000,,,753
