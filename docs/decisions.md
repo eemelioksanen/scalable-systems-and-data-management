@@ -45,6 +45,31 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-31: CSV replayer (2026-09-28, Leo Immonen, issue #6)
+Context: #6 needs preload, maximum-speed, real-time×k and subset replays of the day files into `ticks`. The records need ingest timestamps and their source position, and a consumer must be able to tell a complete finite replay from a partial one.
+Decision ([replayer.md](replayer.md)):
+- **Pacing clock:** live replay paces by the system `Date` + `Time`, as the minimum over the last 256 rows that have one, never moving backward. Replay speed changes only record timestamps, never values.
+- **Source position:** every record carries a `src` header, `<file index>:<line number>`. The value stays the D-24 projection.
+- **Order and failure:** one sending thread, an idempotent producer and `acks=all`. The first unacknowledged record stops the replay, which then reports `FAILED`.
+- **Completion:** the replay ends with a JSON report of the status, every line's fate, and each partition's offset range. A consumer uses only a `COMPLETE` report. `ReplayVerifier` checks a report against Kafka and, independently, against the source files.
+- **Compression:** lz4 in every mode. A preload also batches up to 1 MiB with `linger.ms=50`; live modes keep Kafka's batching defaults.
+- **Retention:** `kafka-init` creates `ticks` with `retention.ms=-1`.
+- **Unprojectable rows** (neither 39 fields nor 40 with an empty last one) are counted as `rejected` and not sent.
+
+Alternatives considered:
+- *Pacing by the raw `Time`, as a running maximum or a running median over 255 rows.* Measured on 08.11.2021, both break on the opening snapshot. The maximum reaches 18:30 at line 195. The median reaches the snapshot's 17:35 block by line 30,859. Either would send the rest of the day unpaced.
+- *Pacing by `Trading time`.* It is empty on quote and housekeeping rows.
+- *Source position recoverable only by re-reading the files.* That is deterministic but unverifiable from Kafka alone. The header costs 12.8 bytes per record, 20% of the payload bytes.
+- *A completion marker in `ticks`.* The Flink parser would count it as malformed. A separate control topic was not needed while a report file is.
+- *No compression, or zstd.* On 10 M rows: no compression 73.7 bytes per record at 1.29 M rec/s, lz4 17.2 at 1.25 M, zstd 10.9 at 0.92 M.
+
+Consequences / measurements (full weekday 08.11.2021, 53,994,554 data rows):
+- 0 rejected rows. The report's MD5 matches Zenodo's.
+- The verifier matched all 53,994,554 records to an independent re-read of the source: 5,493 symbols, each in its hashed partition, in file order, with no offset gaps.
+- 3 M rows replayed in `preload`, `max` and real time at 100×, 10× and 1× produced the same content digest. The paced runs achieved their rate to within 0.1%, with a p99 send lag of 10–21 ms. `Time` has whole-second resolution on 99.9% of those rows, so the replay sends once-a-second bursts of up to 8,709 rows; the lag is the time to send a burst.
+- A dry run reads and projects 2.22 M rows/s. Preload throughput and disk use are in [replayer.md](replayer.md#disk).
+- A full-week preload needs about 5.1 GB of Kafka log with lz4, or 22 GB without compression.
+
 ### D-30: Full-week analysis evidence (2026-09-29, Emilia Repo, issue #4)
 
 The [full-week report](eda-week.md) processes all seven files under D-29 and verifies complete admit-all and single-partition 60-second outputs against the recorded oracle hashes.

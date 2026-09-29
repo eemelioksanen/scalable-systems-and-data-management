@@ -1,0 +1,94 @@
+{
+  "runId" : "speed-preload",
+  "status" : "COMPLETE",
+  "mode" : "preload",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks-speed",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : 3000000,
+    "limitReached" : true
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 3000013,
+    "complete" : false
+  } ],
+  "counts" : {
+    "lines" : 3000013,
+    "comments" : 12,
+    "headers" : 1,
+    "rejected" : 0,
+    "dataRows" : 3000000,
+    "excluded" : 0,
+    "attempted" : 3000000,
+    "acknowledged" : 3000000,
+    "failed" : 0,
+    "keyBytes" : 21680313,
+    "valueBytes" : 136886156,
+    "headerBytes" : 34888970
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 368654,
+    "records" : 368654
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 363555,
+    "records" : 363555
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 332050,
+    "records" : 332050
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 337892,
+    "records" : 337892
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 351350,
+    "records" : 351350
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 357711,
+    "records" : 357711
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 438148,
+    "records" : 438148
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 450640,
+    "records" : 450640
+  } ],
+  "timing" : {
+    "startedAt" : "2026-09-28T20:18:53.863Z",
+    "finishedAt" : "2026-09-28T20:18:56.606Z",
+    "durationMs" : 2743,
+    "flushMs" : 3,
+    "recordsPerSecond" : 1093667.26,
+    "payloadMegabytesPerSecond" : 70.53
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "speed-preload",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4",
+    "linger.ms" : "50",
+    "batch.size" : "1048576"
+  }
+}

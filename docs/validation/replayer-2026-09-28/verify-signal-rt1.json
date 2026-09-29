@@ -1,0 +1,57 @@
+{
+  "runId" : "signal-rt1",
+  "topic" : "ticks-signal",
+  "passed" : false,
+  "problems" : [ "the replay did not complete: INTERRUPTED" ],
+  "contentDigest" : "4a09edaf45580d8294d0ec2b0452c0d34c53978b95ac08b6385c292bbe56207f",
+  "kafka" : {
+    "records" : 1000680,
+    "symbols" : 5493,
+    "partitions" : [ {
+      "partition" : 0,
+      "records" : 119334,
+      "sha256" : "8251aff73f7f0380611e296c89fe26980789a39f097aae41cd4a92021ee622ab"
+    }, {
+      "partition" : 1,
+      "records" : 124597,
+      "sha256" : "e7409dda45f712641fea7de1826c1b6bbb5e6f49d6b3c4c57eb2a74c238c4d61"
+    }, {
+      "partition" : 2,
+      "records" : 116277,
+      "sha256" : "a6ed4e906d0d96f39b90c52c758dea35316f72f9eb31eb652044efd6d0f60447"
+    }, {
+      "partition" : 3,
+      "records" : 116392,
+      "sha256" : "468c5102b156d511cceb3b289be34c868a32e65227194a0c72ba6e5ea03ac11c"
+    }, {
+      "partition" : 4,
+      "records" : 121986,
+      "sha256" : "63c85138cc33ebf6a542bf5ca6ea8dfdb994361cb5645a88ad3d99bb40abda0a"
+    }, {
+      "partition" : 5,
+      "records" : 127172,
+      "sha256" : "1a07aee9534c9d6a314745387bcd0aa10f5707269a02137a9c283e8635704526"
+    }, {
+      "partition" : 6,
+      "records" : 133295,
+      "sha256" : "07128d34442b611502b06f3b5b26f2f52ceee9c764efeef34afbc7c1250dade9"
+    }, {
+      "partition" : 7,
+      "records" : 141627,
+      "sha256" : "8ebe7c9ba132170f9c9556fdddf089279bc035999cf9f9431a1d581b2908523e"
+    } ],
+    "checks" : {
+      "offsetGaps" : 0,
+      "wrongPartition" : 0,
+      "symbolsInSeveralPartitions" : 0,
+      "keyNotFirstField" : 0,
+      "notSevenFields" : 0,
+      "missingSourceHeader" : 0,
+      "sourceOrderViolations" : 0,
+      "notCreateTime" : 0,
+      "timestampOutsideRun" : 0
+    },
+    "firstTimestamp" : "2026-09-28T20:44:49.529Z",
+    "lastTimestamp" : "2026-09-28T20:45:50.638Z"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "runId" : "failure-broker-stop",
+  "topic" : "ticks-failure",
+  "passed" : false,
+  "problems" : [ "the replay did not complete: FAILED" ],
+  "contentDigest" : "138f26c3da70c4fe4972c541029f9c45dd21df54f85f1f68ba26cba302d4f26d",
+  "kafka" : {
+    "records" : 4493486,
+    "symbols" : 5493,
+    "partitions" : [ {
+      "partition" : 0,
+      "records" : 555543,
+      "sha256" : "5972c71328229c2c21a8eee8852e86b7392601a049d1b68a49afc7a0f936b567"
+    }, {
+      "partition" : 1,
+      "records" : 550545,
+      "sha256" : "5e7395c6b5e8b2aeb9186e9faa853ef56635e6af4f1a2d79e26529b906669619"
+    }, {
+      "partition" : 2,
+      "records" : 511860,
+      "sha256" : "26878fd5962cdad689482b20cc68043f9cfbf7243c81d977a3662c43af1dbf0b"
+    }, {
+      "partition" : 3,
+      "records" : 484789,
+      "sha256" : "65c4fde8b1e56725098a540ca63b63db092a1aafbfc761faa2ace1fddab04616"
+    }, {
+      "partition" : 4,
+      "records" : 526301,
+      "sha256" : "6eb9f270d5ec178b3257e8544af9c61a71058c9fbed26fe372a2de2315f64a5e"
+    }, {
+      "partition" : 5,
+      "records" : 510682,
+      "sha256" : "7d8a86ddbf8781971cd4a265aee303162037c6b0c1fd2fca62e8ed9849caf234"
+    }, {
+      "partition" : 6,
+      "records" : 652270,
+      "sha256" : "da04e6419905556ec568fd4dacddb628d158aebaa11c0df359558e878353c25b"
+    }, {
+      "partition" : 7,
+      "records" : 701496,
+      "sha256" : "1bda71e936128f30936751d1cb3775e82bcac40ea75a653052754ce1f661bc00"
+    } ],
+    "checks" : {
+      "offsetGaps" : 0,
+      "wrongPartition" : 0,
+      "symbolsInSeveralPartitions" : 0,
+      "keyNotFirstField" : 0,
+      "notSevenFields" : 0,
+      "missingSourceHeader" : 0,
+      "sourceOrderViolations" : 0,
+      "notCreateTime" : 0,
+      "timestampOutsideRun" : 0
+    },
+    "firstTimestamp" : "2026-09-28T20:46:07.945Z",
+    "lastTimestamp" : "2026-09-28T20:46:11.840Z"
+  }
+}
