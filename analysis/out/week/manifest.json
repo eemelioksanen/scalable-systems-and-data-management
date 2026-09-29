@@ -1,0 +1,275 @@
+{
+  "days": [
+    "2021-11-08",
+    "2021-11-09",
+    "2021-11-10",
+    "2021-11-11",
+    "2021-11-12",
+    "2021-11-13",
+    "2021-11-14"
+  ],
+  "zone_offset": "+02:00",
+  "inputs": [
+    {
+      "day": "2021-11-08",
+      "daily_manifest_sha256": "3e58e611d0ee33820253afdec195ef1137f78caf4b7a4b3ac5ddfb840aa2027b",
+      "raw_sha256": "ccfa5fcd96ae32970d4d0b759d9b4093e2751b07de6a3fed96abc906ad8efa5a",
+      "checkpoint_sha256": "ea1c379ef230d27da1931debcf8242bd45a075398ff247a7660f47ce364ed10a",
+      "revision": "45f28f78e7f15e5662f112e8416aadc35ca3fcc4",
+      "source_sha256": {
+        "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+        "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+        "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+        "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae"
+      }
+    },
+    {
+      "day": "2021-11-09",
+      "daily_manifest_sha256": "1994a96426f6fbd9ceca23b85f180bf7cfb73c889efc8b726dfd8b7567f7c032",
+      "raw_sha256": "9330f47329a96135b8407cfd72b6623f7492c045e46d6ab03971095b4c892a0c",
+      "checkpoint_sha256": "a758038b8eadf6b7ab7cf74d65b089eca4b07cbece57a942b6517d7dba75aa94",
+      "revision": "c406b7338f6ea1c2235c5f20b5daa819c9d28d07",
+      "source_sha256": {
+        "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+        "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+        "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+        "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae"
+      }
+    },
+    {
+      "day": "2021-11-10",
+      "daily_manifest_sha256": "015888fd52bf5e518febf2d8f8b2bda6005b69741426def9072c522104362b60",
+      "raw_sha256": "1aa5c894fed9fb52d35cb7b00de4be893c2f44644fbcbae80291c5bea5fb293b",
+      "checkpoint_sha256": "05e4558bad0525d65e6b6a1eb4113ac5981ccba794853cfc2187ea476622c408",
+      "revision": "c406b7338f6ea1c2235c5f20b5daa819c9d28d07",
+      "source_sha256": {
+        "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+        "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+        "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+        "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae"
+      }
+    },
+    {
+      "day": "2021-11-11",
+      "daily_manifest_sha256": "2f42b8e99a07354e725f5eab0c975b9b4dc2a4f07d21024c4bf2d417b07fcd68",
+      "raw_sha256": "e414cb505ca71b2176dd02785919cf9270635549b9fceec01660e3130c4a1994",
+      "checkpoint_sha256": "3162ccc9ee28e540a22cc26df2caea388dfbadab21d2050a8a2c0462434fe56e",
+      "revision": "c406b7338f6ea1c2235c5f20b5daa819c9d28d07",
+      "source_sha256": {
+        "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+        "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+        "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+        "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae"
+      }
+    },
+    {
+      "day": "2021-11-12",
+      "daily_manifest_sha256": "8791d1e0eee06bca8016f86ca37964308380ad4e2ca5806402f79c524830d790",
+      "raw_sha256": "3e723f369934d7c833fe2c9f7bef2731d9be4f201309b488b959d6f562fc9624",
+      "checkpoint_sha256": "984365a27b62c796d781e44b6d9b7d5e2da59ad91fd4853c5cb63d7a91aac46e",
+      "revision": "c406b7338f6ea1c2235c5f20b5daa819c9d28d07",
+      "source_sha256": {
+        "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+        "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+        "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+        "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae"
+      }
+    },
+    {
+      "day": "2021-11-13",
+      "daily_manifest_sha256": "c0acf0e06d36fd9af3ba750ac633acd4b62cda43ae7781e0409615897e4b9583",
+      "raw_sha256": "a0bcf617345ef5c70e6c18ee8195f6ca38498a7cc11d4697743e8ddd4de46cab",
+      "checkpoint_sha256": "06147731dee927226e55f77356719f93c26e3ab1db0c14a2dd71576f5bdc959f",
+      "revision": "0f38475e56b52a8ad7b2e415d0055f8f27b60994",
+      "source_sha256": {
+        "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+        "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+        "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+        "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae"
+      }
+    },
+    {
+      "day": "2021-11-14",
+      "daily_manifest_sha256": "9eb21ed1213699da76933f30cd736ea6a9e725a1fd497eb3e7bfe9b2ae45876f",
+      "raw_sha256": "2eae798511118974140a9790c6c3996c5c584c1553ba763b70d9fb3aa01f6cf4",
+      "checkpoint_sha256": "bf21e7141d6ee7cc13ed493472034cfdb4baf8f855231be668580fb616bfcb34",
+      "revision": "0f38475e56b52a8ad7b2e415d0055f8f27b60994",
+      "source_sha256": {
+        "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+        "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+        "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+        "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae"
+      }
+    }
+  ],
+  "counts": {
+    "accepted_price_events": 59391670,
+    "windows": 1857457,
+    "windows_spanning_files": 0,
+    "summary_candidates": 5492,
+    "advisories": 11355
+  },
+  "wall_seconds": 408.708,
+  "peak_rss_bytes": 4175503360,
+  "duckdb": "1.5.6",
+  "polars": "1.44.2",
+  "revision": "80aaea1186289d1f1cfcab309d222066f9d48f3d",
+  "worktree_status": "?? analysis/out/daily/2021-11-09/\n?? analysis/out/daily/2021-11-10/\n?? analysis/out/daily/2021-11-11/\n?? analysis/out/daily/2021-11-12/\n?? analysis/out/daily/2021-11-13/\n?? analysis/out/daily/2021-11-14/",
+  "source_sha256": {
+    "daily.py": "877676ca6bd0937b7879a630040b75e8c40bbb07219076a789f379b3f871e1d6",
+    "daily_parse.py": "bb682f45aa79c47e0799d7e90acf07cd001bba31b593b703df0e9130c56b1fa7",
+    "daily_plot.py": "39f37c9879bd4efc3cd7df7222822ab019b804dcdbb708f647cd8de904a7df21",
+    "fetch_day.py": "32d02f9b03034b006940c306bdf09d2c1ee58ea6e9ada1dad44bee7193086fae",
+    "golden.py": "c88021d0e78b372a549606192fbfd2e85814901c5f572a77a87e3acd82c99601",
+    "profile.py": "b2e780d0273327530c330070694cd1059a70d08439b83c6959235df18cf67642",
+    "week.py": "97acbd94d9ee234f5426b9c46aab8e52e1f29375053a642677ddfbd38a84a7c1",
+    "week_plot.py": "9a154ce12ac93deb168d92d6353a7119c78e306f01b272f76d99d06c4894db29"
+  },
+  "oracle_source_sha256": {
+    "__init__.py": "afc9fd6666d342a9c4cd3f2a2ecf197697a35f8880e346d560f61ef7b33cff31",
+    "__main__.py": "a8caaea9bd2e045d6ced41d7dd28554549de2249d8dc01cc258c8b6a17e21bae",
+    "ema.py": "172cabeb00fb414830fa7144f3ec73151688e706c813dccc7d3072e9c87ad272",
+    "parse.py": "c747ad9332ce0511d2fc6f16469404c8f29460d3bcb742d0845e148c688f588f",
+    "run.py": "ff50e9c8801d0947daceb765765cbc02e7e6a3be69dc1caa723ab763322ac41d",
+    "windows.py": "8c6d4fe34d27684e55815f5570e031c2cc3541252ab69f8610dd1d7c7d70ad4e"
+  },
+  "artifacts": {
+    "daily_activity_spikes.csv": {
+      "bytes": 4948,
+      "sha256": "75625dcc0bfddc7820bcf32d9b94402c939530559ce13c6762bd51a634fc7d17"
+    },
+    "daily_coverage.csv": {
+      "bytes": 1521,
+      "sha256": "a7bd1e3fda8690e4cfc6f3e1d23a984ce2b39bc63c0e3abd560c343f92cef9a8"
+    },
+    "daily_event_mix.png": {
+      "bytes": 40459,
+      "sha256": "3f6d972108c42559334961b49b263d7bcf5c3ddf854e8f1b58f276fa66cd5280"
+    },
+    "daily_event_mix.svg": {
+      "bytes": 39183,
+      "sha256": "c82a312061f6137ae4d82d23e35276f0c47ea95afb1c812db1f2f2c7f452bf9d"
+    },
+    "daily_quality.csv": {
+      "bytes": 2002,
+      "sha256": "9906727445a4c4b3804c2df8871a58f26092ca702ad69e00161d4b9265696b1c"
+    },
+    "daily_rates.png": {
+      "bytes": 109723,
+      "sha256": "06051eb7cba3476f643158b8a00bffe77bb9e57d43942ebb485dc5ff04bfe69b"
+    },
+    "daily_rates.svg": {
+      "bytes": 51512,
+      "sha256": "c04594adb7caeadccd6814f0b6dbf53cf8b5d3e4d5518a8725e401a3db3c7981"
+    },
+    "daily_rates_summary.csv": {
+      "bytes": 2789,
+      "sha256": "a52c7d498b50df817f6fbdac21db45817833a058dbe943276987b7d371c4eb30"
+    },
+    "daily_row_reconciliation.csv": {
+      "bytes": 1160,
+      "sha256": "cc2d0335ae26b63bfd3d6f3cd5598df006d88b6f84b724ddfe284614e92390da"
+    },
+    "daily_taxonomy.csv": {
+      "bytes": 5316,
+      "sha256": "17a4263159586fa8253d478145c338b1f83e2283a5676df35257eaf8c5f6255d"
+    },
+    "daily_timestamp_gaps.csv": {
+      "bytes": 2282,
+      "sha256": "6311f27ac046d578aef699e0b069aa71f90bc5bba13f3dad906c0ba8524770d5"
+    },
+    "daily_trading_rates_summary.csv": {
+      "bytes": 2090,
+      "sha256": "4816bc8f39429906a7f900e776f3a662443d894caba33bca4c5b49c26cff851a"
+    },
+    "days.csv": {
+      "bytes": 418,
+      "sha256": "1f6a38ca7a96fef43edf3f571b4a69966c389caf8fbed6d2c55d78e2925cf5e9"
+    },
+    "index_0100_events.csv": {
+      "bytes": 378839,
+      "sha256": "abd592a1aa91339acafbd0b5ba69e858009e6f79ac7586692222cccd66bf6b9b"
+    },
+    "index_0100_groups.csv": {
+      "bytes": 43424,
+      "sha256": "a09212d4fc7754de151cbe4eb176c804330556180cc94c1acc199987c38eb0cf"
+    },
+    "late_events_8.csv": {
+      "bytes": 468719,
+      "sha256": "16625b7079cd49a505837e882ddfd28ed26086d26cd9e6f5ded7306c1cea5d6a"
+    },
+    "oracle_bounded_crosscheck.json": {
+      "bytes": 822,
+      "sha256": "adbf9e263db8013d601627518be2648225a500d429cedfc3bd3f80bd03667c94"
+    },
+    "oracle_crosscheck.json": {
+      "bytes": 813,
+      "sha256": "391598ab44f7fdeeb10639999dac2d382f23385700a1d65486092a08f07da4e6"
+    },
+    "partition_disorder.csv": {
+      "bytes": 3408,
+      "sha256": "b6140c7752056b1b0a9398c2dc4bd1d43b3169abd9c82f95bc430c41c5e82729"
+    },
+    "partition_load.csv": {
+      "bytes": 1710,
+      "sha256": "3fdec14e12a207096f0bb280f178ffa4fa3778b0d6c1f1caa4981e7986178add"
+    },
+    "partition_timestamp_quality.csv": {
+      "bytes": 1734,
+      "sha256": "8e0a246362b7e826030d54a325632e85c84bd385daf35a86f7cfa50ca75bcf45"
+    },
+    "rates_summary.csv": {
+      "bytes": 549,
+      "sha256": "c86c558e372c89e02b4f327be20e16c9c0db65da54e977f748782649551e205a"
+    },
+    "replay_targets.csv": {
+      "bytes": 292,
+      "sha256": "fb0fbc38f1042f7e687822a1f079568bd6230b24b30945817b3d3ed57197d997"
+    },
+    "scenario_effects.csv": {
+      "bytes": 831,
+      "sha256": "e10e9ed48c34c20d305733236b4953339c3fdec7fd2ff3581640443d1a5c8ab6"
+    },
+    "skew.csv": {
+      "bytes": 720,
+      "sha256": "cd04eac2c45c2b2ecac3f5e958ed242e222e08e3e53d795c06476147d42136a4"
+    },
+    "summary_candidate_groups.csv": {
+      "bytes": 76053,
+      "sha256": "dce432d66a67468c7b7f77a95f784e1c0a7260d64207b64279b3b75e085a58f2"
+    },
+    "summary_candidates.csv": {
+      "bytes": 410798,
+      "sha256": "d5515f9fdb0836929db9a170eae2bfb0a654b9eacf90440a607c1eb0a384af45"
+    },
+    "symbols.csv": {
+      "bytes": 174313,
+      "sha256": "34dd43a1886ade374bf0bf51dafc8d4e0b387b6a849e97c371d1649d71437f3c"
+    },
+    "trading_lag_bands.csv": {
+      "bytes": 286,
+      "sha256": "7f8c11eb64729b6f1fbee29e27c6cac047bd298ba77fe014e471079a48bf7149"
+    },
+    "watermark_bounds.csv": {
+      "bytes": 1598,
+      "sha256": "0a9f9d317bc257d2f585bb7544b9fb664b68e197953e2ff59419972cc1917eec"
+    },
+    "watermark_effects.png": {
+      "bytes": 79650,
+      "sha256": "114ae30fb2b720848015a78d6fc1edf986921ae3723dbe207f1dc67510e7d245"
+    },
+    "watermark_effects.svg": {
+      "bytes": 72524,
+      "sha256": "5f13e1dbd55efe076e795d14407fa8c5f80a5b0cdf39580128030c69e58e6f23"
+    },
+    "window_statistics.csv": {
+      "bytes": 156268,
+      "sha256": "ffa2fc0dbca23d03ed8f740264148e79728de106967683c5f92390e4423bc5e6"
+    }
+  },
+  "limits": [
+    "Source-order model with active partitions; no periodic-emission or idleness simulation",
+    "Summary exclusion is an ablation, not an accepted parser policy",
+    "EMA calculation reuses the oracle and is not an independent oracle validation"
+  ]
+}

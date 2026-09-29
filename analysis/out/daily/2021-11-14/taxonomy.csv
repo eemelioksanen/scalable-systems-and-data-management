@@ -1,0 +1,13 @@
+exchange,sec_type,category,rows
+ETR,E,empty_payload,7890
+ETR,E,other,1578
+ETR,I,empty_payload,1897
+ETR,I,other,631
+FR,E,empty_payload,4279
+FR,E,other,1055
+FR,I,empty_payload,4444
+FR,I,other,1481
+NL,E,empty_payload,938
+NL,E,other,360
+NL,I,empty_payload,1171
+NL,I,other,389
