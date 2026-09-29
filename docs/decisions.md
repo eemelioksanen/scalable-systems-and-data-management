@@ -45,7 +45,7 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
-### D-29: CSV replayer (2026-09-28, Leo Immonen, issue #6)
+### D-31: CSV replayer (2026-09-28, Leo Immonen, issue #6)
 Context: #6 needs preload, maximum-speed, real-time×k and subset replays of the day files into `ticks`. The records need ingest timestamps and their source position, and a consumer must be able to tell a complete finite replay from a partial one.
 Decision ([replayer.md](replayer.md)):
 - **Pacing clock:** live replay paces by the system `Date` + `Time`, as the minimum over the last 256 rows that have one, never moving backward. Replay speed changes only record timestamps, never values.

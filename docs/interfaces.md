@@ -17,7 +17,7 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 
 All keys and string values are UTF-8. Partition counts are revisited for the cloud runs.
 
-## `ticks` (D-13, D-14, D-15, D-29)
+## `ticks` (D-13, D-14, D-15, D-31)
 
 The replayer sends raw data and does no parsing. All parsing, timestamp normalization and event classification happen in the Flink job. How to run it, and the measurements behind its choices, are in [replayer.md](replayer.md).
 
@@ -38,11 +38,11 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
 
 - **Header `src`:** the record's source position, `<file index>:<line number>` in ASCII, e.g. `0:14`. The file index points into the replay report's `files`, and lines count from 1 including comment lines. It is the oracle's `(sourceFile, sourceLine)`, with `sourceFile` the file name of `files[index].path`, so the job's late events can be passed to the oracle's `--exclude-events`. Consumers of the value can ignore it.
 - **Record timestamp:** the wall-clock time (epoch ms) when the replayer sent the record. This is the ingest time used for latency measurements.
-- **Compression:** lz4 by default (D-29). Consumers decompress transparently.
+- **Compression:** lz4 by default (D-31). Consumers decompress transparently.
 - **Ordering:** the replayer keeps file order per symbol: day files in date order, lines in file order. It sends from one thread with an idempotent producer and `acks=all`, so retries don't reorder records.
   - Because the key is the symbol, all of a symbol's events land in one partition. **The Kafka offset is therefore the arrival order** used to break ties when picking a window's close (D-4).
   - The oracle uses (file date, line number) as the same arrival order.
-- **Completion:** a finite replay ends with a JSON report (D-29). Only a report with `"status": "COMPLETE"` describes a whole input. Its `offsets` give each partition's `[startOffset, endOffset)`, which hold exactly this run's records when `endOffset - startOffset = records`. A `FAILED` replay leaves a partial input in the topic, so reset `ticks` before retrying.
+- **Completion:** a finite replay ends with a JSON report (D-31). Only a report with `"status": "COMPLETE"` describes a whole input. Its `offsets` give each partition's `[startOffset, endOffset)`, which hold exactly this run's records when `endOffset - startOffset = records`. A `FAILED` replay leaves a partial input in the topic, so reset `ticks` before retrying.
 
 ## `ema-results` (D-16)
 

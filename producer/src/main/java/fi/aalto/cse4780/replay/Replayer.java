@@ -116,7 +116,7 @@ public final class Replayer {
     }
 
     /**
-     * Producer settings (D-29): an idempotent producer with {@code acks=all}, which keeps each
+     * Producer settings (D-31): an idempotent producer with {@code acks=all}, which keeps each
      * partition in send order through retries (D-15), and lz4 compression, which stores a day in a
      * quarter of the space for under 10% of preload throughput. A preload uses large batches, since
      * nothing reads the topic until it finishes. Live modes keep Kafka's batching defaults so
