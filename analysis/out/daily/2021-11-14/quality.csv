@@ -1,0 +1,1 @@
+exchange,sec_type,price_rows,missing_trading_date,missing_trading_time,missing_all_dates,date_mismatch,malformed_ask,malformed_bid,unexpected_symbol,invalid_event_timestamp,invalid_system_timestamp,accepted_price_events,trading_at_0100,at_0100_matching_summary

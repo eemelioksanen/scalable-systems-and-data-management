@@ -1,0 +1,19 @@
+{
+  "reference": "/oracle/evidence/2026-09-28-week-bound60s.json",
+  "reference_sha256": "c9e3183219d81f6e4ba40c95eff95527de84f79d5f3b7788b5932107d38c5fbe",
+  "normalization": "Shift UTC+2 timestamps by +7200000 ms to compare with the recorded Z run",
+  "checks": [
+    {
+      "artifact": "ema_results.parquet",
+      "expected_content_sha256": "ca743e0ab33ebe6c38e8e7700f90ef0b35b6d3ff13f2643b6e58ff9e54ee6326",
+      "actual_content_sha256": "ca743e0ab33ebe6c38e8e7700f90ef0b35b6d3ff13f2643b6e58ff9e54ee6326",
+      "matches": true
+    },
+    {
+      "artifact": "advisories.parquet",
+      "expected_content_sha256": "79d7b65314fa74e3e2e6aef00635d843ee4494a11d0b41edbce885ebee89f9f3",
+      "actual_content_sha256": "79d7b65314fa74e3e2e6aef00635d843ee4494a11d0b41edbce885ebee89f9f3",
+      "matches": true
+    }
+  ]
+}

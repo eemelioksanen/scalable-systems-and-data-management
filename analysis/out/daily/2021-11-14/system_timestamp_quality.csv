@@ -1,0 +1,7 @@
+exchange,category,rows,missing_or_invalid_system_time,backward_steps_from_previous_file_row,largest_step_from_previous_file_row_ms
+ETR,empty_payload,9787,0,794,85789000
+ETR,other,2209,2209,0,0
+FR,empty_payload,8723,0,759,20475510
+FR,other,2536,2528,1,16891243
+NL,empty_payload,2109,0,124,14922366
+NL,other,749,736,4,20841486

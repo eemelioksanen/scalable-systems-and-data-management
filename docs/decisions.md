@@ -45,6 +45,24 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-30: Full-week analysis evidence (2026-09-29, Emilia Repo, issue #4)
+
+The [full-week report](eda-week.md) processes all seven files under D-29 and verifies complete admit-all and single-partition 60-second outputs against the recorded oracle hashes.
+The accepted correctness target remains zero missing or changed closes against admit-all.
+A 64,265,001 ms bound admits every event in the tested source-order models with 1–32 partitions; this is sufficient, not a proven minimum preserving closes or a runtime default.
+Bounds of 264 ms and 60 seconds reject 5,506 Wednesday prices and lose 1,812 windows.
+In the eight-partition model they also change 684,661 existing EMA windows, remove 422 advisories and add 416.
+They remain explicit faster ablations.
+
+The exact same-row open/high/low signature matches only 5,492 of the 5,506 index rows at 01:00.
+Their per-symbol counts are not uniformly three: 1,740 symbols have three rows, 71 have four and one has two.
+Both lists are retained in the report; excluding the narrower signature is a separate experiment, not an accepted parser rule.
+All supplied timestamps and positive prices remain included in the baseline.
+
+The runtime bound and idleness policy remain provisional because D-28's replay and idleness effects are outside the static source-order model.
+The fixed UTC+2 runtime default and paced/idleness verification belong to separate implementation work.
+No runtime code or default changes here.
+
 ### D-29: Daily analysis interpretations and the Monday checkpoint (2026-09-28, Emilia Repo, issue #4)
 
 Emilia selected these rules in the issue #4 working session: fixed UTC+2 for literal CEST; skip empty windows; carry EMA state over nights and weekends; discard and count events for closed windows; flush at finite-input completion; fill only a missing trading date from system Date; exclude unparseable event timestamps; preserve valid explicit dates.
@@ -56,7 +74,8 @@ This does not authorize removing inconvenient events to make a short bound pass.
 The full-week summary-row question raised in [the issue discussion](https://github.com/eemelioksanen/scalable-systems-and-data-management/issues/4#issuecomment-5877151366) remains open: under the selected rules those rows are still price events at their supplied time.
 D-28's runtime findings qualify the source-order estimates in D-27: actual admission depends on periodic watermark emission, replay pace and idleness.
 
-The authorized run is Monday only, followed by human review before another day's download.
+The initial authorized run was Monday only, followed by human review before another day's download.
+After that checkpoint merged in [PR #30](https://github.com/eemelioksanen/scalable-systems-and-data-management/pull/30), Emilia authorized analysis of the remaining six days on 2026-09-29.
 It produces independent dataset summaries and close comparisons, using the [daily analysis method](../analysis/README.md).
 The full-week oracle already supplies reference totals and anomaly evidence; these are cross-checks, not a substitute for processing the remaining days in this analysis.
 See [Monday's results](eda-monday.md).
