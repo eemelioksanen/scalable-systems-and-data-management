@@ -48,7 +48,8 @@ services:
       - |
         set -e
         create="/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists"
-        $$create --topic ticks --partitions ${TICKS_PARTITIONS:-8}
+        # No time-based retention: a preloaded week must outlive the default 7 days (docs/replayer.md).
+        $$create --topic ticks --partitions ${TICKS_PARTITIONS:-8} --config retention.ms=-1
         $$create --topic ema-results --partitions ${TICKS_PARTITIONS:-8}
         $$create --topic advisories --partitions ${TICKS_PARTITIONS:-8}
         $$create --topic stats --partitions 1

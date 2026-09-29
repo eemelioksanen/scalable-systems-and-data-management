@@ -17,11 +17,11 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 
 All keys and string values are UTF-8. Partition counts are revisited for the cloud runs.
 
-## `ticks` (D-13, D-14, D-15)
+## `ticks` (D-13, D-14, D-15, D-31)
 
-The replayer sends raw data and does no parsing. All parsing, timestamp normalization and event classification happen in the Flink job.
+The replayer sends raw data and does no parsing. All parsing, timestamp normalization and event classification happen in the Flink job. How to run it, and the measurements behind its choices, are in [replayer.md](replayer.md).
 
-- **One record per CSV data row**, including non-price and housekeeping rows. Comment lines (`#…`) and any header row are skipped.
+- **One record per CSV data row**, including non-price and housekeeping rows. Comment lines (`#…`) and any header row are skipped. A row that is neither 39 fields nor 40 with an empty last one cannot be projected: it is counted as `rejected` in the replay report and not sent. The profiled weekday has none.
 - **Key:** the `ID` column, as-is. The default Kafka partitioner is used.
 - **Value:** a projection of 7 of the CSV's 39 columns, in this order (D-24). Fields are comma-separated, an empty field means null, and there is no quoting. Note the source rows carry 40 fields, the last one empty (D-21):
 
@@ -36,10 +36,13 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
   RDSA.NL,E,08-11-2021,09:00:01.456,,,
   ```
 
+- **Header `src`:** the record's source position, `<file index>:<line number>` in ASCII, e.g. `0:14`. The file index points into the replay report's `files`, and lines count from 1 including comment lines. It is the oracle's `(sourceFile, sourceLine)`, with `sourceFile` the file name of `files[index].path`, so the job's late events can be passed to the oracle's `--exclude-events`. Consumers of the value can ignore it.
 - **Record timestamp:** the wall-clock time (epoch ms) when the replayer sent the record. This is the ingest time used for latency measurements.
-- **Ordering:** the replayer keeps file order per symbol: day files in date order, lines in file order. Producer idempotence is on (the Kafka default), so retries don't reorder records.
+- **Compression:** lz4 by default (D-31). Consumers decompress transparently.
+- **Ordering:** the replayer keeps file order per symbol: day files in date order, lines in file order. It sends from one thread with an idempotent producer and `acks=all`, so retries don't reorder records.
   - Because the key is the symbol, all of a symbol's events land in one partition. **The Kafka offset is therefore the arrival order** used to break ties when picking a window's close (D-4).
   - The oracle uses (file date, line number) as the same arrival order.
+- **Completion:** a finite replay ends with a JSON report (D-31). Only a report with `"status": "COMPLETE"` describes a whole input. Its `offsets` give each partition's `[startOffset, endOffset)`, which hold exactly this run's records when `endOffset - startOffset = records`. A `FAILED` replay leaves a partial input in the topic, so reset `ticks` before retrying.
 
 ## `ema-results` (D-16)
 

@@ -1,0 +1,104 @@
+{
+  "runId" : "signal-rt1",
+  "status" : "INTERRUPTED",
+  "mode" : "realtime",
+  "rate" : 1.0,
+  "paceFrom" : "2021-11-08T09:00",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks-signal",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 1000693,
+    "complete" : false
+  } ],
+  "counts" : {
+    "lines" : 1000693,
+    "comments" : 12,
+    "headers" : 1,
+    "rejected" : 0,
+    "dataRows" : 1000680,
+    "excluded" : 0,
+    "attempted" : 1000680,
+    "acknowledged" : 1000680,
+    "failed" : 0,
+    "keyBytes" : 7521563,
+    "valueBytes" : 50376881,
+    "headerBytes" : 10897130
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 119334,
+    "records" : 119334
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 124597,
+    "records" : 124597
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 116277,
+    "records" : 116277
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 116392,
+    "records" : 116392
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 121986,
+    "records" : 121986
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 127172,
+    "records" : 127172
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 133295,
+    "records" : 133295
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 141627,
+    "records" : 141627
+  } ],
+  "timing" : {
+    "startedAt" : "2026-09-28T20:44:49.521Z",
+    "finishedAt" : "2026-09-28T20:45:50.640Z",
+    "durationMs" : 61119,
+    "flushMs" : 1,
+    "recordsPerSecond" : 16372.46,
+    "payloadMegabytesPerSecond" : 1.13
+  },
+  "pacing" : {
+    "clockStart" : "2021-11-08T01:01:07",
+    "paceStart" : "2021-11-08T09:00",
+    "clockEnd" : "2021-11-08T09:01:01",
+    "pacedRecords" : 255207,
+    "achievedRate" : 1.02,
+    "lagP50Ms" : 7,
+    "lagP99Ms" : 27,
+    "lagMaxMs" : 33
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "signal-rt1",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4"
+  }
+}

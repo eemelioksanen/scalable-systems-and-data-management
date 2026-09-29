@@ -1,0 +1,95 @@
+{
+  "runId" : "speed-preload",
+  "topic" : "ticks-speed",
+  "passed" : true,
+  "problems" : [ ],
+  "contentDigest" : "6bf5407130071c32d867aa74165ae45566f9f51d069ee20dea06889d874d5145",
+  "kafka" : {
+    "records" : 3000000,
+    "symbols" : 5493,
+    "partitions" : [ {
+      "partition" : 0,
+      "records" : 368654,
+      "sha256" : "43472b3e1d9fcc15ea33c49ff0f087812b0ff8d072a2d14d48ec08a05d5355e3"
+    }, {
+      "partition" : 1,
+      "records" : 363555,
+      "sha256" : "57052b371681066cd23e19db59701916f0a5b787f3af6f9c062fd63b0e0eec00"
+    }, {
+      "partition" : 2,
+      "records" : 332050,
+      "sha256" : "aa23bab9531e1fdf9e3d237cddc12f1f9538d93dbc14f55337d08462106db612"
+    }, {
+      "partition" : 3,
+      "records" : 337892,
+      "sha256" : "c838898c0803d7ec5142df43de238f000652d0cdb2e42a53fa54db8f9c02ca24"
+    }, {
+      "partition" : 4,
+      "records" : 351350,
+      "sha256" : "4263efc74646ab4585f93e5b5e1c6bca063be39ed6bc0a89cd097c39d0a0f5de"
+    }, {
+      "partition" : 5,
+      "records" : 357711,
+      "sha256" : "a422d931ab012fd0a10e138513edda60456cec2810ce7f8c264ef96f66a88456"
+    }, {
+      "partition" : 6,
+      "records" : 438148,
+      "sha256" : "a03558582289f549888415547ec334625279669e2cbf2c22fc520963b3843faf"
+    }, {
+      "partition" : 7,
+      "records" : 450640,
+      "sha256" : "2a3c62cf3bf5d415137d083a0a428eed24c0d3f7b41a05e15c5899316e0c872a"
+    } ],
+    "checks" : {
+      "offsetGaps" : 0,
+      "wrongPartition" : 0,
+      "symbolsInSeveralPartitions" : 0,
+      "keyNotFirstField" : 0,
+      "notSevenFields" : 0,
+      "missingSourceHeader" : 0,
+      "sourceOrderViolations" : 0,
+      "notCreateTime" : 0,
+      "timestampOutsideRun" : 0
+    },
+    "firstTimestamp" : "2026-09-28T20:18:53.871Z",
+    "lastTimestamp" : "2026-09-28T20:18:56.603Z"
+  },
+  "source" : {
+    "rows" : 3000001,
+    "selected" : 3000000,
+    "rejected" : 0,
+    "partitions" : [ {
+      "partition" : 0,
+      "records" : 368654,
+      "sha256" : "43472b3e1d9fcc15ea33c49ff0f087812b0ff8d072a2d14d48ec08a05d5355e3"
+    }, {
+      "partition" : 1,
+      "records" : 363555,
+      "sha256" : "57052b371681066cd23e19db59701916f0a5b787f3af6f9c062fd63b0e0eec00"
+    }, {
+      "partition" : 2,
+      "records" : 332050,
+      "sha256" : "aa23bab9531e1fdf9e3d237cddc12f1f9538d93dbc14f55337d08462106db612"
+    }, {
+      "partition" : 3,
+      "records" : 337892,
+      "sha256" : "c838898c0803d7ec5142df43de238f000652d0cdb2e42a53fa54db8f9c02ca24"
+    }, {
+      "partition" : 4,
+      "records" : 351350,
+      "sha256" : "4263efc74646ab4585f93e5b5e1c6bca063be39ed6bc0a89cd097c39d0a0f5de"
+    }, {
+      "partition" : 5,
+      "records" : 357711,
+      "sha256" : "a422d931ab012fd0a10e138513edda60456cec2810ce7f8c264ef96f66a88456"
+    }, {
+      "partition" : 6,
+      "records" : 438148,
+      "sha256" : "a03558582289f549888415547ec334625279669e2cbf2c22fc520963b3843faf"
+    }, {
+      "partition" : 7,
+      "records" : 450640,
+      "sha256" : "2a3c62cf3bf5d415137d083a0a428eed24c0d3f7b41a05e15c5899316e0c872a"
+    } ]
+  }
+}

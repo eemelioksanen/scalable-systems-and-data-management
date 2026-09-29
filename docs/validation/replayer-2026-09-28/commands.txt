@@ -1,0 +1,46 @@
+# Replayer validation, 28 September 2026, issue #6.
+# Linux host: Intel i7-11700K (16 threads, powersave governor), 62 GiB, NVMe; nothing else running.
+# Docker Engine 29.8.1, Compose 5.5.1, buildx 0.37.1. data/ holds debs2022-gc-trading-day-08-11-21.csv.
+# An isolated Compose project, so that another checkout's stack could keep the default ports.
+
+export KAFKA_HOST_PORT=49092
+docker build --target test --no-cache-filter test .          # 36 producer + 55 flink-job tests pass
+docker compose -p replay6 --profile tools build producer
+docker compose -p replay6 up -d kafka kafka-init
+
+# Every <name>.json here is the stdout of
+#   docker compose -p replay6 --profile tools run --rm -T producer fi.aalto.cse4780.replay.Replayer \
+#     --input /data/debs2022-gc-trading-day-08-11-21.csv --run-id <name> <options>
+# and every verify-<name>.json the stdout of
+#   docker compose -p replay6 --profile tools run --rm -T producer fi.aalto.cse4780.replay.ReplayVerifier \
+#     --report - [--source] < <name>.json
+# Other topics were created like ticks: 8 partitions, retention.ms=-1.
+
+# name                             options
+dryrun-weekday                     --dry-run --checksum
+preload-weekday                    --checksum, with -e JAVA_TOOL_OPTIONS=-Xmx256m     verify --source
+preload-weekday-none               --topic ticks-none-weekday --producer-property compression.type=none     verify
+preload-weekday-lz4-defaultheap    --topic ticks-lz4-weekday
+comp-none                          --topic ticks-none --limit 10000000 --producer-property compression.type=none
+comp-lz4                           --topic ticks-lz4 --limit 10000000 --producer-property compression.type=lz4
+comp-zstd                          --topic ticks-zstd --limit 10000000 --producer-property compression.type=zstd
+speed-preload                      --topic ticks-speed --limit 3000000     verify --source
+speed-max                          --topic ticks-speed --limit 3000000 --mode max     verify
+speed-rt100                        --topic ticks-speed --limit 3000000 --mode realtime --rate 100 --pace-from 2021-11-08T09:00     verify
+speed-rt10                         --topic ticks-speed --limit 3000000 --mode realtime --rate 10 --pace-from 2021-11-08T09:00     verify
+speed-rt1                          --topic ticks-speed --limit 3000000 --mode realtime --rate 1 --pace-from 2021-11-08T09:00     verify
+probe-lz4fast-10m                  --topic ticks-lz4fast --limit 10000000 --producer-property compression.type=lz4
+                                   --producer-property compression.lz4.level=1
+probe-rt10-none                    as speed-rt10, --topic ticks-probe --producer-property compression.type=none
+probe-rt10-lz4fast                 as speed-rt10, --topic ticks-probe --producer-property compression.lz4.level=1
+signal-rt1                         --topic ticks-signal --mode realtime --rate 1 --pace-from 2021-11-08T09:00, then docker stop     verify
+failure-broker-stop                --topic ticks-failure --producer-property delivery.timeout.ms=15000
+                                   --producer-property request.timeout.ms=5000 --producer-property max.block.ms=15000,
+                                   then docker compose -p replay6 stop kafka while it ran
+
+# Log size of a topic's partitions:
+docker compose -p replay6 exec -T kafka sh -c 'cat /tmp/kafka-logs/<topic>-[0-9]*/*.log | wc -c'
+
+# Reset, as in docs/replayer.md:
+docker compose -p replay6 exec -T kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --delete --topic ticks
+docker compose -p replay6 up kafka-init
