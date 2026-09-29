@@ -45,6 +45,24 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-30: Full-week analysis evidence (2026-09-29, Emilia Repo, issue #4)
+
+The [full-week report](eda-week.md) processes all seven files under D-29 and verifies complete admit-all and single-partition 60-second outputs against the recorded oracle hashes.
+The accepted correctness target remains zero missing or changed closes against admit-all.
+A 64,265,001 ms bound admits every event in the tested source-order models with 1–32 partitions; this is sufficient, not a proven minimum preserving closes or a runtime default.
+Bounds of 264 ms and 60 seconds reject 5,506 Wednesday prices and lose 1,812 windows.
+In the eight-partition model they also change 684,661 existing EMA windows, remove 422 advisories and add 416.
+They remain explicit faster ablations.
+
+The exact same-row open/high/low signature matches only 5,492 of the 5,506 index rows at 01:00.
+Their per-symbol counts are not uniformly three: 1,740 symbols have three rows, 71 have four and one has two.
+Both lists are retained in the report; excluding the narrower signature is a separate experiment, not an accepted parser rule.
+All supplied timestamps and positive prices remain included in the baseline.
+
+The runtime bound and idleness policy remain provisional because D-28's replay and idleness effects are outside the static source-order model.
+The fixed UTC+2 runtime default and paced/idleness verification belong to separate implementation work.
+No runtime code or default changes here.
+
 ### D-29: Daily analysis interpretations and the Monday checkpoint (2026-09-28, Emilia Repo, issue #4)
 
 Emilia selected these rules in the issue #4 working session: fixed UTC+2 for literal CEST; skip empty windows; carry EMA state over nights and weekends; discard and count events for closed windows; flush at finite-input completion; fill only a missing trading date from system Date; exclude unparseable event timestamps; preserve valid explicit dates.
