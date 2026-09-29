@@ -26,7 +26,7 @@ def create_prices(con, checkpoints):
     for index, (day, path) in enumerate(checkpoints):
         sources.append(f"""SELECT {quote(day)} AS source_day,
             {index}::BIGINT*{POSITION_STRIDE}+source_line AS source_line,
-            source_line AS physical_line, symbol, sec_type, exchange, event_ms, system_ms, price,
+            source_line AS physical_line, symbol, sec_type, exchange, event_ms, system_ms, price, trading_at_0100,
             (event_ms//{WINDOW_MS}+1)*{WINDOW_MS} AS window_end,
             sec_type='I' AND trading_at_0100 AND matches_open_high_low AS summary_candidate
             FROM read_parquet({quote(path)}) WHERE category='price' AND event_ms IS NOT NULL""")
@@ -132,6 +132,13 @@ def analyze(con, checkpoints, daily_out, out, cache):
     export(con, out, "summary_candidate_groups", """SELECT source_day,symbol,count(*) AS events,
         count(DISTINCT price) AS distinct_prices,min(physical_line) AS first_line,max(physical_line) AS last_line
         FROM prices WHERE summary_candidate GROUP BY source_day,symbol ORDER BY source_day,symbol""")
+    export(con, out, "index_0100_events", """SELECT source_day,physical_line,symbol,
+        system_ms,event_ms,price,summary_candidate FROM prices
+        WHERE sec_type='I' AND trading_at_0100 ORDER BY source_day,physical_line""")
+    export(con, out, "index_0100_groups", """SELECT source_day,symbol,count(*) AS events,
+        count(*) FILTER (WHERE summary_candidate) AS matching_summary_events
+        FROM prices WHERE sec_type='I' AND trading_at_0100
+        GROUP BY source_day,symbol ORDER BY source_day,symbol""")
     export(con, out, "trading_lag_bands", """SELECT source_day,sec_type,
         count(*) FILTER (WHERE system_ms-event_ms>2000) AS over_2s,
         count(*) FILTER (WHERE system_ms-event_ms>3600000) AS over_1h,
