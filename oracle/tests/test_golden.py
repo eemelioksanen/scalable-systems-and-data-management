@@ -37,7 +37,8 @@ def _as_csv(fixture: dict, directory: Path) -> Path:
 def test_golden_sequence(name, tmp_path):
     fixture = json.loads((GOLDEN / f"{name}.json").read_text())
     csv = _as_csv(fixture, tmp_path)
-    run(Config(inputs=[csv], out=tmp_path / "out", input_checksums=False))
+    # _as_csv writes the window times in UTC.
+    run(Config(inputs=[csv], out=tmp_path / "out", zone_offset="Z", input_checksums=False))
 
     got = pl.read_parquet(tmp_path / "out" / "ema_results.parquet")
     want = pl.DataFrame(fixture["windows"])

@@ -7,7 +7,7 @@ Source documents: `CS_E4780_Course_Project_2026.pdf` (task) and `Evaluation_Crit
 - **Query 1:** EMA₃₈ and EMA₁₀₀ per symbol over 5-min tumbling event-time windows. Windows are aligned to midnight, and a window is evaluated when the next one starts.
 - **Query 2:** a BUY advisory when EMA₃₈ crosses above EMA₁₀₀, a SELL advisory when it crosses below.
 - **Smart visualization:** optional, but it earns the "Exceptional" level on creative explorations.
-- **Deliverables:** a public GitHub repo plus a 4–5 page ACM-format report. The deadline is **27.11.2026**, about 8.5 weeks from now.
+- **Deliverables:** a public GitHub repo plus a 4–5 page ACM-format report. The deadline is **27.11.2026**.
 
 **Choices already made:** Kafka + Apache Flink (Java). Team of 3 or more. Develop locally with Docker Compose, then run the final benchmarks on cloud VMs.
 
@@ -25,20 +25,20 @@ Every roadmap item below is there to earn the "Exceptional (3)" level on one of 
 
 ## 1. Semantics to pin down in week 1 (write them in `docs/decisions.md`)
 
-These decisions drive both correctness and the report. The Flink job and the oracle must implement exactly the same ones.
+These decisions drive both correctness and the report. The Flink job and the oracle must implement exactly the same ones. This table is the week-1 proposal; [decisions.md](decisions.md) D-1 to D-10 hold the current decisions and their status.
 
 | Topic | Decision (recommended) | Note |
 |---|---|---|
 | Symbol key | `ID` column as-is, e.g. `RDSA.NL`. Derive `exchange` from the suffix. | Confirm the format in EDA. |
-| Price event | A row whose `Last` is non-null. Every other row is a quote or housekeeping event. | Count those per type. Drop them before `keyBy`. |
-| Event time | `Trading date` (DD-MM-YYYY) + `Trading time` (HH:MM:SS.mmm), parsed into epoch ms. | Measured as millisecond precision, so epoch ms is lossless (D-22). `Trading date` is absent on 92.1% of price rows; `Date` substitutes (D-25). Pick one timezone interpretation and use it everywhere. Whole-hour offsets keep 5-min windows aligned to midnight. |
+| Price event | A row whose `Last` is non-empty and > 0 (D-2). Every other row is a quote or housekeeping event. | Drop them before `keyBy`. The 7-field `ticks` record cannot separate quotes from housekeeping in-stream (D-24), so that split is an EDA figure. |
+| Event time | `Trading date` (DD-MM-YYYY) + `Trading time` (HH:MM:SS.mmm), parsed into epoch ms. | Measured as millisecond precision, so epoch ms is lossless (D-22). `Trading date` is absent on 92.1% of price rows; `Date` substitutes (D-25). Fixed UTC+2, literal CEST, everywhere (D-3, D-32). Whole-hour offsets keep 5-min windows aligned to midnight. |
 | Close | The price with the **latest event time** in the window, not the last one to arrive. Break ties by arrival order. | This matters because order is not guaranteed across exchanges. |
-| Window firing | Fire when the event-time watermark passes the window end. Use a bounded-out-of-orderness watermark with idleness. | Set the bound from the disorder measured in EDA. Send late events to a side output and count them. |
+| Window firing | Fire when the event-time watermark passes the window end. Use a bounded-out-of-orderness watermark with idleness. | Measured (D-27, D-30): 264 ms admits everything except Wednesday's 01:00 burst, which needs about 17.85 h. The late and end-of-input policy is accepted; the bound and idleness are still open (D-5). Late events go to a side output and are counted. |
 | Empty windows | If a symbol has no price event in a window, skip it: EMA unchanged, no output, no crossover check. | Document it. The alternative (carry the last close forward) is an ablation. |
 | EMA init | Implement EMA₀ = 0 exactly as the spec says. | Side effect: every symbol gets a bullish crossover in its first window. Flag it in the viz and report. A warm-up variant is optional. |
 | Day boundaries | EMA state carries over across days and the weekend. There is no daily reset. | |
 | Subscriptions | Compute EMAs for **all** symbols. Only emit for subscribed symbols. | The subscription set lives in a compacted Kafka topic and reaches Flink as broadcast state. |
-| Missing or stale timestamps | Price rows with a missing trading time, or a trading date ≠ system date. | Measure these in EDA first, then choose between dropping them and falling back to `Date`+`Time`. |
+| Missing or stale timestamps | Price rows with a missing trading time, or a trading date ≠ system date. | Settled (D-10, D-29): fill only a missing `Trading date` from `Date`, exclude unparseable timestamps, keep valid explicit dates. |
 
 ---
 
@@ -51,12 +51,12 @@ These decisions drive both correctness and the report. The Flink job and the ora
             Kafka `subscriptions` ──┐   ▼
             (compacted)             │  Flink job
                                     │   KafkaSource + WatermarkStrategy(boundedOOO, idleness)
-                                    │   → parse/normalize → side-output stats (non-price, housekeeping, malformed, late)
+                                    │   → parse/normalize → counted as Flink metrics (non-price, malformed, late, ...; D-28)
                                     │   → keyBy(symbol)
                                     │   → EMA operator (Q1) ─► crossover (Q2)
                                     └──► broadcast filter (subscribed only)
                                         │
-                     Kafka `ema-results`, `advisories`, `stats`
+                     Kafka `ema-results`, `advisories`
                                         │
                   ┌─────────────────────┴───────────────────┐
              Viz backend (WebSocket)                   Prometheus ◄─ Flink/Kafka/node metrics
@@ -65,7 +65,7 @@ These decisions drive both correctness and the report. The Flink job and the ora
 
 - **Main operator:** one `KeyedProcessFunction` keyed by symbol (`EmaCalculator`). Out-of-order arrival can leave several windows open at once, so a `MapState` keeps one close candidate per open window end. A `ValueState` holds `ema38` and `ema100`. Each open window has an event-time timer on its last millisecond. When it fires, the operator computes Q1 and the Q2 crossover check, emits, and drops that window's candidate. A keyed broadcast operator after it publishes only subscribed symbols (D-28).
 - **Alternative to benchmark:** the `TumblingEventTimeWindows` + `ProcessWindowFunction` pair, followed by a keyed EMA function.
-- **Latency measurement:** the replayer stamps each record with its ingest wall-clock time (the Kafka record timestamp). Each output carries (a) processing latency (emit time minus the arrival of the window's last event) and (b) watermark lag.
+- **Latency measurement:** the replayer stamps each record with its ingest wall-clock time (the Kafka record timestamp). Each output carries `maxIngestTs` (the latest ingest time among the window's events) and `emitTs` (D-16). Which latency definitions to report, including watermark lag, is decided in #10.
 - **Benchmark isolation:** in *preload* mode, the whole week is written into Kafka first and Flink then reads from the earliest offset. Throughput is then measured without the replayer as a bottleneck. Latency runs use *live replay*.
 
 **Repo layout:**
@@ -111,7 +111,7 @@ Every run is scripted: config → run → collect → `results/*.csv`. Repeat ea
 
 | Rubric target | Experiment |
 |---|---|
-| Correctness | Diff Flink output against the oracle for the full week. EMAs must match within 1e-9. Advisories are compared as sets, with precision and recall reported. Also: inject bounded shuffling and show the results do not change, and report late-event counts beyond the bound. |
+| Correctness | Diff Flink output against the oracle for the full week, with admit-all as the reference (D-30). EMAs must match within 1e-9 (D-18); binary64 drift alone exceeds that on 1,270 windows (D-27), so report mismatch magnitudes. Advisories are compared as sets, with precision and recall reported. Also: inject bounded shuffling and show the results do not change, and report late-event counts beyond the bound. |
 | Throughput | Preload mode: wall-clock time and events/s for the full week at parallelism 1/2/4/8/16. Plot the speedup curve. |
 | Latency | Live replay at 1×, 10× and 100× real time and at peak: p50/p95/p99 processing latency. Keep the 5-min window delay (inherent to the spec) separate from system latency. |
 | Scalability: exchanges | Run with 1, then 2, then all 3 exchanges (replayer subset mode). |
@@ -185,7 +185,7 @@ Everyone keeps notes in `docs/decisions.md` and on PRs. From those, each member 
 
 - **Local smoke test:** `docker compose up`, then the replayer loads a 1-hour sample, then advisories appear in Kafka and on the dashboard.
 - **Unit tests:** `mvn test` runs the Flink operator test-harness cases with hand-computed EMAs and crossovers.
-- **Correctness gate:** `oracle/diff.py` against the Flink output topics for the full week shows zero EMA mismatches beyond tolerance and matching advisory sets. This gate must pass before any performance numbers are reported.
+- **Correctness gate:** the comparer (#20) against the Flink output topics for the full week shows zero EMA mismatches beyond tolerance and matching advisory sets. This gate must pass before any performance numbers are reported.
 - **Reproducibility:** `bench/run.sh <experiment>` regenerates each results CSV, and `bench/plot.py` regenerates each report figure.
 
 ---
@@ -197,4 +197,4 @@ Only Docker is needed on the host. Python 3 covers the oracle and the EDA.
 - **Build:** `docker compose build` runs Maven inside the `maven:3.9-eclipse-temurin-17` image (stage `build` of the root `Dockerfile`). A BuildKit cache mount keeps `~/.m2` between builds, so dependencies download only once.
 - **Run tests:** `scripts/mvn.sh test` runs Maven in a container with a cached dependency volume. `docker build --target test .` runs `mvn verify` in a clean build.
 - **IDE:** open the repo in the dev container (`.devcontainer/`). VS Code uses "Reopen in Container"; IntelliJ uses "Remote Development → Dev Containers". The IDE then gets JDK 17 + Maven inside the container.
-- **Disk:** check the size on Zenodo before downloading. 289M rows is likely tens of GB uncompressed, and a full-week Kafka preload needs roughly the same again. Keep `data/` and the Docker volumes on a disk with ≥ 100 GB free, or work from a per-day or per-exchange sample locally and run full-week experiments on the cloud VMs.
+- **Disk:** the seven day files are 24.9 GB. A full-week preload adds about 5.1 GB of Kafka log with lz4 (D-31), and the full analysis about 41 GB of local data ([eda-week.md](eda-week.md#reproduction-and-scope)). Keep `data/` and the Docker volumes on a disk with ≥ 100 GB free, or work from a per-day or per-exchange sample locally and run full-week experiments on the cloud VMs.

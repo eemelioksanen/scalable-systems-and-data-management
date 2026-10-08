@@ -36,7 +36,7 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
   RDSA.NL,E,08-11-2021,09:00:01.456,,,
   ```
 
-- **Header `src`:** the record's source position, `<file index>:<line number>` in ASCII, e.g. `0:14`. The file index points into the replay report's `files`, and lines count from 1 including comment lines. It is the oracle's `(sourceFile, sourceLine)`, with `sourceFile` the file name of `files[index].path`, so the job's late events can be passed to the oracle's `--exclude-events`. Consumers of the value can ignore it.
+- **Header `src`:** the record's source position, `<file index>:<line number>` in ASCII, e.g. `0:14`. The file index points into the replay report's `files`, and lines count from 1 including comment lines. It is the oracle's `(sourceFile, sourceLine)`, with `sourceFile` the file name of `files[index].path`, which lets late events be matched to the oracle's `--exclude-events`. The Flink job does not read it yet: it counts its late events but does not export them. Consumers of the value can ignore it.
 - **Record timestamp:** the wall-clock time (epoch ms) when the replayer sent the record. This is the ingest time used for latency measurements.
 - **Compression:** lz4 by default (D-31). Consumers decompress transparently.
 - **Ordering:** the replayer keeps file order per symbol: day files in date order, lines in file order. It sends from one thread with an idempotent producer and `acks=all`, so retries don't reorder records.
@@ -52,14 +52,14 @@ The Flink job emits one JSON record per (symbol, window) when **both** of these 
 - at least one trader subscribes to the symbol (D-9).
 
 ```json
-{"symbol":"RDSA.NL","secType":"E","windowEnd":1636362300000,"close":19.28,"ema38":19.2712,"ema100":19.2655,"maxIngestTs":1790000000123,"emitTs":1790000000456}
+{"symbol":"RDSA.NL","secType":"E","windowEnd":1636355100000,"close":19.28,"ema38":19.2712,"ema100":19.2655,"maxIngestTs":1790000000123,"emitTs":1790000000456}
 ```
 
 | Field | Type | Meaning |
 |---|---|---|
 | `symbol` | string | Symbol key (D-1). |
 | `secType` | string | `E` (equity) or `I` (index), copied from the input event. The viz uses it for filtering. |
-| `windowEnd` | long | Exclusive end of the 5-minute window, epoch ms under the timezone interpretation of D-3. |
+| `windowEnd` | long | Exclusive end of the 5-minute window, epoch ms under the timezone interpretation of D-3 (`--zone-offset`, default `+02:00`): the window ending 09:05 on 08-11-2021 is `1636355100000`. |
 | `close` | double | Price of the window's closing event (D-4). |
 | `ema38`, `ema100` | double | EMA values after this window, written at full precision (no rounding). |
 | `maxIngestTs` | long | Latest record timestamp among the window's price events. |
@@ -79,7 +79,7 @@ The Flink job emits one JSON record per detected crossover of a subscribed symbo
 Crossovers are computed for every symbol, subscribed or not, so a symbol's first advisory after a subscription is still measured against its unpublished history. Every advisory has an `ema-results` record for the same (`symbol`, `windowEnd`) with the same EMAs: the two are filtered together.
 
 ```json
-{"symbol":"RDSA.NL","secType":"E","windowEnd":1636362300000,"type":"BUY","ema38":19.2712,"ema100":19.2655,"maxIngestTs":1790000000123,"emitTs":1790000000456}
+{"symbol":"RDSA.NL","secType":"E","windowEnd":1636355100000,"type":"BUY","ema38":19.2712,"ema100":19.2655,"maxIngestTs":1790000000123,"emitTs":1790000000456}
 ```
 
 The fields mean the same as in `ema-results`.

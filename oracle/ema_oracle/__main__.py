@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m ema_oracle", description=__doc__)
     p.add_argument("inputs", nargs="+", type=Path, help="DEBS 2022 day files; ordered by the DD-MM-YY date in their names")
     p.add_argument("--out", type=Path, default=Path(os.environ.get("ORACLE_OUT", "oracle/out")), help="output directory (default: oracle/out)")
-    p.add_argument("--zone-offset", default="Z", help="UTC offset of trading timestamps, as the Flink job's flag (D-3, D-19); default Z")
+    p.add_argument("--zone-offset", default="+02:00", help="UTC offset of trading timestamps, as the Flink job's flag (D-3, D-32); default +02:00")
     p.add_argument(
         "--missing-trading-date",
         choices=parse.MISSING_DATE_POLICIES,

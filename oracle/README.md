@@ -15,8 +15,8 @@ Only Docker is needed. The container is the canonical environment; `USE_VENV=1` 
 same code in a local venv.
 
 ```bash
-oracle/run.sh data/debs2022-gc-trading-day-*.csv   # results in oracle/out/
-oracle/run.sh test                                 # unit and fixture tests
+oracle/run.sh data/daily/debs2022-gc-trading-day-*.csv   # results in oracle/out/
+oracle/run.sh test                                      # unit and fixture tests
 ```
 
 Day files must lie under `DATA_DIR` (default `data/`), which the container mounts
@@ -25,7 +25,7 @@ taken from the `DD-MM-YY` date in each file name, not from the command line.
 
 | Option | Default | Meaning | Flink job flag |
 |---|---|---|---|
-| `--zone-offset` | `Z` | UTC offset of the trading timestamps (D-3) | `--zone-offset` (D-19) |
+| `--zone-offset` | `+02:00` | UTC offset of the trading timestamps (D-3, D-32) | `--zone-offset` (same default) |
 | `--missing-trading-date` | `system-date` | `system-date` substitutes `Date` for a missing `Trading date` (D-25); `drop` counts the event as missingTimestamp (the D-10 alternative) | none: the job always applies D-25 (D-26) |
 | `--watermark-bound-ms` | unset | reject the events a streaming run with this bound would treat as late, under the model below | `--watermark-bound-ms` |
 | `--exclude-events` | unset | CSV or Parquet of `(sourceFile, sourceLine)` to reject, e.g. the job's own late events | |
@@ -103,20 +103,26 @@ further. So an event the job rejects at bound B is also rejected by the model at
 The one exception is idleness: a partition marked idle is left out of the minimum, and an
 event arriving on it afterwards can be late in the job but not in the model.
 
-**How to compare.** The full week does contain late events: a burst of 5,506 summary rows
-at the end of 10-11 with `Trading time` 01:00:00.000, which no streaming run admits
-([evidence](evidence/README.md#findings)). The admit-all output is therefore not what the
-job should produce.
+**How to compare.** The full week contains one burst of late events: 5,506 summary rows
+at the end of 10-11 with `Trading time` 01:00:00.000, received about 18 h after their
+window ([evidence](evidence/README.md#findings)). D-30 makes the admit-all output the
+correctness reference, so a correct baseline run admits them. A bound that rejects them is
+a faster ablation, compared against its own matching reference.
 
-1. Run the oracle with `--watermark-bound-ms` set to the job's bound. At any bound from
-   264 ms to about 17.8 h the model rejects exactly those 5,506 events, and they are late
-   in the job too, because every partition has passed 01:05 by then.
-2. If the job's `lateTicks` count differs from the oracle's `lateRejected`, pass the job's
-   late events to `--exclude-events` as `(sourceFile, sourceLine)` instead. That reproduces
-   exactly the set the job admitted. It needs the replayer to carry source identity (#6).
-3. The admit-all output is the contract applied literally. It is the reference only if the
-   timestamp policy (D-10) comes to drop those rows in parsing, or for a bound large enough
-   to admit them.
+1. **Baseline:** compare against the admit-all output (no `--watermark-bound-ms`). The job
+   matches it only if its `lateTicks` is 0. A 64,265,001 ms bound admits every event in
+   the model (D-30), and therefore in the job when idleness is off.
+   A smaller bound admits the burst only when the job's watermark happens to trail its
+   reads, as it did in a preload (D-28).
+2. **Ablation with bound B:** run the oracle with `--watermark-bound-ms B`. In the model,
+   every bound from 264 ms to about 17.8 h rejects exactly the 5,506 burst rows. Without
+   idleness the job rejects a subset of what the model rejects, and in a preload it can
+   reject fewer, so this reference applies only when the job's `lateTicks` equals the
+   oracle's `lateRejected`.
+3. **Any other late count:** pass the job's own late events to `--exclude-events` as
+   `(sourceFile, sourceLine)`. The replayer carries that position in the `src` header
+   (D-31), but the job does not read it yet: it counts its late events and does not export
+   them. Until it does, such a run cannot be matched exactly and is not a correctness result.
 
 In every case the rejected events are in `rejected_events.parquet`, counted per file as
 `excluded` or `lateRejected`, and the comparer (#20) reports them beside the diff.

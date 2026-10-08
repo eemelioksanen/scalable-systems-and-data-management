@@ -131,7 +131,7 @@ We have not resolved that tension by dropping these rows or changing the referen
 
 [D-29](decisions.md#d-29-daily-analysis-interpretations-and-the-monday-checkpoint-2026-09-28-emilia-repo-issue-4) records the selected timezone, date fallback, invalid-timestamp treatment, empty-window behavior, state continuity, late-event treatment and finite-input flush.
 The full-week watermark bound and Wednesday's summary-row interpretation remain open.
-The new analysis does not change Flink or oracle runtime defaults; their current `Z` defaults still need separate alignment with the accepted UTC+2 interpretation.
+The new analysis does not change Flink or oracle runtime defaults; their `Z` defaults then still needed separate alignment with the accepted UTC+2 interpretation, which D-32 has since applied.
 
 The next useful day is Wednesday, to inspect the known summary burst before choosing a short full-week bound.
 That download awaits the agreed review of this Monday checkpoint.
