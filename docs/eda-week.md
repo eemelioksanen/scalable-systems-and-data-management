@@ -129,7 +129,7 @@ Do not silently adopt the exact-signature exclusion: it changes both output and 
 
 Keep the runtime watermark and idleness settings provisional.
 [D-28](decisions.md#d-28-query-2-and-subscriptions-2026-09-28-leo-immonen-issue-8) already shows that periodic emission, preload speed and partition idleness affect actual admission.
-A separate runtime follow-up should apply the accepted UTC+2 default, then verify admission, output and memory with paced input and sparse/resuming partitions.
+D-32 has since applied the accepted UTC+2 default. A separate runtime follow-up should verify admission, output and memory with paced input and sparse/resuming partitions.
 A short default requires an explicit accuracy trade-off or an accepted change to the price policy; this analysis makes neither change.
 
 ## Reproduction and scope

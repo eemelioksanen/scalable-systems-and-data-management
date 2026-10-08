@@ -16,9 +16,9 @@ The Flink job (`flink-job/`) and the oracle (`oracle/`) must implement exactly t
 | D-4 | Close | The price with the latest event time in the window. Ties broken by source position (D-23). | **accepted** | Load-bearing, not a formality: **11.06%** of consecutive per-symbol price pairs (257,149 / 2,325,956) run *backward* in `Trading time` within file order, so "latest event time" and "last to arrive" genuinely differ. 9,981 same-millisecond groups carry **differing** prices, so a tie-break is required for determinism. |
 | D-5 | Window firing | Discard and count events for closed windows; flush remaining windows at finite-input completion. Evaluate bounded out-of-orderness and idleness settings separately. | **late/EOF policy accepted; bound and idleness open** | Emilia selected the late/EOF policy on 2026-09-28. The bound targets zero changed closes; faster bounds are ablations. Monday alone cannot settle the full-week bound, and D-28 shows replay timing and idleness matter. See D-29. |
 | D-6 | Empty windows | No price event in a window: EMA unchanged, no output, no crossover check. | **accepted** | Emilia selected skip on 2026-09-28. The carry-forward alternative is an ablation. |
-| D-7 | EMA init | EMA₀ = 0 exactly as the spec says. | proposed | Causes a BUY in every symbol's first window. Flag it in the viz and report. |
+| D-7 | EMA init | EMA₀ = 0 exactly as the spec says. | **accepted** | Kept unchanged by D-29. Causes a BUY in every symbol's first window: all 4,840 of Monday's advisories (D-27). Flag it in the viz and report. |
 | D-8 | Day boundaries | EMA state carries over across days and the weekend. | **accepted** | Emilia selected carry-over on 2026-09-28. |
-| D-9 | Subscriptions | EMAs are computed for all symbols. Results are emitted only for subscribed symbols, via a compacted `subscriptions` topic and broadcast state. | proposed | Implemented as D-28. |
+| D-9 | Subscriptions | EMAs are computed for all symbols. Results are emitted only for subscribed symbols, via a compacted `subscriptions` topic and broadcast state. | **accepted** | Implemented as D-28 (PR #27). |
 | D-10 | Missing or stale timestamps | Substitute system `Date` only for a missing `Trading date`. Exclude and count missing or unparseable event timestamps. Preserve valid explicit dates, including mismatches with system date. | **accepted; summary-row interpretation open** | Emilia selected this policy on 2026-09-28. Do not substitute system arrival time for a supplied trading timestamp. Wednesday's summary-like rows remain included under D-2; any future exclusion requires a separate decision. See D-29. |
 
 ## Stack and infrastructure
@@ -44,6 +44,20 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 ## Log
 
 Add later decisions below, newest first.
+
+### D-32: UTC+2 runtime default and status alignment (2026-10-08, Leo Immonen)
+Context: D-3 accepted fixed UTC+2 on 2026-09-28, but the Flink job and the oracle still defaulted to `Z`, D-19's provisional value, while the analysis already used `+02:00`. D-29 and D-30 left the change to separate implementation work. The README and the oracle README also still described the pre-D-30 correctness reference, and the docs put the day files in two different places.
+Decision:
+- `--zone-offset` defaults to `+02:00` in both the job and the oracle. Window contents do not change, since any whole-hour offset keeps the windows aligned to local midnight. Only the epoch values move: `windowEnd` and event times are 7,200,000 ms smaller than under `Z`.
+- The recorded oracle evidence and the hand-derived fixtures stay at `Z`. Their tests pass `Z` explicitly, and [the evidence README](../oracle/evidence/README.md) says how to reproduce them.
+- The day files live in `data/daily/` in every document, where `analysis/src/fetch_day.py` downloads them.
+- The oracle README's comparison steps follow D-30: admit-all is the baseline reference, and a bounded run is an ablation compared with its matching oracle run.
+- D-7 and D-9 are marked accepted: D-29 kept the zero start, and D-28 implemented the subscriptions.
+
+Consequences:
+- Output written before this change compares with new output only after shifting `windowEnd` by 7,200,000 ms.
+- The bound and idleness stay provisional (D-5). The 60 s default does not meet D-30's admit-all target, which only a bound of about 17.85 h is shown to meet, and the 30 s idleness lost ticks in a live replay (D-28). The baseline therefore has no runtime setting yet that is both correct by D-30 and real-time; this needs a team decision before the correctness gate (#9).
+- The job counts its late events but does not export them or read the `src` header. A run whose late count is neither 0 nor the model's therefore cannot yet be checked against the oracle ([oracle README](../oracle/README.md#late-events-matching-a-batch-run-to-a-streaming-run)).
 
 ### D-31: CSV replayer (2026-09-28, Leo Immonen, issue #6)
 Context: #6 needs preload, maximum-speed, real-time×k and subset replays of the day files into `ticks`. The records need ingest timestamps and their source position, and a consumer must be able to tell a complete finite replay from a partial one.
@@ -153,7 +167,7 @@ Decision: `oracle/` is a Polars batch job built only from the data contract, thi
 Consequences / measurements, on the #4 sample, the 08-11-21 file and the full week (`oracle/evidence/`):
 - The sample counts match the EDA profile exactly: 2,389,887 price events, 17,593 with `Last` = 0 and 2,201,703 without `Trading date`. The week has 289,116,808 data rows and 59,391,670 price events (49.1 M index, 10.3 M equity), 4,970 symbols and about 1.86 M windows. The weekend files contain no price events.
 - **Monday's 4,840 advisories are all the zero-start BUY of D-7.** From zero, EMA38 stays above EMA100 unless the price falls by about the gap between them, which is still 11% after one day of windows. Tuesday has 176 advisories; Wednesday to Friday have 1,592 to 2,454 each.
-- **A burst of summary rows at the end of 10-11:** 5,506 rows at system time 18:56 carry `Trading time` 01:00:00.000. They cover 1,812 FR and NL indices, and their `Last` copies each index's open, high or low. Under D-2 and D-3 they are price events in a 01:05 window. The oracle admits them by default, but a streaming job rejects them as late at any bound under about 17.8 h. The two readings differ in 684,661 windows and 3.7% of advisories. So the correctness check (#9) must compare the job against an oracle run with the job's `--watermark-bound-ms`. Whether these rows are price events at all belongs to the timestamp policy (D-10, #4).
+- **A burst of summary rows at the end of 10-11:** 5,506 rows at system time 18:56 carry `Trading time` 01:00:00.000. They cover 1,812 FR and NL indices, and their `Last` copies each index's open, high or low. Under D-2 and D-3 they are price events in a 01:05 window. The oracle admits them by default, but a streaming job rejects them as late at any bound under about 17.8 h. The two readings differ in 684,661 windows and 3.7% of advisories. So the correctness check (#9) must compare the job against an oracle run with the job's `--watermark-bound-ms`. (D-30 has since made admit-all the correctness reference, with bounded runs as ablations.) Whether these rows are price events at all belongs to the timestamp policy (D-10, #4).
 - **Evidence for D-5, not a decision:** apart from that burst, 352 events in the week arrive after the maximum event time has passed their window's end, and 264 ms admits all of them.
 - **Precision against D-18:** prices reach 1.1e6. There, binary64 rounding alone puts EMAs up to 2.3e-9 (33 ulps) from exact, and 1,270 windows in 6 symbols exceed the 1e-9 tolerance. An implementation that orders the same arithmetic differently can therefore fail the check on these symbols without being wrong. D-18 is unchanged; the comparer (#20) should report mismatch magnitudes, and a relative tolerance may be needed.
 - The advisories do not depend on arithmetic precision: decimal and binary64 agree on every decision, and no window has `|EMA38 − EMA100|` ≤ 1e-9.
@@ -169,7 +183,7 @@ A price row is `missingTimestamp` only when `Trading time` is empty or neither d
 Consequences:
 - `GoldenFixturesTest` replays `fixtures/golden/{synthetic,real}.json` through the operator within the D-18 tolerance, and both sequences match.
 - A real-format replay through Kafka reconciled all 9 records across the counters.
-- D-25 is still only proposed. The oracle (#5) must apply the same rule, or the two will disagree on nearly every row.
+- D-25 is still only proposed. The oracle (#5) must apply the same rule, or the two will disagree on nearly every row. (D-29 has since accepted D-25, and the oracle applies it, D-27.)
 
 ### D-25: `Date` substitutes for a missing `Trading date` (2026-09-28)
 Context: `Trading date` is absent on 92.1% of price rows in the profiled sample.
