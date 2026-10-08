@@ -5,6 +5,8 @@ sizes and MD5s, every count, the admission profile, the precision report, and th
 counts and SHA-256 of every output. The outputs themselves are regenerated, not committed.
 
 All runs used `--zone-offset Z` and `--missing-trading-date system-date`, with no exclusions.
+`Z` was then the default; since D-32 the default is `+02:00`, so add `--zone-offset Z` to the
+commands below to reproduce these manifests. The day files were then directly under `data/`.
 Only `week-bound60s` sets a watermark bound.
 
 | Run | Input | Command (host) |

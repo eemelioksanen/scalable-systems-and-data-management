@@ -19,6 +19,7 @@ EMA_TOL = 1e-12
 
 def oracle(tmp_path: Path, name: str = "out", **kw) -> tuple[dict, Path]:
     out = tmp_path / name
+    kw.setdefault("zone_offset", EXPECTED["zoneOffset"])
     manifest = run(Config(inputs=[FIXTURES / DAY2, FIXTURES / DAY1], out=out, input_checksums=False, **kw))
     return manifest, out
 
