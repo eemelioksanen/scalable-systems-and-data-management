@@ -76,7 +76,7 @@ Then submit the job. The jar is baked into the image at `/opt/job/flink-job.jar`
 docker compose exec jobmanager flink run -d -c fi.aalto.cse4780.trading.TradingTrendsJob /opt/job/flink-job.jar
 ```
 
-For a finite replay, add `--bounded`. The job then reads the offsets of `ticks` and `subscriptions` that exist at startup, evaluates every window including the last, and finishes. Other options, all provisional until the dataset analysis: `--watermark-bound-ms` (default 60000), `--idleness-ms` (30000, 0 = off) and `--zone-offset` (`Z`). They are documented in `TradingTrendsJob`. The subscription format, how changes take effect, and how to rerun are in [docs/interfaces.md](docs/interfaces.md).
+For a finite replay, add `--bounded`. The job then reads the offsets of `ticks` and `subscriptions` that exist at startup, evaluates every window including the last, and finishes. Other options: `--zone-offset` (default `+02:00`, the literal CEST of D-3), and the still provisional `--watermark-bound-ms` (60000) and `--idleness-ms` (30000, 0 = off). With the 60 s default, a run whose watermark keeps up with its input rejects Wednesday's 5,506 burst rows at 01:00, so it does not meet the admit-all correctness target of D-30 ([full-week analysis](docs/eda-week.md#watermarks-and-downstream-effects)). They are documented in `TradingTrendsJob`. The subscription format, how changes take effect, and how to rerun are in [docs/interfaces.md](docs/interfaces.md).
 
 The job's counts are exported to Prometheus, and [docs/interfaces.md](docs/interfaces.md#counts-d-28) lists them. The parser's are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
 
@@ -165,4 +165,8 @@ your home directory would be permitted.
 
 ## Dataset
 
-Download the daily CSVs from Zenodo into `data/`, which is gitignored. Check the free disk space first.
+The seven day files total about 25 GB. Check the free disk space first. Download them from Zenodo into `data/daily/`, which is gitignored and where the analysis, replayer and oracle examples expect them. `fetch_day.py` resumes interrupted transfers and verifies the published MD5:
+
+```bash
+for day in 08 09 10 11 12 13 14; do python3 analysis/src/fetch_day.py 2021-11-$day; done
+```

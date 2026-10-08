@@ -33,7 +33,7 @@ ROW_GROUP_SIZE = 256 * 1024
 class Config:
     inputs: list[Path]
     out: Path
-    zone_offset: str = "Z"
+    zone_offset: str = "+02:00"
     missing_trading_date: str = "system-date"
     watermark_bound_ms: int | None = None
     exclude_events: Path | None = None

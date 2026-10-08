@@ -37,9 +37,9 @@ import org.apache.kafka.common.TopicPartitionInfo;
  *   --ema-topic           ema-results
  *   --advisories-topic    advisories
  *   --group-id            trading-trends
- *   --watermark-bound-ms  60000   bounded out-of-orderness (provisional until the EDA, D-5)
+ *   --watermark-bound-ms  60000   bounded out-of-orderness (provisional, D-5, D-30)
  *   --idleness-ms         30000   mark a partition idle after this much wall-clock silence; 0 = off
- *   --zone-offset         Z       offset of trading timestamps, e.g. +01:00 (provisional, D-3)
+ *   --zone-offset         +02:00  offset of trading timestamps: literal CEST (D-3, D-32)
  *   --bounded                     stop both inputs at their startup offsets (finite replay)
  * </pre>
  *
@@ -57,7 +57,7 @@ public class TradingTrendsJob {
         String subscriptionsTopic = params.get("subscriptions-topic", "subscriptions");
         Duration watermarkBound = Duration.ofMillis(params.getLong("watermark-bound-ms", 60_000));
         Duration idleness = Duration.ofMillis(params.getLong("idleness-ms", 30_000));
-        ZoneOffset zoneOffset = ZoneOffset.of(params.get("zone-offset", "Z"));
+        ZoneOffset zoneOffset = ZoneOffset.of(params.get("zone-offset", "+02:00"));
         boolean bounded = params.has("bounded");
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
