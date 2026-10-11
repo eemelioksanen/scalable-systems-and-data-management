@@ -30,3 +30,8 @@ report/*.synctex.gz
 # Analysis virtualenv (the container in analysis/Dockerfile is canonical)
 analysis/.venv/
 analysis/out/.tmp/
+
+# Dashboard frontend: dependencies, and the build the viz jar serves
+viz/web/node_modules/
+viz/web/dist/
+viz/src/main/resources/static/
