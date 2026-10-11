@@ -22,10 +22,10 @@ import java.time.LocalDate;
  * <p>Times are local wall-clock fields read as UTC epoch milliseconds. Only differences are used, so
  * the timezone question of D-3 does not arise.
  */
-final class SourceClock {
+public final class SourceClock {
 
-    static final int WINDOW = 256;
-    static final long UNKNOWN = Long.MIN_VALUE;
+    public static final int WINDOW = 256;
+    public static final long UNKNOWN = Long.MIN_VALUE;
 
     private static final long MILLIS_PER_DAY = 86_400_000L;
 
@@ -47,7 +47,7 @@ final class SourceClock {
     }
 
     /** Advances the clock with one row's time, or leaves it unchanged for {@link #UNKNOWN}. */
-    long update(long rowTime) {
+    public long update(long rowTime) {
         if (rowTime == UNKNOWN) {
             return now;
         }
@@ -70,15 +70,28 @@ final class SourceClock {
         return now;
     }
 
-    long now() {
+    public long now() {
         return now;
     }
 
     /** {@code Date} ({@code DD-MM-YYYY}) plus {@code Time} ({@code HH:MM:SS[.fff]}), or {@link #UNKNOWN}. */
     long epochMillis(CsvLine row) {
-        String line = row.line();
-        long epochDay = epochDay(line, row.start(CsvLine.DATE), row.end(CsvLine.DATE));
-        long millisOfDay = millisOfDay(line, row.start(CsvLine.TIME), row.end(CsvLine.TIME));
+        return epochMillis(row.line(), row.start(CsvLine.DATE), row.end(CsvLine.DATE),
+                row.start(CsvLine.TIME), row.end(CsvLine.TIME));
+    }
+
+    /** The same reading of a separate {@code Date} and {@code Time} field, or {@link #UNKNOWN}. */
+    public long epochMillis(String date, String time) {
+        if (date == null || time == null) {
+            return UNKNOWN;
+        }
+        String line = date + ',' + time;
+        return epochMillis(line, 0, date.length(), date.length() + 1, line.length());
+    }
+
+    private long epochMillis(String line, int dateFrom, int dateTo, int timeFrom, int timeTo) {
+        long epochDay = epochDay(line, dateFrom, dateTo);
+        long millisOfDay = millisOfDay(line, timeFrom, timeTo);
         if (epochDay == UNKNOWN || millisOfDay == UNKNOWN) {
             return UNKNOWN;
         }

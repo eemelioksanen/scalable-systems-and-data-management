@@ -57,8 +57,8 @@ The single source of truth, guarded by one lock (writes come from two threads, r
 ### FeedClock
 
 - Once a second, for each `ticks` partition, reads the records after the last offset it has seen, at most the final 32 per partition (256 in total with 8 partitions). It uses its own consumer with no group.
-- Feeds the new rows, ordered by record timestamp, into the replayer's `SourceClock` (made public in `producer/`; `viz` depends on the `producer` module). That is the same rule that paces live replay: the minimum `Date`+`Time` over the last 256 rows, never moving backward, which ignores the stale opening snapshot of each day file ([replayer.md](../../replayer.md#the-source-clock)).
-- `SourceClock` reads the local fields as UTC epoch ms. `feedMs` subtracts the zone offset so it is a true epoch value comparable with `windowEnd`.
+- Applies the replayer's source-clock rule ([replayer.md](../../replayer.md#the-source-clock)) to each look: the minimum `Date`+`Time` over the rows read, never moving backward, which ignores the stale opening snapshot of each day file. The window is one look rather than 256 consecutive rows, because the tail is sampled and 256 sampled rows would span many seconds. Dates and times are parsed by the replayer's `SourceClock` (made public in `producer/`; `viz` depends on the `producer` module), so both read them identically.
+- The local fields are read as UTC epoch ms, so `feedMs` subtracts the zone offset to give a true epoch value comparable with `windowEnd`.
 - If no new rows arrive, `feedMs` holds and `feedIdleSince` records when it stopped moving.
 - After a preload, the topic already holds the whole input, so `feedMs` shows the end of the input as soon as the backend starts. Feed time is only meaningful during a live replay.
 
