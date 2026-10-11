@@ -8,13 +8,15 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.common.TopicPartition;
+import static fi.aalto.cse4780.viz.KafkaFixtures.supply;
+
 import org.junit.jupiter.api.Test;
 
 class TicksTailTest {
 
     private final MockConsumer<String, String> consumer = KafkaFixtures.consumerWithTopic("ticks", 1);
     private final FeedClock clock = new FeedClock(ZoneOffset.of("+02:00"));
-    private final TicksTail tail = new TicksTail(consumer, "ticks", clock, () -> 0L);
+    private final TicksTail tail = new TicksTail(supply(consumer), "ticks", clock, () -> 0L);
     private final TopicPartition p0 = new TopicPartition("ticks", 0);
 
     private void append(long from, long count, String time) {
@@ -52,7 +54,7 @@ class TicksTailTest {
 
     @Test
     void waitsWhileTheTopicDoesNotExist() {
-        TicksTail missing = new TicksTail(KafkaFixtures.consumerWithTopic("other", 1), "ticks", clock, () -> 0L);
+        TicksTail missing = new TicksTail(supply(KafkaFixtures.consumerWithTopic("other", 1)), "ticks", clock, () -> 0L);
         assertFalse(missing.pollOnce());
     }
 }

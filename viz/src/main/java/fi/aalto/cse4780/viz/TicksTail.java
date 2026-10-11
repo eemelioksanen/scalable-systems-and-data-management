@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.Map;
 import java.util.function.LongSupplier;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -25,7 +26,8 @@ final class TicksTail implements Runnable {
     private static final int DATE = 2;
     private static final int TIME = 3;
 
-    private final Consumer<String, String> consumer;
+    private final Supplier<Consumer<String, String>> consumerFactory;
+    private Consumer<String, String> consumer;
     private final String topic;
     private final FeedClock clock;
     private final LongSupplier wallClock;
@@ -33,8 +35,8 @@ final class TicksTail implements Runnable {
     private List<TopicPartition> partitions;
     private volatile boolean running = true;
 
-    TicksTail(Consumer<String, String> consumer, String topic, FeedClock clock, LongSupplier wallClock) {
-        this.consumer = consumer;
+    TicksTail(Supplier<Consumer<String, String>> consumerFactory, String topic, FeedClock clock, LongSupplier wallClock) {
+        this.consumerFactory = consumerFactory;
         this.topic = topic;
         this.clock = clock;
         this.wallClock = wallClock;
@@ -57,12 +59,18 @@ final class TicksTail implements Runnable {
                 sleep(1_000);
             }
         } finally {
-            consumer.close();
+            if (consumer != null) {
+                consumer.close();
+            }
         }
     }
 
     /** One look at the tail. Returns false while the topic does not exist yet. */
     boolean pollOnce() {
+        if (consumer == null) {
+            // Created here, not at startup, so an unresolvable broker is retried rather than fatal.
+            consumer = consumerFactory.get();
+        }
         if (partitions == null) {
             List<PartitionInfo> infos = consumer.partitionsFor(topic, Duration.ofSeconds(5));
             if (infos == null || infos.isEmpty()) {
@@ -122,7 +130,10 @@ final class TicksTail implements Runnable {
 
     void stop() {
         running = false;
-        consumer.wakeup();
+        Consumer<String, String> c = consumer;
+        if (c != null) {
+            c.wakeup();
+        }
     }
 
     private void sleep(long ms) {

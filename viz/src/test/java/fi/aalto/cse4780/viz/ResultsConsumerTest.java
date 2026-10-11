@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import org.apache.kafka.clients.consumer.MockConsumer;
+import static fi.aalto.cse4780.viz.KafkaFixtures.supply;
+
 import org.junit.jupiter.api.Test;
 
 class ResultsConsumerTest {
@@ -20,7 +22,7 @@ class ResultsConsumerTest {
     void readsEveryPartitionIntoTheStoreAndCountsMalformedRecords() {
         MockConsumer<String, String> consumer = KafkaFixtures.consumerWithTopic("ema-results", 2);
         Store store = new Store();
-        ResultsConsumer results = new ResultsConsumer(consumer, "ema-results", store);
+        ResultsConsumer results = new ResultsConsumer(supply(consumer), "ema-results", store);
 
         assertTrue(results.pollOnce(Duration.ZERO));
         consumer.addRecord(KafkaFixtures.record("ema-results", 0, 0, 0, json("A.FR", StoreTest.T0, 2, 1)));
@@ -36,8 +38,24 @@ class ResultsConsumerTest {
     @Test
     void waitsWhileTheTopicDoesNotExist() {
         MockConsumer<String, String> consumer = KafkaFixtures.consumerWithTopic("other", 1);
-        ResultsConsumer results = new ResultsConsumer(consumer, "ema-results", new Store());
+        ResultsConsumer results = new ResultsConsumer(supply(consumer), "ema-results", new Store());
 
         assertFalse(results.pollOnce(Duration.ZERO));
+    }
+
+    @Test
+    void aBrokerThatCannotBeReachedYetIsRetriedNotFatal() {
+        int[] attempts = {0};
+        MockConsumer<String, String> consumer = KafkaFixtures.consumerWithTopic("ema-results", 1);
+        ResultsConsumer results = new ResultsConsumer(() -> {
+            if (attempts[0]++ == 0) {
+                throw new org.apache.kafka.common.KafkaException("Failed to construct kafka consumer");
+            }
+            return consumer;
+        }, "ema-results", new Store());
+
+        org.junit.jupiter.api.Assertions.assertThrows(org.apache.kafka.common.KafkaException.class,
+                () -> results.pollOnce(Duration.ZERO));
+        assertTrue(results.pollOnce(Duration.ZERO));
     }
 }

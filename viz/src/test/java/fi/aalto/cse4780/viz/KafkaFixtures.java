@@ -29,6 +29,10 @@ final class KafkaFixtures {
         return consumer;
     }
 
+    static <T> java.util.function.Supplier<T> supply(T value) {
+        return () -> value;
+    }
+
     static ConsumerRecord<String, String> record(String topic, int partition, long offset, long timestamp, String value) {
         return new ConsumerRecord<>(topic, partition, offset, timestamp,
                 org.apache.kafka.common.record.TimestampType.CREATE_TIME, 0, 0, "k", value,

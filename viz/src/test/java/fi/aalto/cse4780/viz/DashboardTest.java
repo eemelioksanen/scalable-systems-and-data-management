@@ -18,6 +18,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import static fi.aalto.cse4780.viz.KafkaFixtures.supply;
+
 import org.junit.jupiter.api.Test;
 
 class DashboardTest {
@@ -34,8 +36,8 @@ class DashboardTest {
         DashboardOptions options = DashboardOptions.parse(new String[] {"--port", "0", "--flush-ms", "20"}, Map.of());
         FeedClock feed = new FeedClock(ZoneOffset.of("+02:00"));
         dashboard = new Dashboard(options, store, feed,
-                new ResultsConsumer(KafkaFixtures.consumerWithTopic("ema-results", 1), "ema-results", store),
-                new TicksTail(KafkaFixtures.consumerWithTopic("ticks", 1), "ticks", feed, System::currentTimeMillis));
+                new ResultsConsumer(supply(KafkaFixtures.consumerWithTopic("ema-results", 1)), "ema-results", store),
+                new TicksTail(supply(KafkaFixtures.consumerWithTopic("ticks", 1)), "ticks", feed, System::currentTimeMillis));
     }
 
     @AfterEach

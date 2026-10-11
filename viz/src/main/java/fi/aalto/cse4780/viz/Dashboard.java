@@ -83,8 +83,8 @@ public final class Dashboard implements AutoCloseable {
         Store store = new Store();
         FeedClock feed = new FeedClock(options.zoneOffset());
         Dashboard dashboard = new Dashboard(options, store, feed,
-                new ResultsConsumer(consumer(options, "results"), options.resultsTopic(), store),
-                new TicksTail(consumer(options, "ticks"), options.ticksTopic(), feed, System::currentTimeMillis));
+                new ResultsConsumer(() -> consumer(options, "results"), options.resultsTopic(), store),
+                new TicksTail(() -> consumer(options, "ticks"), options.ticksTopic(), feed, System::currentTimeMillis));
         Runtime.getRuntime().addShutdownHook(new Thread(dashboard::close));
     }
 

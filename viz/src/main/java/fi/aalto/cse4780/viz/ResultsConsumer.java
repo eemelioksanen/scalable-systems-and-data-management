@@ -2,6 +2,7 @@ package fi.aalto.cse4780.viz;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,7 +20,8 @@ final class ResultsConsumer implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResultsConsumer.class);
 
-    private final Consumer<String, String> consumer;
+    private final Supplier<Consumer<String, String>> consumerFactory;
+    private Consumer<String, String> consumer;
     private final String topic;
     private final Store store;
     private final AtomicLong resultsRead = new AtomicLong();
@@ -28,8 +30,8 @@ final class ResultsConsumer implements Runnable {
     private boolean assigned;
     private boolean warnedMissing;
 
-    ResultsConsumer(Consumer<String, String> consumer, String topic, Store store) {
-        this.consumer = consumer;
+    ResultsConsumer(Supplier<Consumer<String, String>> consumerFactory, String topic, Store store) {
+        this.consumerFactory = consumerFactory;
         this.topic = topic;
         this.store = store;
     }
@@ -50,12 +52,18 @@ final class ResultsConsumer implements Runnable {
                 }
             }
         } finally {
-            consumer.close();
+            if (consumer != null) {
+                consumer.close();
+            }
         }
     }
 
     /** One poll. Returns false while the topic does not exist yet. */
     boolean pollOnce(Duration timeout) {
+        if (consumer == null) {
+            // Created here, not at startup, so an unresolvable broker is retried rather than fatal.
+            consumer = consumerFactory.get();
+        }
         if (!assigned) {
             List<PartitionInfo> partitions = consumer.partitionsFor(topic, Duration.ofSeconds(5));
             if (partitions == null || partitions.isEmpty()) {
@@ -96,7 +104,10 @@ final class ResultsConsumer implements Runnable {
 
     void stop() {
         running = false;
-        consumer.wakeup();
+        Consumer<String, String> c = consumer;
+        if (c != null) {
+            c.wakeup();
+        }
     }
 
     private void sleep(long ms) {
