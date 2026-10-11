@@ -9,7 +9,7 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 
 | Topic | Written by | Read by | Key | Value | Partitions |
 |---|---|---|---|---|---|
-| `ticks` | replayer | Flink job | symbol (`ID`) | CSV line, 7 raw fields | 8 locally (`TICKS_PARTITIONS`) |
+| `ticks` | replayer | Flink job; viz reads the tail for its replay clock | symbol (`ID`) | CSV line, 7 raw fields | 8 locally (`TICKS_PARTITIONS`) |
 | `ema-results` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `advisories` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `subscriptions` | subscription generator | Flink job (broadcast) | trader ID | JSON, or a tombstone | 1, compacted |
