@@ -1,4 +1,4 @@
-# Keep the build context small: only Maven sources and the test fixtures are needed.
+# Keep the build context small: only the Maven and dashboard sources and the test fixtures are needed.
 *
 !pom.xml
 !producer/pom.xml
@@ -6,3 +6,9 @@
 !flink-job/pom.xml
 !flink-job/src/
 !fixtures/golden/
+!viz/pom.xml
+!viz/src/
+!viz/web/
+viz/web/node_modules/
+viz/web/dist/
+viz/src/main/resources/static/

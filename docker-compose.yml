@@ -86,6 +86,21 @@ services:
     volumes:
       - ./data:/data:ro
 
+  viz:
+    build:
+      context: .
+      target: viz
+    image: ${COMPOSE_PROJECT_NAME}/viz:dev
+    ports:
+      - "${VIZ_HOST_PORT:-8088}:8088"
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+    # Must match the job's --zone-offset (D-3).
+    command: ["--zone-offset", "+02:00"]
+
   prometheus:
     image: prom/prometheus:v3.11.2
     ports:
