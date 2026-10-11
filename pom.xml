@@ -13,6 +13,7 @@
     <modules>
         <module>producer</module>
         <module>flink-job</module>
+        <module>viz</module>
     </modules>
 
     <properties>
@@ -29,6 +30,7 @@
         <junit.version>5.14.4</junit.version>
         <slf4j.version>2.0.20</slf4j.version>
         <log4j.version>2.26.1</log4j.version>
+        <javalin.version>6.7.0</javalin.version>
     </properties>
 
     <dependencyManagement>
@@ -94,6 +96,11 @@
                 <version>${kafka.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.javalin</groupId>
+                <artifactId>javalin</artifactId>
+                <version>${javalin.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
@@ -117,7 +124,7 @@
     </dependencyManagement>
 
     <build>
-        <!-- Stable jar names (target/producer.jar, target/flink-job.jar) for the Dockerfile. -->
+        <!-- Stable jar names (target/producer.jar, target/flink-job.jar, target/viz.jar) for the Dockerfile. -->
         <finalName>${project.artifactId}</finalName>
 
         <pluginManagement>

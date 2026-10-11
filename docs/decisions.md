@@ -45,6 +45,19 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-33: Dashboard over `ema-results` (2026-10-11, Eemeli Oksanen) — proposed
+Context: #26 asks for the part of the roadmap's dashboard that needs only `ema-results`, without waiting for #13. The design is in [the spec](superpowers/specs/2026-10-11-dashboard-ema-results-design.md).
+Decision:
+- `viz/` is a Java service (kafka-clients, Javalin) that serves a React + Vite frontend and one WebSocket. It reads `ema-results` from the earliest offset without a consumer group, so a restart rebuilds its state from the topic.
+- It keeps the last 288 five-minute windows (24 h of simulated time) of every published symbol, ending at the newest `windowEnd` seen. Older results are dropped. Memory is bounded by symbols × 288 in the backend and the browser, however long a replay runs.
+- The replay clock shows two simulated times next to wall-clock time: the feed time from the tail of `ticks`, read with the replayer's source-clock rule, and the latest evaluated window. The gap between them shows the watermark delay.
+- The heatmap shows every published symbol, sorted by its latest sign flip of EMA38 − EMA100. A symbol's first window counts as a flip, matching the BUY that zero initialization gives every symbol (D-7).
+- Prices carry no currency label: no topic carries the currency (D-24, D-16), and the chart says so.
+
+Consequences:
+- After a preload the feed time shows the end of the input at once. It is only meaningful during a live replay.
+- #13 adds `advisories` as another consumer feeding the same store, and an extra field in the WebSocket messages.
+
 ### D-32: UTC+2 runtime default and status alignment (2026-10-08, Leo Immonen)
 Context: D-3 accepted fixed UTC+2 on 2026-09-28, but the Flink job and the oracle still defaulted to `Z`, D-19's provisional value, while the analysis already used `+02:00`. D-29 and D-30 left the change to separate implementation work. The README and the oracle README also still described the pre-D-30 correctness reference, and the docs put the day files in two different places.
 Decision:

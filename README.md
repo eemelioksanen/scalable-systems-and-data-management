@@ -60,6 +60,7 @@ docker compose up -d --build
 | Flink | http://localhost:8081 |
 | Prometheus | http://localhost:9090 |
 | Grafana | http://localhost:3000 |
+| Dashboard | http://localhost:8088 |
 | Kafka from the host | `localhost:29092` |
 
 Kafka has no persistent data volume. `stop` retains data in its container; `down`, including without `--volumes`, removes that container and loses its topics, records, subscriptions, and consumer offsets. On the next start, `kafka-init` recreates the five empty application topics. `--volumes` also removes anonymous volumes used by the monitoring images.
@@ -99,7 +100,21 @@ The verification fixture below exercises the packaged Kafka connector independen
 
 `TICKS_PARTITIONS` defaults to 8, `TM_SLOTS` to 2, and `PARALLELISM` to 2. Changing the partition setting does not resize existing topics; reset a disposable stack to apply it. More TaskManagers need more Docker memory; the two-TaskManager check was designed for an 8 GiB Docker VM.
 
-Host ports can be changed with `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT`, and `GRAFANA_HOST_PORT`. Kafka advertises the selected host port; clients inside Compose use `kafka:9092`. `docker compose -p <project>` also isolates the built image tags.
+Host ports can be changed with `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT`, `GRAFANA_HOST_PORT`, and `VIZ_HOST_PORT`. Kafka advertises the selected host port; clients inside Compose use `kafka:9092`. `docker compose -p <project>` also isolates the built image tags.
+
+## Dashboard
+
+`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results`: a trend heatmap of every published symbol over the last 24 hours of five-minute windows, a chart of one symbol's close, EMA38 and EMA100, and a replay clock with the feed time next to wall-clock time. It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Grafana.
+
+To watch it fill, replay a subset live, for example:
+
+```bash
+docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily \
+  --mode realtime --rate 10 --pace-from 2021-11-08T09:00 --symbols RDSA.NL,ASML.NL,AIR.FR,SIE.ETR > /dev/null
+curl -s localhost:8088/health
+```
+
+[viz/README.md](viz/README.md) covers its options, the WebSocket protocol and frontend development.
 
 ## Verify the local stack
 

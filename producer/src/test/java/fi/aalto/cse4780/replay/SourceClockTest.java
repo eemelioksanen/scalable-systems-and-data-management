@@ -31,6 +31,15 @@ class SourceClockTest {
     }
 
     @Test
+    void readsSeparateDateAndTimeFieldsLikeACsvRow() {
+        assertEquals(at("2021-11-08T09:00:01.123"), clock.epochMillis("08-11-2021", "09:00:01.123"));
+        assertEquals(systemTime("09-11-2021", "17:35:00.5"), clock.epochMillis("09-11-2021", "17:35:00.5"));
+        assertEquals(UNKNOWN, clock.epochMillis("", "09:00:00.000"));
+        assertEquals(UNKNOWN, clock.epochMillis("08-11-2021", ""));
+        assertEquals(UNKNOWN, clock.epochMillis(null, "09:00:00.000"));
+    }
+
+    @Test
     void treatsMissingOrMalformedTimesAsUnknown() {
         assertEquals(UNKNOWN, systemTime("", ""));
         assertEquals(UNKNOWN, systemTime("08-11-2021", ""));
