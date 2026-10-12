@@ -14,7 +14,17 @@ x-flink-build: &flink-build
 
 services:
   kafka:
-    image: apache/kafka:4.3.1
+    build:
+      context: .
+      target: kafka
+    image: ${COMPOSE_PROJECT_NAME}/kafka:dev
+    # The image exports arguments as environment for the broker alone. In `environment`, KAFKA_OPTS would also
+    # start the agent in every kafka-*.sh tool, which then fails on the taken port.
+    command:
+      - /etc/kafka/docker/run
+      - KAFKA_OPTS=-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=9404:/etc/jmx-exporter/kafka.yml
+    volumes:
+      - ./infra/kafka/jmx-exporter.yml:/etc/jmx-exporter/kafka.yml:ro
     ports:
       - "${KAFKA_HOST_PORT:-29092}:29092"
     environment:
@@ -107,6 +117,24 @@ services:
       - "${PROMETHEUS_HOST_PORT:-9090}:9090"
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  # Per-container and host CPU, memory and network. It reads the Docker host's root filesystem and every
+  # container's cgroup, so it runs privileged in the host's cgroup namespace.
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.60.6
+    privileged: true
+    cgroup: host
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=5s
+      - --enable_metrics=cpu,memory,network
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.project,com.docker.compose.service
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
 
   grafana:
     image: grafana/grafana:12.2
