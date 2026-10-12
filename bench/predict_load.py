@@ -4,8 +4,9 @@
     bench/.venv/bin/python bench/predict_load.py [--partitions 8 16] [--parallelism 1 2 4 8] [--exchanges FR,NL]
 
 The source's subtasks read whole Kafka partitions, assigned as the Kafka connector's enumerator does; q1-ema's
-subtasks own key groups of the symbol, as Flink's keyBy assigns them. Prints one CSV row per partition count and
-parallelism: each subtask's records and the skew, max over mean.
+subtasks own key groups of the symbol, as Flink's keyBy assigns them under the default max parallelism, which the job
+does not override. Prints one CSV row per partition count and parallelism: each subtask's records and the skew, max
+over mean.
 """
 
 from __future__ import annotations
@@ -65,7 +66,7 @@ def q1_subtask(symbol: str, parallelism: int) -> int:
 
 
 def source_subtask(partition: int, parallelism: int, topic: str = "ticks") -> int:
-    start = (signed(java_hash(topic) * 31) & 0x7FFFFFFF) % parallelism
+    start = (java_hash(topic) * 31 & 0x7FFFFFFF) % parallelism
     return (start + partition) % parallelism
 
 
@@ -78,13 +79,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--symbols", type=Path, default=ROOT / "analysis" / "out" / "week" / "symbols.csv")
     parser.add_argument("--partitions", type=int, nargs="+", default=[8, 16, 32])
-    parser.add_argument("--parallelism", type=int, nargs="+", default=[1, 2, 4, 6, 8, 16])
+    parser.add_argument("--parallelism", type=int, nargs="+", default=[1, 2, 4, 6, 8, 16, 32])
     parser.add_argument("--exchanges", help="only symbols with these suffixes, e.g. FR,NL")
     args = parser.parse_args()
 
-    rows = list(csv.DictReader(args.symbols.open()))
+    with args.symbols.open() as f:
+        rows = list(csv.DictReader(f))
     if args.exchanges:
-        keep = set(args.exchanges.split(","))
+        keep = {e.strip() for e in args.exchanges.split(",")}
         rows = [r for r in rows if r["symbol"].rsplit(".", 1)[-1] in keep]
     out = csv.writer(sys.stdout)
     out.writerow(["partitions", "parallelism", "sourceRecords", "sourceSkew", "q1PriceEvents", "q1Skew"])
