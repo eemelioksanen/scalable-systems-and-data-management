@@ -45,6 +45,26 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-37: Local baselines, run procedure and partition counts (2026-10-12, Emilia Repo, issue #24) — proposed
+Context: #24 runs each planned configuration once on the local VM to find the bottlenecks and to fix the matrix, the partition counts and the procedure that #11's and #12's repeated runs use. The runs are tuning data ([evidence](validation/2026-10-12-baselines/README.md)); #9 still precedes any published performance conclusion.
+Decision:
+- **Procedure:** keep D-36's full reset before every repeat, so each starts with cold JVMs and an empty Kafka. Throughput stays the `ticks` source's records over its subtasks' span, from Flink's record of a bounded preload of the full week, the longest load available locally (36 to 59 s of job). `warmupS` is 15 for preloads and 20 for live runs: a 15 s rate window then holds neither the job's first seconds nor the unpaced rows before `--pace-from`. The measurement interval stays D-36's.
+- **Local matrix for #11** (7 vCPUs, 8 GiB): parallelism 1, 2 and 4 on 8 partitions with one TaskManager of 4 slots; FR, FR with NL, and all exchanges at p4; live replay of 08 November from 09:00 at 100x, 300x and 1000x. Parallelism above 4, several TaskManagers and other partition counts are dropped locally: the CPU limit hides what they would show.
+- **Partitions for #12:** as many as the largest parallelism #12 runs, with parallelisms that divide it (16 partitions for p1 to p16). More partitions change no subtask's load when the parallelism divides the count. Check any other choice with `bench/predict_load.py`.
+- **Input rate:** one replayer offers at most about 1.5 M records/s. A rate experiment that has to saturate the job needs several replayers, which #12 has to add.
+
+Alternatives considered:
+- *Reusing a preloaded topic across repeats and resetting only Flink:* saves the 2.5 to 3.5 min preload per repeat, but each repeat would no longer record its own preload rate, and the output topics and Prometheus history would need their own resets. At about 6 min per full-week run, #11's matrix with 3 repeats takes about 3 h, which is affordable.
+- *Steady-state throughput from Prometheus:* excludes the ramp, but a full-week job gives at most five usable scrapes, and the whole-job rate was within 5% of it in most runs.
+- *More partitions against skew:* with a dividing parallelism the hash of each symbol modulo the parallelism alone decides its subtask, so only hot-key-aware partitioning (the roadmap's optional item) would change the skew.
+
+Consequences / measurements (2026-10-12, Apple M4 Pro, rootless Podman VM with 7 vCPUs and 8 GiB; 13 single runs; full week, 289,116,808 rows, unless stated):
+- The job read 4.93 M records/s at p1, 6.87 M at p2 and 8.05 M at p4, then 6.93 M at p6 and 7.49 M at p8. From p4 the VM used 6.1 to 6.4 of its 7 cores, 5.5 in the TaskManager. p4 on two TaskManagers read 8.08 M. The `ticks` source was the busiest stage (busy 0.69 to 0.85), `q1-ema` 0.34 to 0.52, the output 0.08 to 0.13.
+- While the job read a preload, Kafka used at most 0.55 cores with its request handlers at least 99% idle. The replayer preloaded 1.44 to 1.59 M records/s, against 3.32 M rows/s when it only reads and projects, so its own producer path limits ingestion.
+- `bench/predict_load.py` matched every source and `q1-ema` subtask's records exactly in all ten preloads, including p6 on 8 and 16 partitions (source skew 1.72 and 1.33) and the FR and FR with NL subsets. Predicted skew at p16 on 16 partitions: 1.49 in the source, 1.27 in `q1-ema`.
+- Live replay of 08 November at 100x, 300x and 1000x: the job kept up at every rate, with no lag after the first scrape beyond 259 records, and exported the oracle's 373,126 results and 4,840 advisories with `lateTicks` 0. At 1000x the replayer reached 1.51 M records/s and fell up to 4.8 s behind its schedule.
+- p4 on 16 partitions read 7.26 M records/s against 8.05 M on 8 with identical loads. One run each cannot separate that from run-to-run variation.
+
 ### D-36: Benchmark harness (2026-10-12, Emilia Repo, issue #10) — proposed
 Context: #10 needs scripted runs (reset, replay, warm-up, measurement, completion) with stable run IDs, retained raw results and configurations, mean and std over repeats, count reconciliation and the correctness check (#20). #24, #11 and #12 run on it. The live-latency criteria depend on the watermark bound and idleness that #7 has not chosen.
 Decision ([bench/README.md](../bench/README.md)):

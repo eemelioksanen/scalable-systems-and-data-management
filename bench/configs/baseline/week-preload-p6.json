@@ -1,0 +1,27 @@
+{
+  "name": "week-preload-p6",
+  "mode": "preload",
+  "repeats": 1,
+  "input": [
+    "data/daily"
+  ],
+  "job": {
+    "watermarkBoundMs": 64265001,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00"
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 6,
+    "parallelism": 6
+  }
+}

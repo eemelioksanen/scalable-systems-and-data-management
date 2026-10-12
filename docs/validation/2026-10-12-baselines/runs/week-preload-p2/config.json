@@ -1,0 +1,510 @@
+{
+  "runId": "week-preload-p2-20261012T162356Z-r1",
+  "status": "COMPLETE",
+  "job": {
+    "id": "477b9107aec6ae304c3b46b998a65384",
+    "bounded": true,
+    "flinkRunFlags": [],
+    "args": [
+      "--watermark-bound-ms",
+      "64265001",
+      "--idleness-ms",
+      "0",
+      "--zone-offset",
+      "+02:00",
+      "--bounded"
+    ]
+  },
+  "stack": {
+    "containers": [
+      {
+        "name": "trading-trends-cadvisor-1",
+        "image": "ghcr.io/google/cadvisor:v0.60.6",
+        "imageId": "2fd6a2c740415380a9d87a2d404861bbd95f7168707955e80be2d2b200a10e45",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-grafana-1",
+        "image": "docker.io/grafana/grafana:12.2",
+        "imageId": "9cb3884a76fc5bd721911b127e1cfbf1af86e55bccc263aecc43e71f4404af78",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-jobmanager-1",
+        "image": "docker.io/trading-trends/flink-job:dev",
+        "imageId": "605bd77638e30bd9b98dd9d11b057f71ff9f8f5bff78160ff35ee12665af78e7",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-kafka-1",
+        "image": "docker.io/trading-trends/kafka:dev",
+        "imageId": "b113124780856d64ca79c1ec93416ea0436a95b1619eafc3959a775ebae12133",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-prometheus-1",
+        "image": "docker.io/prom/prometheus:v3.11.2",
+        "imageId": "a2517e2d385fd71f9f30463419b6f5c98a4a7dfb704ba2f2f6d569f504ac0f13",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-taskmanager-1",
+        "image": "docker.io/trading-trends/flink-job:dev",
+        "imageId": "605bd77638e30bd9b98dd9d11b057f71ff9f8f5bff78160ff35ee12665af78e7",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-viz-1",
+        "image": "docker.io/trading-trends/viz:dev",
+        "imageId": "c7c50f7ff89f71587bb58bee9aa2023a8d2417972657ded5e0b3d9d80225f524",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      }
+    ],
+    "taskmanagers": [
+      {
+        "id": "10.89.0.7:42761-8fe95f",
+        "path": "pekko.tcp://flink@10.89.0.7:42761/user/rpc/taskmanager_0",
+        "dataPort": 33671,
+        "jmxPort": -1,
+        "timeSinceLastHeartbeat": 1791822491940,
+        "slotsNumber": 2,
+        "freeSlots": 2,
+        "totalResource": {
+          "cpuCores": 2.0,
+          "taskHeapMemory": 383,
+          "taskOffHeapMemory": 0,
+          "managedMemory": 512,
+          "networkMemory": 128,
+          "extendedResources": {}
+        },
+        "freeResource": {
+          "cpuCores": 2.0,
+          "taskHeapMemory": 383,
+          "taskOffHeapMemory": 0,
+          "managedMemory": 512,
+          "networkMemory": 128,
+          "extendedResources": {}
+        },
+        "hardware": {
+          "cpuCores": 7,
+          "physicalMemory": 8289873920,
+          "freeMemory": 536870912,
+          "managedMemory": 536870920
+        },
+        "memoryConfiguration": {
+          "frameworkHeap": 134217728,
+          "taskHeap": 402653174,
+          "frameworkOffHeap": 134217728,
+          "taskOffHeap": 0,
+          "networkMemory": 134217730,
+          "managedMemory": 536870920,
+          "jvmMetaspace": 268435456,
+          "jvmOverhead": 201326592,
+          "totalFlinkMemory": 1342177280,
+          "totalProcessMemory": 1811939328
+        }
+      }
+    ],
+    "flinkConfig": [
+      {
+        "key": "blob.server.port",
+        "value": "6124"
+      },
+      {
+        "key": "taskmanager.memory.process.size",
+        "value": "1728m"
+      },
+      {
+        "key": "metrics.reporter.prom.port",
+        "value": "9249"
+      },
+      {
+        "key": "taskmanager.bind-host",
+        "value": "0.0.0.0"
+      },
+      {
+        "key": "jobmanager.execution.failover-strategy",
+        "value": "region"
+      },
+      {
+        "key": "jobmanager.rpc.address",
+        "value": "jobmanager"
+      },
+      {
+        "key": "jobmanager.memory.off-heap.size",
+        "value": "134217728b"
+      },
+      {
+        "key": "jobmanager.memory.jvm-overhead.min",
+        "value": "201326592b"
+      },
+      {
+        "key": "metrics.reporter.prom.factory.class",
+        "value": "org.apache.flink.metrics.prometheus.PrometheusReporterFactory"
+      },
+      {
+        "key": "jobmanager.memory.process.size",
+        "value": "1600m"
+      },
+      {
+        "key": "web.tmpdir",
+        "value": "/tmp/flink-web-fca7f1c3-c619-437d-a117-434570f266bd"
+      },
+      {
+        "key": "jobmanager.rpc.port",
+        "value": "6123"
+      },
+      {
+        "key": "query.server.port",
+        "value": "6125"
+      },
+      {
+        "key": "jobmanager.bind-host",
+        "value": "0.0.0.0"
+      },
+      {
+        "key": "parallelism.default",
+        "value": "2"
+      },
+      {
+        "key": "taskmanager.numberOfTaskSlots",
+        "value": "2"
+      },
+      {
+        "key": "rest.address",
+        "value": "0.0.0.0"
+      },
+      {
+        "key": "jobmanager.memory.jvm-metaspace.size",
+        "value": "268435456b"
+      },
+      {
+        "key": "env.java.opts.all",
+        "value": "--add-exports=java.rmi/sun.rmi.registry=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED"
+      },
+      {
+        "key": "jobmanager.memory.heap.size",
+        "value": "1073741824b"
+      },
+      {
+        "key": "jobmanager.memory.jvm-overhead.max",
+        "value": "201326592b"
+      }
+    ],
+    "flinkVersion": "2.2.1",
+    "clock": {
+      "containerMinusHostMs": 65,
+      "roundTripMs": 135
+    }
+  },
+  "experiment": "week-preload-p2-20261012T162356Z",
+  "config": {
+    "name": "week-preload-p2",
+    "mode": "preload",
+    "repeats": 1,
+    "input": [
+      "data/daily"
+    ],
+    "job": {
+      "watermarkBoundMs": 64265001,
+      "idlenessMs": 0,
+      "zoneOffset": "+02:00"
+    },
+    "stack": {
+      "partitions": 8,
+      "taskmanagers": 1,
+      "slots": 2,
+      "parallelism": 2
+    },
+    "subscriptions": [
+      {
+        "trader": "all",
+        "symbols": [
+          "*"
+        ]
+      }
+    ]
+  },
+  "configFile": "bench/configs/baseline/week-preload-p2.json",
+  "code": {
+    "revision": "2c89b5b6bb09c3b4af6c44ae8895eb89e1782ad2",
+    "branch": "24-local-baselines",
+    "dirty": false
+  },
+  "checkpointing": false,
+  "hardware": {
+    "host": {
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "machine": "arm64",
+      "cpus": 14,
+      "cpuModel": "Apple M4 Pro",
+      "memoryBytes": 51539607552
+    },
+    "engine": {
+      "host": {
+        "arch": "arm64",
+        "buildahVersion": "1.45.1",
+        "cgroupManager": "systemd",
+        "cgroupVersion": "v2",
+        "cgroupControllers": [
+          "cpu",
+          "io",
+          "memory",
+          "pids"
+        ],
+        "cdiSpecDirs": [
+          "/etc/cdi",
+          "/var/run/cdi"
+        ],
+        "conmon": {
+          "package": "conmon-2.2.1-2.fc44.aarch64",
+          "path": "/usr/bin/conmon",
+          "version": "conmon version 2.2.1, commit: "
+        },
+        "cpus": 7,
+        "cpuUtilization": {
+          "userPercent": 7.2,
+          "systemPercent": 1.34,
+          "idlePercent": 91.45
+        },
+        "databaseBackend": "sqlite",
+        "distribution": {
+          "distribution": "fedora",
+          "variant": "podman-machine-os",
+          "version": "44"
+        },
+        "eventLogger": "journald",
+        "freeLocks": 1975,
+        "hostname": "localhost.localdomain",
+        "idMappings": {
+          "gidmap": [
+            {
+              "container_id": 0,
+              "host_id": 1000,
+              "size": 1
+            },
+            {
+              "container_id": 1,
+              "host_id": 100000,
+              "size": 1000000
+            }
+          ],
+          "uidmap": [
+            {
+              "container_id": 0,
+              "host_id": 444131066,
+              "size": 1
+            },
+            {
+              "container_id": 1,
+              "host_id": 100000,
+              "size": 1000000
+            }
+          ]
+        },
+        "kernel": "7.1.10-200.fc44.aarch64",
+        "logDriver": "journald",
+        "memFree": 775938048,
+        "memAvailable": 4171194368,
+        "memTotal": 8289873920,
+        "networkBackend": "netavark",
+        "networkBackendInfo": {
+          "backend": "netavark",
+          "version": "netavark 2.1.0",
+          "package": "netavark-2.1.0-1.fc44.aarch64",
+          "path": "/usr/libexec/podman/netavark",
+          "dns": {
+            "version": "aardvark-dns 2.1.0",
+            "package": "aardvark-dns-2.1.0-1.fc44.aarch64",
+            "path": "/usr/libexec/podman/aardvark-dns"
+          },
+          "defaultNetwork": "podman"
+        },
+        "ociRuntime": {
+          "name": "crun",
+          "package": "crun-1.30-1.fc44.aarch64",
+          "path": "/usr/bin/crun",
+          "version": "crun version 1.30\ncommit: a6e70f254e509ceac317027c858082cc6da34cf2\nrundir: /run/user/444131066/crun\nspec: 1.0.0\n+SYSTEMD +SELINUX +APPARMOR +CAP +SECCOMP +EBPF +CRIU +LIBKRUN +WASM:wasmedge +JSON_C"
+        },
+        "os": "linux",
+        "remoteSocket": {
+          "path": "unix:///run/user/444131066/podman/podman.sock",
+          "exists": true
+        },
+        "rootlessNetworkCmd": "pasta",
+        "rootlessPortForwarder": "rootlessport",
+        "serviceIsRemote": true,
+        "security": {
+          "apparmorEnabled": false,
+          "capabilities": "CAP_CHOWN,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_KILL,CAP_NET_BIND_SERVICE,CAP_SETFCAP,CAP_SETGID,CAP_SETPCAP,CAP_SETUID,CAP_SYS_CHROOT",
+          "rootless": true,
+          "seccompEnabled": true,
+          "seccompProfilePath": "/usr/share/containers/seccomp.json",
+          "selinuxEnabled": true
+        },
+        "pasta": {
+          "executable": "/usr/bin/pasta",
+          "package": "passt-0^20260728.gf8df3f1-2.fc44.aarch64",
+          "version": "pasta 0^20260728.gf8df3f1-2.fc44.aarch64-pasta\nCopyright Red Hat\nGNU General Public License, version 2 or later\n  <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+        },
+        "swapFree": 0,
+        "swapTotal": 0,
+        "uptime": "3h 46m 19.00s (Approximately 0.12 days)",
+        "variant": "v8",
+        "linkmode": "dynamic",
+        "emulatedArchitectures": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm64be"
+        ]
+      },
+      "store": {
+        "containerStore": {
+          "number": 8,
+          "paused": 0,
+          "running": 7,
+          "stopped": 1
+        },
+        "graphDriverName": "overlay",
+        "graphOptions": {
+          "overlay.mountopt": "nodev"
+        },
+        "graphRoot": "/var/home/core/.local/share/containers/storage",
+        "graphRootAllocated": 106769133568,
+        "graphRootUsed": 20523110400,
+        "graphStatus": {
+          "Backing Filesystem": "xfs",
+          "Native Overlay Diff": "true",
+          "Supports d_type": "true",
+          "Supports shifting": "false",
+          "Supports volatile": "true",
+          "Using metacopy": "false"
+        },
+        "imageCopyTmpDir": "/var/tmp",
+        "imageStore": {
+          "number": 96
+        },
+        "runRoot": "/run/user/444131066/containers",
+        "volumePath": "/var/home/core/.local/share/containers/storage/volumes",
+        "transientStore": false
+      },
+      "registries": {
+        "search": [
+          "docker.io"
+        ]
+      },
+      "plugins": {
+        "volume": [
+          "local"
+        ],
+        "network": [
+          "bridge",
+          "macvlan",
+          "ipvlan"
+        ],
+        "log": [
+          "k8s-file",
+          "none",
+          "passthrough",
+          "journald"
+        ],
+        "authorization": null
+      },
+      "version": {
+        "APIVersion": "6.1.3",
+        "Version": "6.1.3",
+        "GoVersion": "go1.26.8-X:nodwarf5",
+        "GitCommit": "85b994955e0b4e30fbce9c8351cab85676140ede",
+        "BuiltTime": "Tue Sep 29 03:00:00 2026",
+        "Built": 1790640000,
+        "BuildOrigin": "Copr: packit/podman-container-tools-podman-29854",
+        "OsArch": "linux/arm64",
+        "Os": "linux"
+      },
+      "Client": {
+        "APIVersion": "6.1.3",
+        "Version": "6.1.3",
+        "GoVersion": "go1.27.1",
+        "GitCommit": "",
+        "BuiltTime": "Tue Sep 29 16:00:02 2026",
+        "Built": 1790686802,
+        "BuildOrigin": "brew",
+        "OsArch": "darwin/arm64",
+        "Os": "darwin"
+      }
+    }
+  },
+  "effective": {
+    "mode": "preload",
+    "finish": "bounded",
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 2,
+    "parallelism": 2,
+    "watermarkBoundMs": 64265001,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00",
+    "warmupS": 0.0,
+    "subscribers": 1
+  },
+  "times": {
+    "resetStart": 1791822236653,
+    "resetEnd": 1791822255860,
+    "replayStart": 1791822263724,
+    "replayEnd": 1791822445601,
+    "jobSubmitted": 1791822447745,
+    "jobStart": 1791822447468,
+    "jobEnd": 1791822489911
+  },
+  "inputs": [
+    {
+      "path": "data/daily/debs2022-gc-trading-day-08-11-21.csv",
+      "bytes": 4672671094,
+      "md5": "a08013f09a6b77355dae8b3ce141624d"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-09-11-21.csv",
+      "bytes": 5057964097,
+      "md5": "3e1b7a79c63c71e03f4cef82fbda94a2"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-10-11-21.csv",
+      "bytes": 5512236266,
+      "md5": "bed2f79e124f68da54929500f115a820"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-11-11-21.csv",
+      "bytes": 4790117848,
+      "md5": "943b8b04853c3fe70477b5aa1e5c6533"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-12-11-21.csv",
+      "bytes": 4836178492,
+      "md5": "4d9d0529948879e581cbe047eb23bfb7"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-13-11-21.csv",
+      "bytes": 3106841,
+      "md5": "64f57410de31c5753b848bf4eeee7bc4"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-14-11-21.csv",
+      "bytes": 1905658,
+      "md5": "adfc75f72d9348209d602baa72af44b5"
+    }
+  ]
+}
