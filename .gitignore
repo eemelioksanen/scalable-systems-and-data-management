@@ -3,6 +3,7 @@
 # Raw dataset and large generated outputs
 data/
 oracle/out/
+correctness/out/
 bench/results/raw/
 
 # Java / Maven
