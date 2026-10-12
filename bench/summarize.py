@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import matplotlib
@@ -26,6 +27,29 @@ def busy_ratio(vertex: dict | None) -> float | None:
     return 1 - (sum(vertex["idleMs"]) + sum(vertex["backPressuredMs"])) / sum(vertex["durationMs"])
 
 
+def busy_skew(vertex: dict | None) -> float | None:
+    """The busiest subtask's busy time over the mean subtask's.
+
+    Busy time, not ratio: in a bounded run a lightly loaded subtask finishes early, and its own ratio hides that.
+    """
+    if not vertex:
+        return None
+    busy = [d - i - b for i, b, d in zip(vertex["idleMs"], vertex["backPressuredMs"], vertex["durationMs"])]
+    average = sum(busy) / len(busy) if busy else 0
+    return max(busy) / average if average > 0 else None
+
+
+def interval_mean(metrics: dict, name: str, container: str = "", combine=sum) -> float | None:
+    """A query's mean over the measurement interval, combined over the series whose container name matches."""
+    means = [s["mean"] for s in metrics.get(name, [])
+             if s["mean"] is not None and re.search(container, s["labels"].get("name", ""))]
+    return combine(means) if means else None
+
+
+def mean(values: list[float]) -> float:
+    return sum(values) / len(values)
+
+
 def run_row(run: Path) -> dict:
     config = json.loads((run / "config.json").read_text())
     effective = config["effective"]
@@ -38,6 +62,7 @@ def run_row(run: Path) -> dict:
         return row
     s = json.loads((run / "summary.json").read_text())
     vertices = s["job"]["vertices"]
+    output = next((v for name, v in vertices.items() if name.startswith("subscription-filter")), None)
     correctness = s.get("correctness", {})
     row.update({
         "jobState": s["jobState"],
@@ -51,6 +76,14 @@ def run_row(run: Path) -> dict:
         "q1ReadSkew": vertices.get("q1-ema", {}).get("readSkew"),
         "sourceBusyRatio": busy_ratio(vertices.get("Source: ticks")),
         "q1BusyRatio": busy_ratio(vertices.get("q1-ema")),
+        "outputBusyRatio": busy_ratio(output),
+        "sourceBusySkew": busy_skew(vertices.get("Source: ticks")),
+        "q1BusySkew": busy_skew(vertices.get("q1-ema")),
+        "taskmanagerCpuCores": interval_mean(s["metrics"], "cpuCores", r"-taskmanager-\d+$"),
+        "kafkaCpuCores": interval_mean(s["metrics"], "cpuCores", r"-kafka-\d+$"),
+        "replayCpuCores": interval_mean(s["metrics"], "cpuCores", r"-replay$"),
+        "hostCpuCores": interval_mean(s["metrics"], "hostCpuCores"),
+        "brokerRequestHandlerIdle": interval_mean(s["metrics"], "brokerRequestHandlerIdle", combine=mean),
         "emaResults": s["outputs"].get("ema-results"),
         "advisories": s["outputs"].get("advisories"),
         "lateTicks": s["counters"]["lateTicks"] if s["reconciliation"]["countersFinal"]["lateTicks"] else None,
