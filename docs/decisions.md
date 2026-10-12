@@ -45,6 +45,27 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-36: Benchmark harness (2026-10-12, Emilia Repo, issue #10) — proposed
+Context: #10 needs scripted runs (reset, replay, warm-up, measurement, completion) with stable run IDs, retained raw results and configurations, mean and std over repeats, count reconciliation and the correctness check (#20). #24, #11 and #12 run on it. The live-latency criteria depend on the watermark bound and idleness that #7 has not chosen.
+Decision ([bench/README.md](../bench/README.md)):
+- **Runs:** `bench/run.py` takes a JSON config and repeats it. Each repeat resets the stack with `docker compose down --volumes`, writes the subscriptions, then either preloads and submits the job, or submits the job and replays live. The run ID is `<name>-<UTC stamp>-r<k>`, and the replay report carries it. The config must state the watermark bound and idleness; the harness has no defaults for them.
+- **Completion:** a bounded job ends itself. A drained job ends once the sum of its Kafka offsets reaches the replay's end offsets and q1-ema has received every price event; `flink stop --drain` then fires the remaining windows, as end of input does in a bounded run. Live runs always drain.
+- **Collection before reset:** Flink's REST record of the job, every D-35 query as a 5 s range query, the counters' last samples, the effective Compose file, container limits and image IDs, hardware, the code revision and input MD5s, and the correctness export. Preload time comes from the replayer's report, not from Prometheus.
+- **Reconciliation** uses the per-vertex record counts Flink keeps after a job ends: replayed records = records read, price events out of the source = into q1-ema, records written = records exported, and windows evaluated = `ema-results` exported under a `*` subscription. A counter from Prometheus is marked final only when its last sample agrees with those counts, and `compare` gets `lateTicks` only when it is final.
+- **Latency (bound-independent part):** live runs keep every result's `maxIngestTs` and `emitTs`, and the summary reports `emitTs - maxIngestTs` percentiles over the measurement interval. It contains the watermark wait.
+
+Alternatives considered:
+- *Counters from Prometheus alone:* a bounded job's metrics vanish when it finishes, and a 13.8 M-record preload ran in 3.5 s, between two scrapes.
+- *Polling the TaskManagers' metrics endpoint during a bounded run:* a source finishes and unregisters its metrics right after its last record, so the last poll can still miss increments.
+- *Draining every run:* exact counters, but the job's duration then includes the wait for the harness to notice it is done, so throughput runs keep `--bounded`.
+- *A lighter reset (recreating topics):* faster, but keeps Flink's JVMs warm and Prometheus's history between repeats.
+
+Consequences / measurements (2026-10-12, rootless Podman VM with 7 CPUs and 8 GiB, 8 partitions, one TaskManager with 2 slots; 12 symbols of 08 to 10 November, 13,810,579 rows, admit-all oracle):
+- Bounded preload at parallelism 2: reconciliation exact (13,810,579 read, 492,434 price events, 4,166 windows, 17 advisories), 0 EMA and 0 advisory differences, precision and recall 1.0. The gate fails only because `lateTicks` was never scraped.
+- Drained preload: the source's counters matched the oracle's input split exactly (492,434 price, 13,318,109 non-price, 36 non-positive, 182,540 dated from `Date`), `lateTicks` was final at 0, and the gate passed.
+- Live replay of 1.5 M rows of 08 November at 100× from 09:00, with the provisional 60 s bound and 30 s idleness: pacing achieved 100.0×, p99 send lag 7 ms; all counts reconciled and `lateTicks` was 0. `emitTs - maxIngestTs` was 1.0 s at p50, 18.5 s at p95 and 21.4 s at p99. 60 s of event time is 0.6 s at 100×, so the tail is the watermark waiting for the slower partitions. This is an observation under provisional settings, not a result.
+- **Open, for #7:** separating the watermark wait from queueing and processing needs the time the watermark passed each window's end. Flink's watermark gauges are sampled every 5 s, so per window it would have to be modelled from `ticks` (record timestamps, event times, partitions) under the run's bound and idleness. Watermark lag needs the replay's source clock against the job's watermark. Both depend on the bound and idleness #7 chooses.
+
 ### D-35: Kafka, container and host metrics (2026-10-12, Emilia Repo, issue #22) — proposed
 Context: the benchmark harness (#10) and the bottleneck runs (#24) need throughput, lag, backpressure, CPU, memory, GC, network and state per subtask from Prometheus, which scraped only Flink.
 Decision ([queries in interfaces.md](interfaces.md#metrics-d-35)):

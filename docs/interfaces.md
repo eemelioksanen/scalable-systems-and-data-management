@@ -119,7 +119,7 @@ The job's counts are Flink metrics, exported to Prometheus (see the README). Not
 | `subscription-filter` | `publishedResults`, `publishedAdvisories`, `suppressedResults` | At the end of a run, `publishedResults` + `suppressedResults` = `evaluatedWindows`. |
 | | `subscriptionsReady` (gauge) | 1 once the startup subscriptions have been read. |
 
-A finished `--bounded` job's metrics disappear with it. Prometheus keeps what it last scraped, every 5 s, so read the final counts from the Flink UI or REST API before the job ends if they have to be exact.
+A finished `--bounded` job's metrics disappear with it. Prometheus keeps what it last scraped, every 5 s, so read the final counts from the Flink UI or REST API before the job ends if they have to be exact. Flink's REST API keeps each vertex's record counts after the job ends, which the benchmark harness reconciles with ([bench/README.md](../bench/README.md#counts-and-reconciliation)).
 
 ## Metrics (D-35)
 
