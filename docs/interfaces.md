@@ -114,11 +114,51 @@ The job's counts are Flink metrics, exported to Prometheus (see the README). Not
 | | `systemDateEvents` | Price events dated from `Date` (D-25), a subset of `priceEvents`. |
 | `q1-ema` | `lateTicks` | Price events whose window had already been evaluated. |
 | | `evaluatedWindows`, `buyCrossovers`, `sellCrossovers` | Windows and crossovers of every symbol, subscribed or not. |
+| | `emaStates`, `openWindows` (gauges) | Per subtask: symbols whose EMAs it holds, and windows holding a close candidate. They count state entries, not bytes (D-35). |
 | `subscriptions` source | `subscriptionUpdates`, `subscriptionTombstones`, `malformedSubscriptions` | Split every `subscriptions` record. |
 | `subscription-filter` | `publishedResults`, `publishedAdvisories`, `suppressedResults` | At the end of a run, `publishedResults` + `suppressedResults` = `evaluatedWindows`. |
 | | `subscriptionsReady` (gauge) | 1 once the startup subscriptions have been read. |
 
 A finished `--bounded` job's metrics disappear with it. Prometheus keeps what it last scraped, every 5 s, so read the final counts from the Flink UI or REST API before the job ends if they have to be exact.
+
+## Metrics (D-35)
+
+Prometheus scrapes three jobs every 5 s:
+
+| Job | Exporter | Covers |
+|---|---|---|
+| `flink` | Flink's Prometheus reporter, port 9249 on the JobManager and every TaskManager | Throughput, lag, busy and backpressured time, records and state per subtask, Flink's JVMs |
+| `kafka` | Prometheus JMX exporter agent 1.7.0 in the broker, port 9404, rules in [`infra/kafka/jmx-exporter.yml`](../infra/kafka/jmx-exporter.yml) | Messages and bytes per topic, end offset per partition, broker idle ratios, the broker's JVM |
+| `cadvisor` | cAdvisor 0.60.6 | CPU, memory and network per container and for the Docker host |
+
+Each measurement and its query:
+
+| Measurement | Query | Job |
+|---|---|---|
+| Raw ticks into Kafka, records/s | `sum(rate(kafka_server_brokertopicmetrics_messagesin_total{topic="ticks"}[15s]))` | `kafka` |
+| Raw ticks read by the job, records/s per subtask | `sum by (subtask_index) (rate(flink_taskmanager_job_task_operator_KafkaSourceReader_KafkaConsumer_records_consumed_total{operator_name="Source:_ticks"}[15s]))` | `flink` |
+| Price events, events/s | `sum(rate(flink_taskmanager_job_task_operator_deserializer_ticks_priceEvents[15s]))` | `flink` |
+| Lag, records | `sum(flink_taskmanager_job_task_operator_pendingRecords{operator_name="Source:_ticks"})` | `flink` |
+| Lag from the broker's end offsets | `sum(kafka_log_logendoffset{topic="ticks"}) - sum(flink_taskmanager_job_task_operator_KafkaSourceReader_topic_partition_currentOffset{topic="ticks"} + 1)` | `kafka`, `flink` |
+| Idle and backpressured time, ms/s per subtask | `rate(flink_taskmanager_job_task_accumulateIdleTimeMs[15s])`, `rate(flink_taskmanager_job_task_accumulateBackPressuredTimeMs[15s])`, by `task_name` and `subtask_index`; busy is 1000 minus both | `flink` |
+| Records per subtask | `flink_taskmanager_job_task_operator_numRecordsIn{operator_name="q1_ema"}`, by `subtask_index` | `flink` |
+| State entries per subtask | `flink_taskmanager_job_task_operator_emaStates`, `flink_taskmanager_job_task_operator_openWindows` | `flink` |
+| State bytes | `flink_jobmanager_job_lastCheckpointFullSize`, only when the job is submitted with checkpointing; per subtask from the REST API's checkpoint details | `flink` |
+| CPU, cores | `max by (name) (rate(container_cpu_usage_seconds_total{name!=""}[15s]))`; the host is `id="/"` | `cadvisor` |
+| Memory, bytes | `max by (name) (container_memory_working_set_bytes{name!=""})`; the host is `id="/"` | `cadvisor` |
+| Peak memory, bytes | `max by (name) (max_over_time(container_memory_working_set_bytes{name!=""}[10m]))` over the run; `container_memory_max_usage_bytes` is the cgroup's peak since the container started, page cache included | `cadvisor` |
+| JVM heap, bytes | `flink_taskmanager_Status_JVM_Memory_Heap_Used`, `jvm_memory_used_bytes{job="kafka", area="heap"}` | `flink`, `kafka` |
+| GC time | `flink_taskmanager_Status_JVM_GarbageCollector_All_TimeMsPerSecond` (ms/s), `rate(jvm_gc_collection_seconds_sum{job="kafka"}[30s])` (s/s) | `flink`, `kafka` |
+| Network per container, bytes/s | `sum by (name) (max by (name, interface) (rate(container_network_receive_bytes_total{name!=""}[15s])))`, and `transmit` | `cadvisor` |
+| Network per topic, bytes/s | `sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesin_total[15s]))`, and `bytesout` | `kafka` |
+| Broker saturation, 1 = idle | `kafka_server_request_handler_avg_idle_ratio` (a one-minute average), `kafka_network_processor_avg_idle_ratio` | `kafka` |
+
+- Flink's `currentOffset` is the last record read, -1 before the first, hence the `+ 1`.
+- The job commits no offsets without checkpointing (D-28), so Kafka has no consumer-group lag for it.
+- Podman reports a container under several cgroups. The largest is the container itself, which `max by (name)` picks; Docker should report one series per container, but no Docker run has checked that. Network series are per interface, so the network query takes the maximum per interface before summing; cAdvisor leaves out loopback.
+- A `[15s]` rate spans three scrapes, so it smooths bursts shorter than that.
+- Flink's own `busyTimeMsPerSecond`, `idleTimeMsPerSecond` and `backPressuredTimeMsPerSecond` are 60 s averages, and busy reads 1000 until a task's first 5 s update. The rates of the accumulated idle and backpressured times follow a run within about 5 s. Busy is taken as the rest: Flink computes `accumulateBusyTimeMs` as wall time minus an idle time that only updates every 5 s, so its rate can exceed 1000 ms/s.
+- To get state bytes, submit with `-Dexecution.checkpointing.interval=10s -Drestart-strategy.type=none`. Without the restart setting, checkpointing would also restart a failed job instead of failing it (D-28). The state gauges count from the job's start, so they are wrong after any restore from a checkpoint or savepoint.
 
 ## Restart and replay (D-28)
 

@@ -52,7 +52,7 @@ def wait_for(description, read, ready, timeout=120):
 
 
 def free_ports():
-    sockets = [socket.socket() for _ in range(4)]
+    sockets = [socket.socket() for _ in range(5)]
     try:
         for connection in sockets:
             connection.bind(("127.0.0.1", 0))
@@ -67,16 +67,16 @@ class Verification:
         self.output = output
         self.project = "trading-trends-check-" + uuid.uuid4().hex[:12]
         self.test_image = f"{self.project}/test:dev"
-        kafka, flink, prometheus, grafana = free_ports()
+        kafka, flink, prometheus, grafana, viz = free_ports()
         self.env = dict(os.environ, KAFKA_HOST_PORT=str(kafka), FLINK_HOST_PORT=str(flink),
-                        PROMETHEUS_HOST_PORT=str(prometheus), GRAFANA_HOST_PORT=str(grafana),
+                        PROMETHEUS_HOST_PORT=str(prometheus), GRAFANA_HOST_PORT=str(grafana), VIZ_HOST_PORT=str(viz),
                         TICKS_PARTITIONS="8", TM_SLOTS="2", PARALLELISM="2", COMPOSE_PROFILES="")
         self.bootstrap = f"localhost:{kafka}"
         self.flink = f"http://127.0.0.1:{flink}"
         self.prometheus = f"http://127.0.0.1:{prometheus}"
         self.grafana = f"http://127.0.0.1:{grafana}"
         self.results = {"project": self.project, "started": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                        "ports": {"kafka": kafka, "flink": flink, "prometheus": prometheus, "grafana": grafana},
+                        "ports": {"kafka": kafka, "flink": flink, "prometheus": prometheus, "grafana": grafana, "viz": viz},
                         "checks": {}, "devcontainer": "not requested", "status": "running"}
 
     def record(self, name, value):
@@ -165,27 +165,36 @@ class Verification:
         self.record("kafka-roundtrip", "host and container clients produced and consumed the same records")
 
     def metrics(self, managers):
-        targets = wait_for("healthy Flink scrape targets", lambda: get_json(self.prometheus + "/api/v1/targets"),
-                           lambda value: len(value["data"]["activeTargets"]) == managers + 1
+        jobs = {"flink": managers + 1, "kafka": 1, "cadvisor": 1}
+        targets = wait_for("healthy scrape targets", lambda: get_json(self.prometheus + "/api/v1/targets"),
+                           lambda value: sorted(target["labels"]["job"] for target in value["data"]["activeTargets"])
+                           == sorted(job for job, count in jobs.items() for _ in range(count))
                            and all(target["health"] == "up" for target in value["data"]["activeTargets"]))
         datasources = wait_for("Grafana datasource", lambda: get_json(self.grafana + "/api/datasources"),
                                lambda value: any(item["name"] == "Prometheus" for item in value))
         uid = next(item["uid"] for item in datasources if item["name"] == "Prometheus")
+        taskmanagers = (f'container_label_com_docker_compose_project="{self.project}",'
+                        'container_label_com_docker_compose_service="taskmanager"')
+        # Each query's expected series count, and the value every series must have (None: any positive value).
+        queries = [("flink_jobmanager_numRegisteredTaskManagers", 1, managers),
+                   ("flink_taskmanager_Status_JVM_Memory_Heap_Used", managers, None),
+                   (f'kafka_server_brokertopicmetrics_messagesin_total{{topic="{INPUT}"}}', 1, 2),
+                   (f"max by (name) (container_memory_working_set_bytes{{{taskmanagers}}})", managers, None)]
         samples = {}
-        for metric, count in [("flink_jobmanager_numRegisteredTaskManagers", 1),
-                              ("flink_taskmanager_Status_JVM_Memory_Heap_Used", managers)]:
-            query = urllib.parse.urlencode({"query": metric})
+        for query, count, expected in queries:
+            encoded = urllib.parse.urlencode({"query": query})
             for name, base in [("prometheus", self.prometheus),
                                ("grafana", self.grafana + f"/api/datasources/proxy/uid/{uid}")]:
-                result = wait_for(f"{metric} via {name}", lambda: get_json(base + "/api/v1/query?" + query),
+                result = wait_for(f"{query} via {name}", lambda: get_json(base + "/api/v1/query?" + encoded),
                                   lambda value: value["status"] == "success" and len(value["data"]["result"]) == count
-                                  and (metric != "flink_jobmanager_numRegisteredTaskManagers"
-                                       or float(value["data"]["result"][0]["value"][1]) == managers))
+                                  and all(float(item["value"][1]) == expected for item in value["data"]["result"]
+                                          if expected is not None))
                 series = result["data"]["result"]
                 require(all(float(item["value"][1]) > 0 for item in series), f"Invalid metric sample: {series}")
-                samples[f"{name}:{metric}"] = series
+                samples[f"{name}:{query}"] = series
         (self.output / f"metrics-{managers}.json").write_text(json.dumps({"targets": targets, "samples": samples}, indent=2) + "\n")
-        self.record(f"metrics-{managers}", f"{managers + 1} healthy targets; Flink samples via Prometheus and Grafana")
+        self.record(f"metrics-{managers}", f"{managers + 3} healthy targets; Flink, Kafka and cAdvisor samples "
+                                           "via Prometheus and Grafana")
 
     def devcontainer(self, executable):
         label = f"stack-verification={self.project}"
@@ -215,8 +224,8 @@ class Verification:
         self.run("docker", "run", "--rm", "--mount",
                  f"type=bind,source={FIXTURES / 'LoggingCheck.java'},target=/tmp/LoggingCheck.java,readonly",
                  self.test_image, "java", "-cp", "/src/producer/target/producer.jar", "/tmp/LoggingCheck.java")
-        self.compose("build", "jobmanager", "producer", timeout=1200)
-        self.record("container-build", "both runtime images, Maven clean verify, and packaged producer logging")
+        self.compose("build", "kafka", "jobmanager", "producer", "viz", timeout=1200)
+        self.record("container-build", "runtime images, Maven clean verify, and packaged producer logging")
         self.compose("up", "-d", "--no-build", "--scale", "taskmanager=1")
         self.compose("wait", "kafka-init", timeout=180)
         self.kafka()
@@ -255,8 +264,8 @@ class Verification:
         ids = self.run("docker", "ps", "-aq", "--filter", f"label=stack-verification={self.project}").split()
         if ids:
             self.run("docker", "rm", "-f", "-v", *ids)
-        self.run("docker", "image", "rm", self.test_image, f"{self.project}/flink-job:dev",
-                 f"{self.project}/producer:dev", check=False)
+        self.run("docker", "image", "rm", self.test_image, f"{self.project}/kafka:dev", f"{self.project}/flink-job:dev",
+                 f"{self.project}/producer:dev", f"{self.project}/viz:dev", check=False)
 
 
 def main():
