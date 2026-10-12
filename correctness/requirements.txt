@@ -1,0 +1,4 @@
+# Pinned with the oracle's, so both read and write Parquet the same way.
+polars==1.44.2
+pytest==9.1.1
+kafka-python==3.0.11

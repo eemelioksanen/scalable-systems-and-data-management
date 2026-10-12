@@ -1,0 +1,11 @@
+[project]
+name = "ema-check"
+version = "1.0.0"
+description = "Exports the Flink job's output, compares it with the oracle, and injects disorder into day files"
+requires-python = ">=3.11"
+dependencies = ["polars>=1.30,<2", "kafka-python>=3,<4"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "../oracle"]
+addopts = "-p no:cacheprovider"
