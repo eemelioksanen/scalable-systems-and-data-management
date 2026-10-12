@@ -45,6 +45,25 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-34: Correctness tools (2026-10-12, Emilia Repo, issue #20) — proposed
+Context: the one-weekday check (#21) and the full-week gate (#9) need to export the job's output, compare it with the oracle without hiding missing, duplicate or rejected results, and feed the job disordered and late input whose expected output is known.
+Decision ([correctness/README.md](../correctness/README.md)):
+- **Export:** read each output topic up to the end offsets taken at the start, and record them per partition. An export is complete only if every partition starts at offset 0 and holds one record per offset. The export records the job's zone offset, which must equal the oracle's.
+- **Classification:** every difference is `lateRejection` (either side rejected an event of the symbol in that window or earlier), `precisionDrift` (same close, EMAs within 66 ulps, twice D-27's measured drift), `pipelineLoss` (missing from the job, unexplained) or `unexplained`. All classes fail the gate; D-18 is unchanged. Whether an unexplained difference is an oracle error needs a person to check the input at the oracle's close position.
+- **Late counts:** the gate also fails unless the job's `lateTicks` equals the oracle's `excluded` + `lateRejected`, so a run is not judged against a reference that rejected a different number of events. Equal counts do not prove the same events were rejected; the job's late-event list (D-31) would.
+- **Disorder:** a price row's sort key is the running maximum event time plus a seeded delay in [0, B], never below an earlier row with the same symbol and event time. Every event then needs at most B more bound in the oracle's admission model, and closes are unchanged.
+- **Late events:** a chosen price row is held until the written rows reach its window end plus L, and is listed with the bound it needs.
+
+Alternatives considered:
+- *Shuffling rows within a fixed number of positions:* bounds displacement in rows rather than in event time, so it says nothing about the watermark bound a run needs.
+- *Deciding "oracle error" automatically:* both implementations follow the same written rules, so a difference beyond drift cannot be blamed on either side without reading the input.
+
+Consequences / measurements (2026-10-12, local stack, 11 symbols of 08-10 November, 12,722,292 records, bound 64,265,001 ms, idleness off, `--bounded` preload):
+- Original input: 3,720 windows and 23 advisories (15 BUY, 8 SELL) equal to the admit-all oracle, `lateTicks` 0. The gate passes.
+- With 1 s of injected disorder: the same 3,720 windows and 23 advisories as the original's oracle output. The gate passes.
+- With 161 injected late events at 60 s: the job counted 0 late events and the 60 s oracle run 170, so the gate refuses that reference. All 507 differences are `lateRejection` by the oracle. Against an admit-all oracle run on the same files the gate passes. A preload lets the watermark trail the reads (D-28), so testing the job's own late rejections needs a paced replay.
+- The job still only counts its late events (D-31). Until it exports them, `--job-late-events` has no input from a real run.
+
 ### D-33: Dashboard over `ema-results` (2026-10-11, Eemeli Oksanen) — proposed
 Context: #26 asks for the part of the roadmap's dashboard that needs only `ema-results`, without waiting for #13. The design is in [the spec](superpowers/specs/2026-10-11-dashboard-ema-results-design.md).
 Decision:

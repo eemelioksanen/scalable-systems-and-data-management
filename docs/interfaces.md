@@ -143,3 +143,4 @@ Both inputs are read from the earliest offset, so the same `ticks` and a preload
 
   Report the mismatch counts. They must all be 0.
 - **Advisory check:** compare the two sets of (`symbol`, `windowEnd`, `type`). Report precision and recall. Both must be 1.0.
+- **Tools:** [`correctness/`](../correctness/README.md) exports the topics, runs both checks and classifies every difference (D-34).
