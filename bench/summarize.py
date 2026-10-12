@@ -124,7 +124,7 @@ def main():
             ax = axes[row][col]
             plotted = False
             for r in dirs:
-                if (r / "metrics.json").exists():
+                if (r / "summary.json").exists():
                     x, y = timeseries(r, name)
                     plotted |= bool(x)
                     ax.plot(x, y, marker=".", label=r.name)

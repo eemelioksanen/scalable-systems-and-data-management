@@ -216,8 +216,11 @@ class Run:
         self.record: dict = {"runId": self.id, "status": "RUNNING"}
 
     def sh(self, *args, input: str | None = None, timeout: float = 600, check: bool = True,
-           stdout_path: Path | None = None) -> str:
-        """Runs a command with its stderr in commands.log; returns stdout unless it goes to stdout_path."""
+           stdout_path: Path | None = None, watch=None) -> str:
+        """Runs a command with its stderr in commands.log; returns stdout unless it goes to stdout_path.
+
+        watch, if given, is called every few seconds while the command runs; if it raises, the command is stopped.
+        """
         command = [str(a) for a in args]
         print("+ " + shlex.join(command), flush=True)
         log_path = self.dir / "commands.log"
@@ -226,8 +229,11 @@ class Run:
             log.flush()
             out = stdout_path.open("w") if stdout_path else subprocess.PIPE
             try:
-                result = subprocess.run(command, cwd=ROOT, env=self.env, input=input, text=True, timeout=timeout,
-                                        stdout=out, stderr=log)
+                if watch is None:
+                    result = subprocess.run(command, cwd=ROOT, env=self.env, input=input, text=True,
+                                            timeout=timeout, stdout=out, stderr=log)
+                else:
+                    result = self._watched(command, out, log, timeout, watch)
             finally:
                 if stdout_path:
                     out.close()
@@ -236,6 +242,23 @@ class Run:
         if check and result.returncode:
             raise RuntimeError(f"exit {result.returncode}: {shlex.join(command)}\n{log_path.read_text()[-4000:]}")
         return output
+
+    def _watched(self, command: list[str], out, log, timeout: float, watch) -> subprocess.CompletedProcess:
+        process = subprocess.Popen(command, cwd=ROOT, env=self.env, text=True, stdout=out, stderr=log)
+        deadline = time.monotonic() + timeout
+        try:
+            while True:
+                try:
+                    process.wait(timeout=SCRAPE_S)
+                    return subprocess.CompletedProcess(command, process.returncode, None)
+                except subprocess.TimeoutExpired:
+                    if time.monotonic() > deadline:
+                        raise
+                    watch()
+        except BaseException:
+            process.terminate()
+            process.wait(timeout=60)
+            raise
 
     def compose(self, *args, **kwargs) -> str:
         return self.sh("docker", "compose", *args, **kwargs)
@@ -269,13 +292,20 @@ class Run:
                      "kafka:9092", "--topic", "subscriptions", "--reader-property", "parse.key=true",
                      "--reader-property", "key.separator=|", input=lines)
 
-    def replay(self, mode: str) -> dict:
+    def replay(self, mode: str, job_id: str | None = None) -> dict:
         args = []
         for path in self.cfg.container_inputs():
             args += ["--input", path]
-        self.compose("run", "--rm", "-T", "producer", "fi.aalto.cse4780.replay.Replayer", *args, "--mode", mode,
-                     "--run-id", self.id, *self.cfg.replay_args, stdout_path=self.dir / "replay.json",
-                     timeout=self.cfg.timeout_s, check=False)
+        watch = (lambda: self.running(job_id)) if job_id else None
+        container = f"{self.id}-replay"
+        try:
+            self.compose("run", "--rm", "-T", "--name", container, "producer", "fi.aalto.cse4780.replay.Replayer",
+                         *args, "--mode", mode, "--run-id", self.id, *self.cfg.replay_args,
+                         stdout_path=self.dir / "replay.json", timeout=self.cfg.timeout_s, check=False, watch=watch)
+        except BaseException:
+            # Stopping the Compose client does not always stop the container it started.
+            self.sh("docker", "stop", "-t", "30", container, check=False, timeout=60)
+            raise
         report = json.loads((self.dir / "replay.json").read_text())
         if report.get("status") != "COMPLETE":
             raise RuntimeError(f"replay ended {report.get('status')}; see replay.json")
@@ -402,12 +432,14 @@ class Run:
     def salvage(self):
         """Keeps what explains a failed run before the next reset deletes it."""
         job_id = self.record.get("job", {}).get("id")
-        if not job_id or (self.dir / "flink-job.json").exists():
+        if not job_id:
             return
         try:
-            job = self.flink_job(job_id)["job"]
-            end = job["end-time"] if job["end-time"] > 0 else int(time.time() * 1000)
-            self.metrics(self.times.get("replayStart", job["start-time"]), end)
+            job = (json.loads((self.dir / "flink-job.json").read_text()) if (self.dir / "flink-job.json").exists()
+                   else self.flink_job(job_id))["job"]
+            if not (self.dir / "metrics.json").exists():
+                end = job["end-time"] if job["end-time"] > 0 else int(time.time() * 1000)
+                self.metrics(self.times.get("replayStart", job["start-time"]), end)
         except Exception as error:
             print(f"could not collect the failed run: {error}", file=sys.stderr, flush=True)
 
@@ -533,7 +565,7 @@ class Run:
                 wait_for("every job task to run", lambda: self.running(job_id),
                          lambda j: all(v["status"] == "RUNNING" for v in j["vertices"]), timeout=180, interval=1)
                 if self.cfg.mode == "live":
-                    report = self.replay("realtime")
+                    report = self.replay("realtime", job_id)
                 self.wait_drained(job_id, report)
                 job = self.drain(job_id)
             self.mark("jobStart", job["start-time"])
