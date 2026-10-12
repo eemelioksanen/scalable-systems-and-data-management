@@ -1,0 +1,10 @@
+{
+  "name": "subset12-preload-p1",
+  "mode": "preload",
+  "repeats": 3,
+  "input": ["data/subset12"],
+  "job": {"watermarkBoundMs": 64265001, "idlenessMs": 0, "zoneOffset": "+02:00"},
+  "stack": {"partitions": 8, "taskmanagers": 1, "slots": 2, "parallelism": 1},
+  "subscriptions": [{"trader": "all", "symbols": ["*"]}],
+  "oracle": "oracle/out/subset12"
+}
