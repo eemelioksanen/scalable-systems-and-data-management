@@ -81,6 +81,8 @@ For a finite replay, add `--bounded`. The job then reads the offsets of `ticks` 
 
 The job's counts are exported to Prometheus, and [docs/interfaces.md](docs/interfaces.md#counts-d-28) lists them. The parser's are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
 
+Prometheus also scrapes the Kafka broker, through a JMX exporter agent, and cAdvisor, for CPU, memory and network per container and for the Docker host. [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query and the exporter for each measurement.
+
 The producer uses the `tools` profile and is not built by the default start command. Build it explicitly:
 
 ```bash
@@ -127,7 +129,7 @@ correctness/run.sh compare --oracle oracle/out --job correctness/out/run-1 --job
 
 ## Verify the local stack
 
-The verification script builds both images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink metrics through both Prometheus and Grafana. It also proves that stop/start retains Kafka records and reset removes them.
+The verification script builds the images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through both Prometheus and Grafana. It also proves that stop/start retains Kafka records and reset removes them.
 
 The checker needs Python 3.9+ and one Python client to reach the host Kafka listener. It uses its own Compose project, unused host ports, and synthetic topics, then removes its containers and images. Base images and build caches remain available for subsequent runs.
 
@@ -182,7 +184,9 @@ writable path. Only `fetch_slice.sh` touches the network, and it runs on the hos
 ### Container file access
 
 Containers can read host files only where a bind mount grants it, and every mount in this
-repo is a project-relative path. To enforce that rather than rely on convention, restrict
+repo is a project-relative path except cAdvisor's. cAdvisor runs privileged and mounts the
+Docker host's `/`, `/sys`, `/var/run` and `/var/lib/docker` read-only. To enforce the rest
+rather than rely on convention, restrict
 Docker Desktop's shared paths (Settings -> Resources -> File sharing) to this repository
 alone. The defaults include `/Users`, so without that change a bind mount anywhere under
 your home directory would be permitted.
