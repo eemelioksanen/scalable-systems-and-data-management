@@ -81,7 +81,7 @@ For a finite replay, add `--bounded`. The job then reads the offsets of `ticks` 
 
 The job's counts are exported to Prometheus, and [docs/interfaces.md](docs/interfaces.md#counts-d-28) lists them. The parser's are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
 
-Prometheus also scrapes the Kafka broker, through a JMX exporter agent, and cAdvisor, for CPU, memory and network per container and for the Docker host. [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query and the exporter for each measurement.
+Prometheus also scrapes the Kafka broker (through a JMX exporter agent) and cAdvisor (CPU, memory and network per container and for the Docker host). [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query and the exporter for each measurement.
 
 The producer uses the `tools` profile and is not built by the default start command. Build it explicitly:
 

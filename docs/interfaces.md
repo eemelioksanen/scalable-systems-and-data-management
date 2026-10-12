@@ -140,24 +140,25 @@ Each measurement and its query:
 | Price events, events/s | `sum(rate(flink_taskmanager_job_task_operator_deserializer_ticks_priceEvents[15s]))` | `flink` |
 | Lag, records | `sum(flink_taskmanager_job_task_operator_pendingRecords{operator_name="Source:_ticks"})` | `flink` |
 | Lag from the broker's end offsets | `sum(kafka_log_logendoffset{topic="ticks"}) - sum(flink_taskmanager_job_task_operator_KafkaSourceReader_topic_partition_currentOffset{topic="ticks"} + 1)` | `kafka`, `flink` |
-| Busy and backpressured time, ms/s per subtask | `flink_taskmanager_job_task_busyTimeMsPerSecond`, `flink_taskmanager_job_task_backPressuredTimeMsPerSecond`, by `task_name` and `subtask_index` | `flink` |
+| Idle and backpressured time, ms/s per subtask | `rate(flink_taskmanager_job_task_accumulateIdleTimeMs[15s])`, `rate(flink_taskmanager_job_task_accumulateBackPressuredTimeMs[15s])`, by `task_name` and `subtask_index`; busy is 1000 minus both | `flink` |
 | Records per subtask | `flink_taskmanager_job_task_operator_numRecordsIn{operator_name="q1_ema"}`, by `subtask_index` | `flink` |
 | State entries per subtask | `flink_taskmanager_job_task_operator_emaStates`, `flink_taskmanager_job_task_operator_openWindows` | `flink` |
 | State bytes | `flink_jobmanager_job_lastCheckpointFullSize`, only when the job is submitted with checkpointing; per subtask from the REST API's checkpoint details | `flink` |
 | CPU, cores | `max by (name) (rate(container_cpu_usage_seconds_total{name!=""}[15s]))`; the host is `id="/"` | `cadvisor` |
 | Memory, bytes | `max by (name) (container_memory_working_set_bytes{name!=""})`; the host is `id="/"` | `cadvisor` |
-| Peak memory since the container started, bytes | `max by (name) (container_memory_max_usage_bytes{name!=""})`; for a run window, `max_over_time` of the working set | `cadvisor` |
+| Peak memory, bytes | `max by (name) (max_over_time(container_memory_working_set_bytes{name!=""}[10m]))` over the run; `container_memory_max_usage_bytes` is the cgroup's peak since the container started, page cache included | `cadvisor` |
 | JVM heap, bytes | `flink_taskmanager_Status_JVM_Memory_Heap_Used`, `jvm_memory_used_bytes{job="kafka", area="heap"}` | `flink`, `kafka` |
 | GC time | `flink_taskmanager_Status_JVM_GarbageCollector_All_TimeMsPerSecond` (ms/s), `rate(jvm_gc_collection_seconds_sum{job="kafka"}[30s])` (s/s) | `flink`, `kafka` |
-| Network per container, bytes/s | `max by (name) (rate(container_network_receive_bytes_total{name!=""}[15s]))`, and `transmit` | `cadvisor` |
+| Network per container, bytes/s | `sum by (name) (max by (name, interface) (rate(container_network_receive_bytes_total{name!=""}[15s])))`, and `transmit` | `cadvisor` |
 | Network per topic, bytes/s | `sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesin_total[15s]))`, and `bytesout` | `kafka` |
-| Broker saturation, 1 = idle | `kafka_server_request_handler_avg_idle_ratio`, `kafka_network_processor_avg_idle_ratio` | `kafka` |
+| Broker saturation, 1 = idle | `kafka_server_request_handler_avg_idle_ratio` (a one-minute average), `kafka_network_processor_avg_idle_ratio` | `kafka` |
 
 - Flink's `currentOffset` is the last record read, -1 before the first, hence the `+ 1`.
 - The job commits no offsets without checkpointing (D-28), so Kafka has no consumer-group lag for it.
-- Podman reports a container under several cgroups. The largest is the container itself, which `max by (name)` picks; under Docker there is one series per container.
+- Podman reports a container under several cgroups. The largest is the container itself, which `max by (name)` picks; Docker should report one series per container, but no Docker run has checked that. Network series are per interface, so the network query takes the maximum per interface before summing; cAdvisor leaves out loopback.
 - A `[15s]` rate spans three scrapes, so it smooths bursts shorter than that.
-- To get state bytes, submit with `-Dexecution.checkpointing.interval=10s -Drestart-strategy.type=none`. Without the restart setting, checkpointing would also restart a failed job instead of failing it (D-28). A restart from a checkpoint would reset the state gauges to 0.
+- Flink's own `busyTimeMsPerSecond`, `idleTimeMsPerSecond` and `backPressuredTimeMsPerSecond` are 60 s averages, and busy reads 1000 until a task's first 5 s update. The rates of the accumulated idle and backpressured times follow a run within about 5 s. Busy is taken as the rest: Flink computes `accumulateBusyTimeMs` as wall time minus an idle time that only updates every 5 s, so its rate can exceed 1000 ms/s.
+- To get state bytes, submit with `-Dexecution.checkpointing.interval=10s -Drestart-strategy.type=none`. Without the restart setting, checkpointing would also restart a failed job instead of failing it (D-28). The state gauges count from the job's start, so they are wrong after any restore from a checkpoint or savepoint.
 
 ## Restart and replay (D-28)
 

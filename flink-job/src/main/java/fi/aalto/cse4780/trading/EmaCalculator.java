@@ -47,8 +47,8 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
     private transient Counter evaluatedWindows;
     private transient Counter buyCrossovers;
     private transient Counter sellCrossovers;
-    private transient long emaStates;
-    private transient long openWindowCount;
+    private transient volatile long emaStateCount;
+    private transient volatile long openWindowCount;
 
     @Override
     public void open(OpenContext openContext) {
@@ -61,7 +61,7 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
         evaluatedWindows = metrics.counter("evaluatedWindows");
         buyCrossovers = metrics.counter("buyCrossovers");
         sellCrossovers = metrics.counter("sellCrossovers");
-        metrics.gauge("emaStates", () -> emaStates);
+        metrics.gauge("emaStates", () -> emaStateCount);
         metrics.gauge("openWindows", () -> openWindowCount);
     }
 
@@ -97,7 +97,7 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
         EmaState state = emas.value();
         if (state == null) {
             state = new EmaState();
-            emaStates++;
+            emaStateCount++;
         }
         double previousEma38 = state.ema38;
         double previousEma100 = state.ema100;
