@@ -59,7 +59,7 @@ oracle/run.sh data/subset12/*.csv --out /out/subset12
 4. **Completion.** A bounded job is done when Flink reports it `FINISHED`. A drained job is done once the sum of the job's Kafka offsets reaches the replay's end offsets and q1-ema has received every price event, by Prometheus; the harness waits one more scrape, then stops it with `--drain`. A job that fails or is cancelled meanwhile stops the run at once.
 5. **Collection**, before the next reset deletes it: Flink's record of the job, Prometheus range queries, the job's counters, the effective configuration, and an export of `ema-results` and `advisories` with `correctness/run.sh export`. With an `oracle`, `correctness/run.sh compare` runs too.
 
-The **measurement interval** is the job's run in a preload and the replay in a live run, both minus `warmupS` at the start. Repeated runs use 15 s for preloads and 20 s for live runs (D-37). It bounds the metric summaries in `summary.json`. Preload time is never inside it: it is the replayer's own `durationMs` and `recordsPerSecond`, kept separately (D-35: a short preload gives Prometheus two or three scrapes).
+The **measurement interval** is the job's run in a preload and the replay in a live run, both minus `warmupS` at the start. Repeated runs use 15 s for preloads and 25 s for live runs (D-37). It bounds the metric summaries in `summary.json`. Preload time is never inside it: it is the replayer's own `durationMs` and `recordsPerSecond`, kept separately (D-35: a short preload gives Prometheus two or three scrapes).
 
 **Job throughput** is the records the `ticks` source read divided by the time from its first subtask's start to its last subtask's end, from Flink's record of the job. That leaves out scheduling and deployment, about 9% of a 3.5 s job. Only bounded runs report it: a drained job's tasks run on until the harness stops them.
 
@@ -94,7 +94,7 @@ Each repeat writes `bench/results/raw/<name>-<stamp>/r<k>/`. The run ID is `<nam
 
 | File | Contents |
 |---|---|
-| `runs.csv` | One row per run: status, stack size, replay and job throughput, subtask read skew (max over mean), busy ratios, output counts, `lateTicks` when final, reconciliation and correctness verdict. A busy ratio is 1 − (idle + backpressured) / duration over the tasks' whole run, from Flink's record of the job (D-35's definition of busy). The busy skew is the busiest subtask's ratio over the mean. CPU cores per container and the broker's request handler idle ratio are means over the measurement interval. |
+| `runs.csv` | One row per run: status, stack size, replay and job throughput, subtask read skew (max over mean), busy ratios, output counts, `lateTicks` when final, reconciliation and correctness verdict. A busy ratio is 1 − (idle + backpressured) / duration over the tasks' whole run, from Flink's record of the job (D-35's definition of busy). The busy skew is the busiest subtask's busy time over the mean. CPU cores (the TaskManagers' summed, Kafka's, the replayer's and the host's) and the broker's request handler idle ratio are means over the measurement interval. |
 | `summary.csv` | Per experiment and metric: n, mean, sample standard deviation, min and max, over the `COMPLETE` runs. |
 | `throughput.png` | Job and replayer records per second: mean, standard deviation and each run. |
 | `timeseries.png` | Ticks read per second and lag over time, one line per repeat. A preload of a few seconds has no samples. |

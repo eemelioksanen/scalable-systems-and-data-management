@@ -1,0 +1,36 @@
+{
+  "name": "day-live-1x-slice",
+  "mode": "live",
+  "repeats": 1,
+  "input": [
+    "data/daily/debs2022-gc-trading-day-08-11-21.csv"
+  ],
+  "replayArgs": [
+    "--rate",
+    "1",
+    "--pace-from",
+    "2021-11-08T09:00",
+    "--limit",
+    "3000000"
+  ],
+  "warmupS": 10,
+  "job": {
+    "watermarkBoundMs": 60000,
+    "idlenessMs": 30000,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ]
+}
