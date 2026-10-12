@@ -127,6 +127,15 @@ correctness/run.sh export --zone-offset +02:00 --out /out/run-1
 correctness/run.sh compare --oracle oracle/out --job correctness/out/run-1 --job-late-ticks 0 --out /out/run-1-vs-oracle
 ```
 
+## Benchmarks
+
+[bench/README.md](bench/README.md) describes the harness. `bench/run.py` resets the stack, replays an input, runs the job to completion and keeps the raw measurements, the effective configuration, a count reconciliation and, given an oracle run, the correctness check. `bench/summarize.py` turns repeated runs into CSV tables and plots with mean and std:
+
+```bash
+python3 bench/run.py bench/configs/subset12-preload-p2.json
+bench/.venv/bin/python bench/summarize.py bench/results/raw/subset12-preload-p2-<stamp>
+```
+
 ## Verify the local stack
 
 The verification script builds the images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through both Prometheus and Grafana. It also proves that stop/start retains Kafka records and reset removes them.
