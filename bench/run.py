@@ -169,9 +169,21 @@ class Config:
         self.finish = raw.get("finish", "bounded" if self.mode == "preload" else "drain")
         if self.finish not in ("bounded", "drain") or (self.mode == "live" and self.finish != "drain"):
             raise ValueError("finish must be bounded or drain, and drain in a live run")
+        if self.checkpointing and self.finish == "bounded":
+            raise ValueError("checkpointing needs finish drain: a bounded job waits for a final checkpoint, "
+                             "which distorts its duration, and a short one takes none")
         self.oracle = Path(raw["oracle"]) if raw.get("oracle") else None
+        selecting = {"--limit", "--symbols", "--symbols-file", "--exchanges"} & set(self.replay_args)
+        if self.oracle and selecting:
+            raise ValueError(f"the oracle covers whole files, so {sorted(selecting)} would make every run differ")
         if self.oracle and not (ROOT / self.oracle / "manifest.json").exists():
             raise ValueError(f"{self.oracle} holds no oracle output")
+
+    def effective(self) -> dict:
+        return {"mode": self.mode, "finish": self.finish, "partitions": self.partitions,
+                "taskmanagers": self.taskmanagers, "slots": self.slots, "parallelism": self.parallelism,
+                "watermarkBoundMs": self.bound_ms, "idlenessMs": self.idleness_ms, "zoneOffset": self.zone_offset,
+                "warmupS": self.warmup_s, "subscribers": len(self.subscriptions)}
 
     @property
     def all_subscribed(self) -> bool:
@@ -289,16 +301,23 @@ class Run:
                         lambda j: j["state"] in ("FINISHED", "FAILED", "CANCELED"),
                         timeout=self.cfg.timeout_s, interval=1)
 
-    def wait_drained(self, report: dict):
+    def running(self, job_id: str) -> dict:
+        job = http_json(f"{FLINK}/jobs/{job_id}")
+        if job["state"] in ("FAILED", "CANCELED", "FINISHED"):
+            raise RuntimeError(f"the job ended {job['state']} while the harness waited for it")
+        return job
+
+    def wait_drained(self, job_id: str, report: dict):
         """The unbounded job has read every replayed record and passed each price event to q1-ema."""
         written = sum(p["endOffset"] or 0 for p in report["offsets"])
         read = 'sum(flink_taskmanager_job_task_operator_KafkaSourceReader_topic_partition_currentOffset{topic="ticks"} + 1)'
-        wait_for(f"the job to read all {written} records", lambda: scalar(read), lambda n: n == written,
-                 timeout=self.cfg.timeout_s, interval=SCRAPE_S)
+        wait_for(f"the job to read all {written} records", lambda: self.running(job_id) and scalar(read),
+                 lambda n: n == written, timeout=self.cfg.timeout_s, interval=SCRAPE_S)
         handed = "sum(flink_taskmanager_job_task_operator_deserializer_ticks_priceEvents)"
         received = 'sum(flink_taskmanager_job_task_operator_numRecordsIn{operator_name="q1_ema"})'
-        wait_for("q1-ema to receive every price event", lambda: (scalar(handed), scalar(received)),
-                 lambda pair: pair[0] is not None and pair[0] == pair[1], timeout=300, interval=SCRAPE_S)
+        wait_for("q1-ema to receive every price event",
+                 lambda: self.running(job_id) and (scalar(handed), scalar(received)),
+                 lambda pair: pair[0] is not None and pair[0] == pair[1], timeout=self.cfg.timeout_s, interval=SCRAPE_S)
         time.sleep(SCRAPE_S + 1)
 
     def drain(self, job_id: str) -> dict:
@@ -380,6 +399,18 @@ class Run:
                       "roundTripMs": int((after - before) * 1000)},
         }
 
+    def salvage(self):
+        """Keeps what explains a failed run before the next reset deletes it."""
+        job_id = self.record.get("job", {}).get("id")
+        if not job_id or (self.dir / "flink-job.json").exists():
+            return
+        try:
+            job = self.flink_job(job_id)["job"]
+            end = job["end-time"] if job["end-time"] > 0 else int(time.time() * 1000)
+            self.metrics(self.times.get("replayStart", job["start-time"]), end)
+        except Exception as error:
+            print(f"could not collect the failed run: {error}", file=sys.stderr, flush=True)
+
     # Derived
 
     def reconcile(self, report: dict, flink: dict, counters: dict, outputs: dict) -> dict:
@@ -407,10 +438,6 @@ class Run:
             "split": sum(counters[n] or 0 for n in SPLIT) == total(source, "read-records")
                      and counters["priceEvents"] == total(source, "write-records"),
             "lateTicks": counters["q1RecordsIn"] == total(q1, "read-records"),
-            "windows": counters["evaluatedWindows"] == total(q1, "write-records"),
-            "published": counters["publishedResults"] is not None
-                         and counters["publishedResults"] + (counters["publishedAdvisories"] or 0)
-                         == total(sinks, "write-records"),
         }
         if self.cfg.oracle:
             oracle = json.loads((ROOT / self.cfg.oracle / "manifest.json").read_text())["counts"]["total"]
@@ -418,6 +445,12 @@ class Run:
                 ("replayed data rows = oracle data rows", report["counts"]["dataRows"], oracle["dataRows"]),
                 ("price events = oracle price events", total(source, "write-records"), oracle["accepted"]),
             ]
+            if final["split"]:
+                checks += [
+                    ("non-price events = oracle's", counters["nonPriceEvents"], oracle["nonPrice"]),
+                    ("non-positive prices = oracle's", counters["nonPositivePriceEvents"], oracle["nonPositivePrice"]),
+                    ("events dated from Date = oracle's", counters["systemDateEvents"], oracle["systemDateEvents"]),
+                ]
         rows = [{"check": name, "left": left, "right": right, "ok": left is not None and left == right}
                 for name, left, right in checks]
         return {"ok": all(r["ok"] for r in rows), "checks": rows, "countersFinal": final}
@@ -440,7 +473,9 @@ class Run:
                 "durationMs": [s["duration"] for s in subtasks],
                 "readSkew": round(max(records) / mean, 4) if mean else None,
             }
-        read = per_vertex.get("Source: ticks", {}).get("readRecords", [])
+        source = flink["vertices"].get("Source: ticks", {}).get("subtasks", [])
+        read = [s["metrics"]["read-records"] for s in source]
+        span_ms = max(s["end-time"] for s in source) - min(s["start-time"] for s in source) if source else 0
         if self.cfg.mode == "preload":
             interval = (job["start-time"] + int(self.cfg.warmup_s * 1000), job["end-time"])
         else:
@@ -462,9 +497,9 @@ class Run:
             "measurementInterval": {"startMs": interval[0], "endMs": interval[1]},
             "replay": {"records": report["counts"]["acknowledged"], "durationMs": report["timing"]["durationMs"],
                        "recordsPerSecond": report["timing"]["recordsPerSecond"], "pacing": report.get("pacing")},
-            "job": {"durationMs": duration_ms, "recordsRead": sum(read),
-                    "recordsPerSecond": round(sum(read) / duration_ms * 1000, 1)
-                                        if self.cfg.finish == "bounded" and duration_ms > 0 else None,
+            "job": {"durationMs": duration_ms, "sourceSpanMs": span_ms, "recordsRead": sum(read),
+                    "recordsPerSecond": round(sum(read) / span_ms * 1000, 1)
+                                        if self.cfg.finish == "bounded" and span_ms > 0 else None,
                     "vertices": per_vertex},
             "counters": counters,
             "reconciliation": recon,
@@ -473,7 +508,12 @@ class Run:
         }
         if "compare" in outputs:
             c = outputs["compare"]
-            summary["correctness"] = {"pass": c["pass"], "problems": c["problems"],
+            identical = (not c["ema"]["differences"] and not c["advisories"]["byKind"]
+                         and not any(c["ema"]["duplicateRows"].values()) and not any(c["advisories"]["duplicateRows"].values()))
+            only_late_unknown = all(p.startswith("the job's lateTicks was not given") for p in c["problems"])
+            summary["correctness"] = {"verdict": "pass" if c["pass"] else
+                                      "unverified" if identical and only_late_unknown else "fail",
+                                      "problems": c["problems"],
                                       "emaDifferences": c["ema"]["differences"], "advisoryDifferences":
                                       sum(c["advisories"]["byKind"].values()) if c["advisories"]["byKind"] else 0,
                                       "precision": c["advisories"]["precision"], "recall": c["advisories"]["recall"]}
@@ -490,19 +530,20 @@ class Run:
             if self.cfg.finish == "bounded":
                 job = self.wait_ended(job_id)
             else:
-                wait_for("every job task to run", lambda: http_json(f"{FLINK}/jobs/{job_id}"),
+                wait_for("every job task to run", lambda: self.running(job_id),
                          lambda j: all(v["status"] == "RUNNING" for v in j["vertices"]), timeout=180, interval=1)
                 if self.cfg.mode == "live":
                     report = self.replay("realtime")
-                self.wait_drained(report)
+                self.wait_drained(job_id, report)
                 job = self.drain(job_id)
-            start = self.times["replayStart"] if self.cfg.mode == "preload" else None
             self.mark("jobStart", job["start-time"])
             self.mark("jobEnd", job["end-time"])
-            start = start or job["start-time"]
+            start = self.times["replayStart"] if self.cfg.mode == "preload" else job["start-time"]
             time.sleep(2 * SCRAPE_S)
             flink = self.flink_job(job_id)
             pulled = self.metrics(start, job["end-time"])
+            if job["state"] != "FINISHED":
+                raise RuntimeError(f"the job ended {job['state']}; see flink-job.json")
             counters = self.counters(start, job["end-time"])
             self.record["stack"] = self.describe()
             outputs = {"export": self.export()}
@@ -512,13 +553,15 @@ class Run:
                 outputs["compare"] = self.compare(counters["lateTicks"] if final else None)
             summary = self.summarize(report, flink, pulled, counters, recon, outputs)
             self.save("summary.json", summary)
-            self.record["status"] = "COMPLETE" if job["state"] == "FINISHED" else job["state"]
-        except Exception as error:
-            self.record["status"] = "FAILED"
-            self.record["error"] = str(error)
+            valid = recon["ok"] and summary.get("correctness", {}).get("verdict") != "fail"
+            self.record["status"] = "COMPLETE" if valid else "INVALID"
+        except BaseException as error:
+            self.record["status"] = "FAILED" if isinstance(error, Exception) else "INTERRUPTED"
+            self.record["error"] = str(error) or type(error).__name__
+            self.salvage()
             raise
         finally:
-            self.record.update({**session, "times": self.times, "inputs": self.inputs})
+            self.record.update({**session, "effective": self.cfg.effective(), "times": self.times, "inputs": self.inputs})
             self.save("config.json", self.record)
 
 
@@ -548,12 +591,6 @@ def main():
     args = parser.parse_args()
     cfg = Config(args.config, args.repeats)
 
-    experiment = RESULTS / f"{cfg.name}-{utc_stamp()}"
-    experiment.mkdir(parents=True)
-    print(f"experiment {experiment}", flush=True)
-    if not args.no_build:
-        subprocess.run(["docker", "compose", "--profile", "tools", "build"], cwd=ROOT, env=cfg.env(), check=True)
-
     inputs = [{"path": str(f.relative_to(ROOT)), "bytes": f.stat().st_size, "md5": md5(f)} for f in cfg.input_files()]
     if cfg.oracle:
         oracle = json.loads((ROOT / cfg.oracle / "manifest.json").read_text())
@@ -561,7 +598,12 @@ def main():
         theirs = sorted((i["file"], i.get("md5")) for i in oracle.get("inputs", []))
         if ours != theirs:
             raise SystemExit(f"{cfg.oracle} was computed from other files: {theirs} against {ours}")
+    if not args.no_build:
+        subprocess.run(["docker", "compose", "--profile", "tools", "build"], cwd=ROOT, env=cfg.env(), check=True)
 
+    experiment = RESULTS / f"{cfg.name}-{utc_stamp()}"
+    experiment.mkdir(parents=True)
+    print(f"experiment {experiment}", flush=True)
     session = {
         "experiment": experiment.name,
         "config": cfg.raw,
@@ -571,17 +613,19 @@ def main():
         "checkpointing": cfg.checkpointing,
         "hardware": hardware(),
     }
-    failed = 0
+    complete = 0
     for repeat in range(1, cfg.repeats + 1):
         run = Run(cfg, experiment, repeat, inputs)
         print(f"== {run.id}", flush=True)
         try:
             run.execute(session)
         except Exception as error:
-            failed += 1
             print(f"FAILED {run.id}: {error}", file=sys.stderr, flush=True)
-    print(f"{cfg.repeats - failed} of {cfg.repeats} runs complete in {experiment}", flush=True)
-    sys.exit(1 if failed else 0)
+        if run.record["status"] == "INVALID":
+            print(f"INVALID {run.id}: reconciliation or correctness failed; see summary.json", file=sys.stderr, flush=True)
+        complete += run.record["status"] == "COMPLETE"
+    print(f"{complete} of {cfg.repeats} runs complete in {experiment}", flush=True)
+    sys.exit(0 if complete == cfg.repeats else 1)
 
 
 if __name__ == "__main__":

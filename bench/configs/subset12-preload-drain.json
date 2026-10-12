@@ -3,27 +3,9 @@
   "mode": "preload",
   "finish": "drain",
   "repeats": 1,
-  "input": [
-    "data/subset12"
-  ],
-  "job": {
-    "watermarkBoundMs": 64265001,
-    "idlenessMs": 0,
-    "zoneOffset": "+02:00"
-  },
-  "stack": {
-    "partitions": 8,
-    "taskmanagers": 1,
-    "slots": 2,
-    "parallelism": 2
-  },
-  "subscriptions": [
-    {
-      "trader": "all",
-      "symbols": [
-        "*"
-      ]
-    }
-  ],
+  "input": ["data/subset12"],
+  "job": {"watermarkBoundMs": 64265001, "idlenessMs": 0, "zoneOffset": "+02:00"},
+  "stack": {"partitions": 8, "taskmanagers": 1, "slots": 2, "parallelism": 2},
+  "subscriptions": [{"trader": "all", "symbols": ["*"]}],
   "oracle": "oracle/out/subset12"
 }

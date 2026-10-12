@@ -20,33 +20,19 @@ import polars as pl  # noqa: E402
 
 
 def busy_ratio(vertex: dict | None) -> float | None:
+    """Busy share of the tasks' whole run, as D-35 defines busy: the rest after idle and backpressured time."""
     if not vertex or not sum(vertex["durationMs"]):
         return None
-    return sum(vertex["busyMs"]) / sum(vertex["durationMs"])
-
-
-def latency(run: Path, summary: dict) -> dict:
-    """Last contributing ingest to emission per published window, within the measurement interval (live only)."""
-    if summary["mode"] != "live":
-        return {}
-    interval = summary["measurementInterval"]
-    ms = (pl.read_parquet(run / "export" / "ema_results.parquet")
-          .filter(pl.col("emitTs").is_between(interval["startMs"], interval["endMs"]))
-          .select((pl.col("emitTs") - pl.col("maxIngestTs")).alias("ms"))["ms"])
-    if ms.is_empty():
-        return {"ingestToEmitCount": 0}
-    return {"ingestToEmitCount": ms.len(), **{f"ingestToEmitP{q}Ms": float(ms.quantile(q / 100, "nearest"))
-                                              for q in (50, 95, 99)}}
+    return 1 - (sum(vertex["idleMs"]) + sum(vertex["backPressuredMs"])) / sum(vertex["durationMs"])
 
 
 def run_row(run: Path) -> dict:
     config = json.loads((run / "config.json").read_text())
-    stack = config["config"].get("stack", {})
+    effective = config["effective"]
     row = {
-        "experiment": config["experiment"], "run": config["runId"], "mode": config["config"]["mode"],
-        "status": config["status"], "partitions": stack.get("partitions", 8),
-        "taskmanagers": stack.get("taskmanagers", 1), "slots": stack.get("slots", 2),
-        "parallelism": stack.get("parallelism", 2), "checkpointing": config["checkpointing"],
+        "experiment": config["experiment"], "run": config["runId"], "status": config["status"],
+        **{k: effective[k] for k in ("mode", "finish", "partitions", "taskmanagers", "slots", "parallelism")},
+        "checkpointing": config["checkpointing"],
     }
     if not (run / "summary.json").exists():
         return row
@@ -59,6 +45,7 @@ def run_row(run: Path) -> dict:
         "replayDurationMs": s["replay"]["durationMs"],
         "replayRecordsPerSecond": s["replay"]["recordsPerSecond"],
         "jobDurationMs": s["job"]["durationMs"],
+        "sourceSpanMs": s["job"]["sourceSpanMs"],
         "jobRecordsPerSecond": s["job"]["recordsPerSecond"],
         "sourceReadSkew": vertices.get("Source: ticks", {}).get("readSkew"),
         "q1ReadSkew": vertices.get("q1-ema", {}).get("readSkew"),
@@ -66,12 +53,10 @@ def run_row(run: Path) -> dict:
         "q1BusyRatio": busy_ratio(vertices.get("q1-ema")),
         "emaResults": s["outputs"].get("ema-results"),
         "advisories": s["outputs"].get("advisories"),
-        "finish": s["finish"],
         "lateTicks": s["counters"]["lateTicks"] if s["reconciliation"]["countersFinal"]["lateTicks"] else None,
         "reconciliationOk": s["reconciliation"]["ok"],
-        "correctnessPass": correctness.get("pass"),
+        "correctness": correctness.get("verdict"),
         "emaDifferences": correctness.get("emaDifferences"),
-        **latency(run, s),
     })
     return row
 
@@ -123,8 +108,7 @@ def main():
                .agg(n=pl.len(), mean=pl.col("value").mean(), std=pl.col("value").std(),
                     min=pl.col("value").min(), max=pl.col("value").max()))
     summary.write_csv(out / "summary.csv")
-    print(summary.filter(pl.col("metric").is_in(["jobRecordsPerSecond", "replayRecordsPerSecond", "jobDurationMs",
-                                                  "ingestToEmitP50Ms", "ingestToEmitP99Ms"])))
+    print(summary.filter(pl.col("metric").is_in(["jobRecordsPerSecond", "replayRecordsPerSecond", "jobDurationMs"])))
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
     bars(axes[0], summary, runs, "jobRecordsPerSecond", "Job: ticks read per second (REST)")
@@ -132,13 +116,6 @@ def main():
     fig.suptitle("Mean, std and each run", fontsize=10)
     fig.tight_layout()
     fig.savefig(out / "throughput.png", dpi=120)
-
-    if "ingestToEmitP50Ms" in runs.columns:
-        fig, axes = plt.subplots(1, 3, figsize=(12, 4))
-        for ax, q in zip(axes, (50, 95, 99)):
-            bars(ax, summary, runs, f"ingestToEmitP{q}Ms", f"Last ingest to emit, p{q} (ms)")
-        fig.tight_layout()
-        fig.savefig(out / "latency.png", dpi=120)
 
     panels = [("ticksReadPerSubtask", "Ticks read per second"), ("lag", "Lag, records (pendingRecords)")]
     fig, axes = plt.subplots(len(panels), len(run_dirs), figsize=(5 * len(run_dirs), 6), squeeze=False)
