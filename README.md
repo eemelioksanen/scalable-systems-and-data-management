@@ -116,6 +116,15 @@ curl -s localhost:8088/health
 
 [viz/README.md](viz/README.md) covers its options, the WebSocket protocol and frontend development.
 
+## Correctness check
+
+[correctness/README.md](correctness/README.md) has the tools: `export` dumps `ema-results` and `advisories` after a run, `compare` diffs them against the oracle (D-18), and `inject` rewrites day files with bounded disorder and late events. For a finished `--bounded` run with the `["*"]` subscription and an admit-all oracle run in `oracle/out/`:
+
+```bash
+correctness/run.sh export --zone-offset +02:00 --out /out/run-1
+correctness/run.sh compare --oracle oracle/out --job correctness/out/run-1 --job-late-ticks 0 --out /out/run-1-vs-oracle
+```
+
 ## Verify the local stack
 
 The verification script builds both images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink metrics through both Prometheus and Grafana. It also proves that stop/start retains Kafka records and reset removes them.
