@@ -57,6 +57,7 @@ The Maven build runs the Query 1 unit and Flink mini-cluster tests added on `mai
 The SQL fixture verifies the connector on the running cluster; it does not validate Query 1's numerical output or the replayer, subscriptions, or oracle.
 The dev-container check uses the reference CLI and does not exercise an IDE's graphical integration.
 
-This verifies the initial Flink scrape only.
-Kafka and host exporters, performance measurements, and cloud deployment belong to later tasks.
+This run verified the initial Flink scrape only.
+The Kafka and cAdvisor scrapes came later with D-35, which the script now also checks and which records them under load.
+Performance measurements and cloud deployment belong to later tasks.
 Kafka remains temporary: removing its container loses all its records and offsets.

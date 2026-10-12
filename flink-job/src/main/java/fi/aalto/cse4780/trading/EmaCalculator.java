@@ -47,6 +47,8 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
     private transient Counter evaluatedWindows;
     private transient Counter buyCrossovers;
     private transient Counter sellCrossovers;
+    private transient long emaStates;
+    private transient long openWindowCount;
 
     @Override
     public void open(OpenContext openContext) {
@@ -59,6 +61,8 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
         evaluatedWindows = metrics.counter("evaluatedWindows");
         buyCrossovers = metrics.counter("buyCrossovers");
         sellCrossovers = metrics.counter("sellCrossovers");
+        metrics.gauge("emaStates", () -> emaStates);
+        metrics.gauge("openWindows", () -> openWindowCount);
     }
 
     @Override
@@ -75,6 +79,7 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
         if (candidate == null) {
             candidate = new CloseCandidate(tick);
             ctx.timerService().registerEventTimeTimer(lastMillis);
+            openWindowCount++;
         } else {
             candidate.offer(tick);
         }
@@ -87,10 +92,12 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
         long windowEnd = timestamp + 1;
         CloseCandidate close = openWindows.get(windowEnd);
         openWindows.remove(windowEnd);
+        openWindowCount--;
 
         EmaState state = emas.value();
         if (state == null) {
             state = new EmaState();
+            emaStates++;
         }
         double previousEma38 = state.ema38;
         double previousEma100 = state.ema100;

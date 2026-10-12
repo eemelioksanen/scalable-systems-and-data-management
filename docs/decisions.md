@@ -45,6 +45,31 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-35: Kafka, container and host metrics (2026-10-12, Emilia Repo, issue #22) — proposed
+Context: the benchmark harness (#10) and the bottleneck runs (#24) need throughput, lag, backpressure, CPU, memory, GC, network and state per subtask from Prometheus, which scraped only Flink.
+Decision ([queries in interfaces.md](interfaces.md#metrics-d-35)):
+- **Kafka:** the Prometheus JMX exporter agent runs in the broker, from a `kafka` image target that adds its jar by checksum. Its rules keep messages and bytes per topic, each partition's end offset and size, and the request handler and network idle ratios; the agent adds the broker's JVM. Compose passes the agent as a start argument, so the Kafka tools in the healthcheck and in `docker compose exec` do not start a second agent on the same port.
+- **Containers and host:** cAdvisor, limited to CPU, memory and network. It runs privileged in the host's cgroup namespace and mounts the Docker host's `/`, `/sys`, `/var/run` and `/var/lib/docker` read-only.
+- **Lag:** Flink's `pendingRecords`, cross-checked against the broker's end offsets. Without checkpointing the job commits no offsets (D-28), so the broker has no consumer-group lag to report.
+- **State:** two `q1-ema` gauges count state entries per subtask: symbols with EMAs and open windows. Heap state has no size metric, so bytes come from checkpoint sizes in a run submitted with checkpointing.
+
+Alternatives considered:
+- *A separate Kafka exporter reading consumer groups:* the job commits no offsets, and the JMX rules already give the topic offsets.
+- *node-exporter for the host:* cAdvisor's root cgroup already gives the host's CPU, memory and network.
+- *Checkpointing on by default for state bytes:* changes D-28's failure behavior and puts checkpoint barriers into every measured run.
+- *RocksDB native metrics:* bytes per subtask, but only with the RocksDB backend, which is an ablation.
+
+Consequences / measurements (2026-10-12, rootless Podman 6.1.3 VM with 7 CPUs and 8 GiB, defaults of 8 partitions, 2 slots, parallelism 2; [evidence](validation/2026-10-12-metrics-under-load.json)). 13,810,579 rows of 12 symbols, 08-10 November, were preloaded in 8.6 s, and the job was submitted afterwards to read the backlog:
+- Raw ticks reached 1.07 M records/s into Kafka. The job read up to 615 k records/s on one source subtask and up to 16.3 k price events/s.
+- The highest lag Prometheus saw was 5.07 M records by `pendingRecords` and 5.06 M by the broker's end offsets; the source had read the rest before its first scrape. The lag reached 0 within about 10 s.
+- Every task was busy 1000 ms/s and none was backpressured: the `ticks` source, which parses every row, was the slowest stage. Backpressure therefore read 0 throughout; no local run made a downstream stage slower than the source.
+- With the job already running during a preload, it kept up: no lag and no backpressure while the replayer wrote 1.2 M records/s.
+- The 12 symbols hash to 6 of the 8 partitions. Source subtask 0 read 10,778,797 records and subtask 1 read 3,031,782; `q1-ema` received 213,460 and 278,974 price events for 5 and 7 symbols. At this symbol count, the partition hash decides the load per subtask, which matters for #24.
+- `emaStates` was 5 and 7. `openWindows` peaked at 1,636 and 2,530 while the watermark trailed the backlog (D-28), then fell to 0 and 4, the windows still waiting for the watermark. With 10 s checkpoints, `q1-ema` held 4,687 and 5,043 bytes of state and the job 22,983 bytes.
+- Peak memory: Kafka 1.49 GB, the TaskManager 838 MB, the JobManager 645 MB. The VM's working set reached 5.25 GB of 8 GiB. CPU: the TaskManager up to 1.44 cores, Kafka 0.47, the VM 1.87 of 7.
+- GC: the TaskManager up to 1.95 ms/s, the broker 0.3 ms/s of young collections. Network: the TaskManager received up to 24.1 MB/s and Kafka sent 19.4 MB/s.
+- Under rootless Podman, cAdvisor needs the Podman socket instead of Docker's and no `/var/lib/docker`, and it reports each container under three cgroups; `max by (name)` in the queries picks the container. Docker Desktop and Docker on Linux were not run.
+
 ### D-34: Correctness tools (2026-10-12, Emilia Repo, issue #20) — proposed
 Context: the one-weekday check (#21) and the full-week gate (#9) need to export the job's output, compare it with the oracle without hiding missing, duplicate or rejected results, and feed the job disordered and late input whose expected output is known.
 Decision ([correctness/README.md](../correctness/README.md)):

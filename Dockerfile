@@ -35,6 +35,12 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp clean verify
 FROM ${FLINK_IMAGE} AS flink-job
 COPY --from=build /src/flink-job/target/flink-job.jar /opt/job/flink-job.jar
 
+# Kafka with the Prometheus JMX exporter agent; compose passes the agent to the broker only.
+FROM apache/kafka:4.3.1 AS kafka
+ADD --chmod=644 --checksum=sha256:0ad843261c567d1924a017d542e14c40f2afff523d940c25ee000742fde4b3a9 \
+    https://github.com/prometheus/jmx_exporter/releases/download/1.7.0/jmx_prometheus_javaagent-1.7.0.jar \
+    /opt/jmx-exporter/jmx_prometheus_javaagent.jar
+
 FROM eclipse-temurin:17-jre AS producer
 COPY --from=build /src/producer/target/producer.jar /app/producer.jar
 ENTRYPOINT ["java", "-cp", "/app/producer.jar"]
