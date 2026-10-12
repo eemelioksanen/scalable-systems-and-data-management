@@ -26,6 +26,21 @@ def busy_ratio(vertex: dict | None) -> float | None:
     return 1 - (sum(vertex["idleMs"]) + sum(vertex["backPressuredMs"])) / sum(vertex["durationMs"])
 
 
+def busy_skew(vertex: dict | None) -> float | None:
+    """The busiest subtask's busy ratio over the mean subtask's."""
+    if not vertex or not all(vertex["durationMs"]):
+        return None
+    ratios = [1 - (i + b) / d for i, b, d in zip(vertex["idleMs"], vertex["backPressuredMs"], vertex["durationMs"])]
+    mean = sum(ratios) / len(ratios)
+    return max(ratios) / mean if mean > 0 else None
+
+
+def interval_mean(metrics: dict, name: str, match: str = "") -> float | None:
+    """A query's mean over the measurement interval, summed over the series whose name label contains match."""
+    means = [s["mean"] for s in metrics.get(name, []) if s["mean"] is not None and match in s["labels"].get("name", "")]
+    return sum(means) if means else None
+
+
 def run_row(run: Path) -> dict:
     config = json.loads((run / "config.json").read_text())
     effective = config["effective"]
@@ -38,6 +53,7 @@ def run_row(run: Path) -> dict:
         return row
     s = json.loads((run / "summary.json").read_text())
     vertices = s["job"]["vertices"]
+    output = next((v for name, v in vertices.items() if name.startswith("subscription-filter")), None)
     correctness = s.get("correctness", {})
     row.update({
         "jobState": s["jobState"],
@@ -51,6 +67,14 @@ def run_row(run: Path) -> dict:
         "q1ReadSkew": vertices.get("q1-ema", {}).get("readSkew"),
         "sourceBusyRatio": busy_ratio(vertices.get("Source: ticks")),
         "q1BusyRatio": busy_ratio(vertices.get("q1-ema")),
+        "outputBusyRatio": busy_ratio(output),
+        "sourceBusySkew": busy_skew(vertices.get("Source: ticks")),
+        "q1BusySkew": busy_skew(vertices.get("q1-ema")),
+        "taskmanagerCpuCores": interval_mean(s["metrics"], "cpuCores", "taskmanager"),
+        "kafkaCpuCores": interval_mean(s["metrics"], "cpuCores", "kafka-1"),
+        "replayCpuCores": interval_mean(s["metrics"], "cpuCores", "-replay"),
+        "hostCpuCores": interval_mean(s["metrics"], "hostCpuCores"),
+        "brokerRequestHandlerIdle": interval_mean(s["metrics"], "brokerRequestHandlerIdle"),
         "emaResults": s["outputs"].get("ema-results"),
         "advisories": s["outputs"].get("advisories"),
         "lateTicks": s["counters"]["lateTicks"] if s["reconciliation"]["countersFinal"]["lateTicks"] else None,
