@@ -52,7 +52,7 @@ def wait_for(description, read, ready, timeout=120):
 
 
 def free_ports():
-    sockets = [socket.socket() for _ in range(4)]
+    sockets = [socket.socket() for _ in range(5)]
     try:
         for connection in sockets:
             connection.bind(("127.0.0.1", 0))
@@ -67,16 +67,16 @@ class Verification:
         self.output = output
         self.project = "trading-trends-check-" + uuid.uuid4().hex[:12]
         self.test_image = f"{self.project}/test:dev"
-        kafka, flink, prometheus, grafana = free_ports()
+        kafka, flink, prometheus, grafana, viz = free_ports()
         self.env = dict(os.environ, KAFKA_HOST_PORT=str(kafka), FLINK_HOST_PORT=str(flink),
-                        PROMETHEUS_HOST_PORT=str(prometheus), GRAFANA_HOST_PORT=str(grafana),
+                        PROMETHEUS_HOST_PORT=str(prometheus), GRAFANA_HOST_PORT=str(grafana), VIZ_HOST_PORT=str(viz),
                         TICKS_PARTITIONS="8", TM_SLOTS="2", PARALLELISM="2", COMPOSE_PROFILES="")
         self.bootstrap = f"localhost:{kafka}"
         self.flink = f"http://127.0.0.1:{flink}"
         self.prometheus = f"http://127.0.0.1:{prometheus}"
         self.grafana = f"http://127.0.0.1:{grafana}"
         self.results = {"project": self.project, "started": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                        "ports": {"kafka": kafka, "flink": flink, "prometheus": prometheus, "grafana": grafana},
+                        "ports": {"kafka": kafka, "flink": flink, "prometheus": prometheus, "grafana": grafana, "viz": viz},
                         "checks": {}, "devcontainer": "not requested", "status": "running"}
 
     def record(self, name, value):

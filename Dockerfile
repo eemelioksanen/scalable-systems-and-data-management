@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 #
 # Builds everything inside containers: no JDK or Maven needed on the host.
-#   docker compose build                    # images for flink-job, producer and viz
+#   docker compose build                    # images for kafka, flink-job, producer and viz
 #   docker build --target test .            # run the Maven test suite
 #
 # Keep FLINK_IMAGE in sync with <flink.version> in pom.xml.

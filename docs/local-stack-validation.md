@@ -58,6 +58,6 @@ The SQL fixture verifies the connector on the running cluster; it does not valid
 The dev-container check uses the reference CLI and does not exercise an IDE's graphical integration.
 
 This run verified the initial Flink scrape only.
-The Kafka and cAdvisor scrapes came later with D-35, which the script now also checks and which records them under load.
+D-35 added the Kafka and cAdvisor scrapes. The script now checks them, and D-35 records them under load.
 Performance measurements and cloud deployment belong to later tasks.
 Kafka remains temporary: removing its container loses all its records and offsets.

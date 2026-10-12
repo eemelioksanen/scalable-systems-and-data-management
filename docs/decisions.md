@@ -48,7 +48,7 @@ Add later decisions below, newest first.
 ### D-35: Kafka, container and host metrics (2026-10-12, Emilia Repo, issue #22) — proposed
 Context: the benchmark harness (#10) and the bottleneck runs (#24) need throughput, lag, backpressure, CPU, memory, GC, network and state per subtask from Prometheus, which scraped only Flink.
 Decision ([queries in interfaces.md](interfaces.md#metrics-d-35)):
-- **Kafka:** the Prometheus JMX exporter agent runs in the broker, from a `kafka` image target that adds its jar by checksum. Its rules keep messages and bytes per topic, each partition's end offset and size, and the request handler and network idle ratios; the agent adds the broker's JVM. Compose passes the agent as a start argument, so the Kafka tools in the healthcheck and in `docker compose exec` do not start a second agent on the same port.
+- **Kafka:** the Prometheus JMX exporter agent runs in the broker, from a `kafka` image target that adds its jar by checksum. Its rules keep messages and bytes per topic, each partition's end offset, and the request handler and network idle ratios; the agent adds the broker's JVM. Compose passes the agent as a start argument, so the Kafka tools in the healthcheck and in `docker compose exec` do not start a second agent on the same port.
 - **Containers and host:** cAdvisor, limited to CPU, memory and network. It runs privileged in the host's cgroup namespace and mounts the Docker host's `/`, `/sys`, `/var/run` and `/var/lib/docker` read-only.
 - **Lag:** Flink's `pendingRecords`, cross-checked against the broker's end offsets. Without checkpointing the job commits no offsets (D-28), so the broker has no consumer-group lag to report.
 - **State:** two `q1-ema` gauges count state entries per subtask: symbols with EMAs and open windows. Heap state has no size metric, so bytes come from checkpoint sizes in a run submitted with checkpointing.
@@ -59,15 +59,17 @@ Alternatives considered:
 - *Checkpointing on by default for state bytes:* changes D-28's failure behavior and puts checkpoint barriers into every measured run.
 - *RocksDB native metrics:* bytes per subtask, but only with the RocksDB backend, which is an ablation.
 
-Consequences / measurements (2026-10-12, rootless Podman 6.1.3 VM with 7 CPUs and 8 GiB, defaults of 8 partitions, 2 slots, parallelism 2; [evidence](validation/2026-10-12-metrics-under-load.json)). 13,810,579 rows of 12 symbols, 08-10 November, were preloaded in 8.6 s, and the job was submitted afterwards to read the backlog:
-- Raw ticks reached 1.07 M records/s into Kafka. The job read up to 615 k records/s on one source subtask and up to 16.3 k price events/s.
-- The highest lag Prometheus saw was 5.07 M records by `pendingRecords` and 5.06 M by the broker's end offsets; the source had read the rest before its first scrape. The lag reached 0 within about 10 s.
-- Every task was busy 1000 ms/s and none was backpressured: the `ticks` source, which parses every row, was the slowest stage. Backpressure therefore read 0 throughout; no local run made a downstream stage slower than the source.
-- With the job already running during a preload, it kept up: no lag and no backpressure while the replayer wrote 1.2 M records/s.
-- The 12 symbols hash to 6 of the 8 partitions. Source subtask 0 read 10,778,797 records and subtask 1 read 3,031,782; `q1-ema` received 213,460 and 278,974 price events for 5 and 7 symbols. At this symbol count, the partition hash decides the load per subtask, which matters for #24.
-- `emaStates` was 5 and 7. `openWindows` peaked at 1,636 and 2,530 while the watermark trailed the backlog (D-28), then fell to 0 and 4, the windows still waiting for the watermark. With 10 s checkpoints, `q1-ema` held 4,687 and 5,043 bytes of state and the job 22,983 bytes.
-- Peak memory: Kafka 1.49 GB, the TaskManager 838 MB, the JobManager 645 MB. The VM's working set reached 5.25 GB of 8 GiB. CPU: the TaskManager up to 1.44 cores, Kafka 0.47, the VM 1.87 of 7.
-- GC: the TaskManager up to 1.95 ms/s, the broker 0.3 ms/s of young collections. Network: the TaskManager received up to 24.1 MB/s and Kafka sent 19.4 MB/s.
+Consequences / measurements (2026-10-12, rootless Podman 6.1.3 VM with 7 CPUs and 8 GiB; defaults of 8 partitions, 2 slots and parallelism 2; [evidence](validation/2026-10-12-metrics-under-load.json)):
+- Flink's `busyTimeMsPerSecond` and `backPressuredTimeMsPerSecond` average over 60 s and read busy as 1000 until a task's first update, so a run shorter than a minute shows nothing reliable in them. The queries use the rates of the accumulated idle and backpressured times instead, which follow a run within about 5 s.
+- **Two-day backlog.** All symbols of 08 and 09 November, 112,806,424 records, were preloaded in 71 s at up to 1.63 M records/s (29.1 MB/s) with the job stopped. The job, submitted afterwards, read them at 4.1 to 4.8 M records/s per source subtask.
+  - Lag at the first scrape was 89.2 M records by the broker's offsets and 89.1 M by `pendingRecords`. It was 0 ten seconds later, so the busy and backpressure figures below rest on two scrapes.
+  - The ticks sources were busy about 800 to 860 ms/s and backpressured 25 to 38 ms/s; `q1-ema` was busy about 480 to 520 ms/s. So the sources were the busiest stage, and `q1-ema` sometimes could not take their output at once. The TaskManager used up to 4.3 of the VM's 7 cores.
+  - All symbols spread evenly. The source subtasks read 56,652,816 and 56,153,608 records, `q1-ema` received 11,652,713 and 12,041,928 price events, and `emaStates` reached 2,493 and 2,423.
+  - `openWindows` peaked at 48,320 and 48,597 while the watermark trailed the backlog (D-28), then fell to 4 and 10, the windows still waiting for the watermark. With 10 s checkpoints, `q1-ema` held 78,891 and 77,140 bytes of state, about 32 bytes per symbol, and the whole job 169,284 bytes.
+  - Working set at its highest: Kafka 1.35 GB, the producer 1.11 GB, the TaskManager 945 MB. Kafka's cgroup peak, page cache included, was 2.85 GB. The VM's working set reached 5.37 GB of 8 GiB.
+  - GC: the TaskManager up to 24 ms/s (a 60 s average), the broker up to 0.8 ms/s. Network: the TaskManager received up to 169 MB/s, and Kafka sent up to 183 MB/s.
+- **Twelve symbols, preloaded while the job ran.** 13,810,579 records of 12 symbols, 08 to 10 November, reached Kafka at up to 1.25 M records/s. The job kept up: no scrape showed any lag.
+  - The 12 symbols hash to 6 of the 8 partitions. Source subtask 0 read 10,778,797 records and subtask 1 read 3,031,782; `q1-ema` received 213,460 and 278,974 price events for 5 and 7 symbols. With few symbols the partition hash decides each subtask's load, which matters for #24's subset runs.
 - Under rootless Podman, cAdvisor needs the Podman socket instead of Docker's and no `/var/lib/docker`, and it reports each container under three cgroups; `max by (name)` in the queries picks the container. Docker Desktop and Docker on Linux were not run.
 
 ### D-34: Correctness tools (2026-10-12, Emilia Repo, issue #20) — proposed
