@@ -111,14 +111,17 @@ a faster ablation, compared against its own matching reference.
 
 1. **Baseline:** compare against the admit-all output (no `--watermark-bound-ms`). The job
    matches it only if its `lateTicks` is 0. A 64,265,001 ms bound admits every event in
-   the model (D-30), and therefore in the job when idleness is off.
+   the model (D-30), and therefore in the job when idleness is off. Those are the defaults
+   of a `--bounded` job (D-38), and a full-week preload at them matched.
    A smaller bound admits the burst only when the job's watermark happens to trail its
-   reads, as it did in a preload (D-28).
-2. **Ablation with bound B:** run the oracle with `--watermark-bound-ms B`. In the model,
-   every bound from 264 ms to about 17.8 h rejects exactly the 5,506 burst rows. Without
-   idleness the job rejects a subset of what the model rejects, and in a preload it can
-   reject fewer, so this reference applies only when the job's `lateTicks` equals the
-   oracle's `lateRejected`.
+   reads, which differs from run to run: three full-week preloads at 60 s rejected 5,506,
+   5,506 and 4,044 of the rows (D-38).
+2. **A live run, or an ablation, with bound B:** run the oracle with
+   `--watermark-bound-ms B`. A live job's default is 1000 (D-38). In the model, every bound
+   from 264 ms to about 17.8 h rejects exactly the 5,506 burst rows. Without idleness the
+   job rejects a subset of what the model rejects, and in a preload it can reject fewer,
+   so this reference applies only when the job's `lateTicks` equals the oracle's
+   `lateRejected`. Paced replays of Monday to Wednesday at 1 s and at 60 s did (D-38).
 3. **Any other late count:** pass the job's own late events to `--exclude-events` as
    `(sourceFile, sourceLine)`. The replayer carries that position in the `src` header
    (D-31), but the job does not read it yet: it counts its late events and does not export

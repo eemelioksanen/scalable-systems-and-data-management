@@ -1,0 +1,58 @@
+{
+  "what": "The 594761f job jar submitted with --bounded and no watermark flags, on a stack holding the preloaded week",
+  "codeRevision": "594761f",
+  "jarSha256": "726f05b2b64a8f3b59654e1a3fe2d89ab444fdc0e819e745a5df4a07cbc6240e",
+  "command": [
+    "flink",
+    "run",
+    "-d",
+    "-c",
+    "fi.aalto.cse4780.trading.TradingTrendsJob",
+    "/tmp/flink-job-594761f.jar",
+    "--bounded",
+    "--ema-topic",
+    "ema-results-defaults",
+    "--advisories-topic",
+    "advisories-defaults"
+  ],
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4,
+    "note": "the stack of week-preload-drain-b1s-i30s-843c89f-r3 after its run, with its preloaded ticks and * subscription"
+  },
+  "job": {
+    "id": "e4d01071705a9a934692580b96f94969",
+    "state": "FINISHED",
+    "durationMs": 75569,
+    "vertices": {
+      "Source: ticks": {
+        "readRecords": 289116808,
+        "writeRecords": 59391670
+      },
+      "Source: subscriptions": {
+        "readRecords": 1,
+        "writeRecords": 1
+      },
+      "q1-ema": {
+        "readRecords": 59391670,
+        "writeRecords": 1857457
+      },
+      "subscription-filter -> (ema-results: Writer -> ema-results: Committer, crossovers -> advisories: Writer -> advisories: Committer)": {
+        "readRecords": 1857461,
+        "writeRecords": 1868812
+      }
+    }
+  },
+  "counters": {
+    "sampledEveryMs": 200,
+    "samples": 286,
+    "lastSample": {
+      "q1RecordsIn": 59391670,
+      "lateTicks": 0,
+      "subtasks": 4
+    },
+    "final": true
+  }
+}
