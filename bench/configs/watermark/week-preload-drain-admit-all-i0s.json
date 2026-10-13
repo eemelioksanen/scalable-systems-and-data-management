@@ -1,0 +1,29 @@
+{
+  "name": "week-preload-drain-admit-all-i0s",
+  "mode": "preload",
+  "finish": "drain",
+  "repeats": 1,
+  "input": [
+    "data/daily"
+  ],
+  "job": {
+    "watermarkBoundMs": 64265001,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "oracle": "oracle/out/week"
+}
