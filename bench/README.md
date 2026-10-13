@@ -44,18 +44,18 @@ oracle/run.sh data/subset12/*.csv --out /out/subset12
 | `finish` | How the job ends. `bounded` (preload default): submitted with `--bounded`, so its duration is exact. `drain`: submitted unbounded; once it has read every record, `flink stop --drain` evaluates the remaining windows. Live runs always drain. |
 | `input` | Files or directories under `data/`, passed to the replayer as `/data/...`. |
 | `replayArgs` | Further replayer options: `--rate` and `--pace-from` (required `--rate` in live runs), `--exchanges`, `--symbols`, `--limit`. The harness sets `--mode` and `--run-id`. |
-| `job` | `watermarkBoundMs`, `idlenessMs` and `zoneOffset`, all required, and optional extra `args`. The bound and idleness are still open (D-5, #7), so the harness has no defaults for them. |
+| `job` | `watermarkBoundMs`, `idlenessMs` and `zoneOffset`, all required, and optional extra `args`. The harness has no defaults for the bound and idleness, so every record states them. The job's own are 64265001 and 0 with `--bounded`, and 1000 and 30000 live (D-38). |
 | `stack` | `partitions` (`TICKS_PARTITIONS`), `taskmanagers` (`--scale`), `slots` (`TM_SLOTS`), `parallelism` (`PARALLELISM`). Defaults 8, 1, 2, 2. |
 | `checkpointing` | `true` submits with `-Dexecution.checkpointing.interval=10s -Drestart-strategy.type=none`, which state bytes need (D-35). Default `false`. It needs `"finish": "drain"`: a bounded job would wait for a final checkpoint before it ends, and a few-second one takes none. |
 | `subscriptions` | Trader records written to `subscriptions` before the job starts. Default `[{"trader":"all","symbols":["*"]}]`. |
 | `repeats`, `warmupS`, `timeoutS` | Repeats; seconds excluded from the start of the measurement interval; how long the replay, the job and the drain may each take (default 3600). Startup waits have fixed limits of a few minutes. |
-| `oracle` | An oracle output directory for the correctness check. The harness refuses one computed from other files than `input`, and one combined with `--limit`, `--symbols`, `--symbols-file` or `--exchanges`, since the oracle covers whole files. |
+| `oracle` | An oracle output directory for the correctness check. The harness refuses one computed from other files than `input`, and one combined with `--limit`, `--symbols`, `--symbols-file` or `--exchanges`, since the oracle covers whole files. For a live run, use an oracle run at the job's bound: a live job rejects the burst that the admit-all output includes (D-38). |
 
 ## What a run does
 
 1. **Reset.** `docker compose down --volumes`, then `up -d --scale taskmanager=N`. It waits for `kafka-init` to exit, Flink to register the TaskManagers and slots, and Prometheus to scrape every Flink, Kafka and cAdvisor target.
 2. **Subscriptions** are written before the job is submitted, so the output is deterministic (D-28).
-3. **Replay and job.** A preload replays everything with the job stopped, then submits it. A live run submits the job, waits for all its tasks to run, then replays at the configured rate.
+3. **Replay and job.** A preload replays everything with the job stopped, then submits it. A live run submits the job, waits for all its tasks to run, then replays at the configured rate. The replay has to start within the job's idleness timeout. After that every partition is idle, and the unpaced rows before `--pace-from` can be rejected as late (D-38). `config.json` has both times.
 4. **Completion.** A bounded job is done when Flink reports it `FINISHED`. A drained job is done once the sum of the job's Kafka offsets reaches the replay's end offsets and q1-ema has received every price event, by Prometheus; the harness waits one more scrape, then stops it with `--drain`. A job that fails or is cancelled meanwhile stops the run at once.
 5. **Collection**, before the next reset deletes it: Flink's record of the job, Prometheus range queries, the job's counters, the effective configuration, and an export of `ema-results` and `advisories` with `correctness/run.sh export`. With an `oracle`, `correctness/run.sh compare` runs too.
 
@@ -122,7 +122,7 @@ The counters (interfaces.md, "Counts") come from Prometheus's last sample. `coun
 
 ## Latency
 
-Every run's export keeps each result's `maxIngestTs` (when the window's last contributing price event entered Kafka) and `emitTs` (when the job emitted it). The harness computes no latency from them yet. Their difference includes the watermark wait, which depends on the bound and idleness #7 has not chosen, and how to separate it from queueing and processing is open (D-36).
+Every run's export keeps each result's `maxIngestTs` (when the window's last contributing price event entered Kafka) and `emitTs` (when the job emitted it). The harness computes no latency from them yet. Their difference includes the watermark wait, which depends on the bound and idleness (D-38), and how to separate it from queueing and processing is open (D-36, #37).
 
 ## Not covered
 

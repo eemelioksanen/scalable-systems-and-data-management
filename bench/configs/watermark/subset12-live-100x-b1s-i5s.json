@@ -1,0 +1,35 @@
+{
+  "name": "subset12-live-100x-b1s-i5s",
+  "mode": "live",
+  "repeats": 1,
+  "input": [
+    "data/subset12/debs2022-gc-trading-day-08-11-21.csv"
+  ],
+  "replayArgs": [
+    "--rate",
+    "100",
+    "--pace-from",
+    "2021-11-08T09:00"
+  ],
+  "warmupS": 25,
+  "job": {
+    "watermarkBoundMs": 1000,
+    "idlenessMs": 5000,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 2,
+    "parallelism": 2
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "oracle": "oracle/out/subset12-mon"
+}

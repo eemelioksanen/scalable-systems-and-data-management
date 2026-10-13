@@ -214,7 +214,7 @@ Expected values follow the hand-worked sequences in
 
 | Topic | Why it is not settled here |
 |---|---|
-| Watermark bound and idleness | Runtime setting still open after the [full-week analysis](eda-week.md). D-30 demonstrates a sufficient 64,265,001 ms source-order bound; 264 ms and 60 s lose 1,812 windows. D-28 still requires paced/idleness runtime verification. |
+| Watermark bound and idleness | The [full-week analysis](eda-week.md) left the runtime setting open. D-30 demonstrates a sufficient 64,265,001 ms source-order bound; 264 ms and 60 s lose 1,812 windows. D-38 proposes the defaults after paced and preloaded runs: that bound without idleness for a finite replay, 1 s and 30 s for a live job. |
 | Missing / stale timestamp policy | D-29 accepts the missing-date fallback, excludes unparseable event timestamps, and preserves valid explicit dates. The interpretation of Wednesday's summary-like rows remains open. |
 
 D-29 accepts the skip-empty-window, carry-over, late-event and finite-input policies as interpretations of the spec.
