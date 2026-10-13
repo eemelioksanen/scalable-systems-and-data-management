@@ -51,9 +51,9 @@ import org.apache.kafka.common.TopicPartitionInfo;
  * {@code flink stop --drain}, evaluates every remaining window, including the last one.
  *
  * <p>A price event whose window has already been evaluated is late: it is counted in
- * {@code lateTicks}, goes to the {@code late-ticks} side output and changes no result. The
- * watermark defaults decide which events those are, and they differ by mode (D-38): see
- * {@link #LIVE} and {@link #FINITE_REPLAY}.
+ * {@code lateTicks}, goes to the {@code late-ticks} side output and is left out of the
+ * calculation. The watermark defaults decide which events those are, and they differ by mode
+ * (D-38): see {@link #LIVE} and {@link #FINITE_REPLAY}.
  */
 public class TradingTrendsJob {
 

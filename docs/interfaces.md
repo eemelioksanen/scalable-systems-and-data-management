@@ -104,6 +104,21 @@ The fields mean the same as in `ema-results`.
 
 **Finite replay.** With `--bounded`, the job reads `subscriptions` only up to the end offsets at submission, like `ticks`. Later changes are ignored.
 
+## Event time, late events and end of input (D-5, D-38)
+
+- **Watermark.** Each `ticks` partition's watermark is the largest event time read from it, minus the bound, minus 1 ms. The job's watermark is the minimum over the partitions that are not idle. A partition is idle once it has had no price event for the idleness timeout, in wall-clock time. Non-price rows do not count.
+- **Publication.** A window is evaluated when the watermark reaches its last millisecond: once every partition that is not idle has read an event at or after `windowEnd` plus the bound.
+- **Late events.** A price event whose window has already been evaluated is counted in `lateTicks` and left out of the calculation. If it would have been its window's last event, the window closes on an earlier price. If it would have been the only one, the window is never published. Either way the symbol's later EMAs and advisories differ from a run that admitted it. The job does not export its late events yet (#38).
+- **Defaults.** They depend on the mode, and each flag replaces its own default:
+
+  | Mode | `--watermark-bound-ms` | `--idleness-ms` | Late in the week | Output equals |
+  |---|---|---|---|---|
+  | live | 1000 | 30000 | the 5,506 burst rows of 10 November | an oracle run with `--watermark-bound-ms 1000` |
+  | `--bounded` | 64265001 | 0 (off) | none | the admit-all oracle output (D-30) |
+
+- **End of input.** A `--bounded` job at its startup offsets, and any job stopped with `flink stop --drain`, evaluates every window still open, whether or not its sources were idle. A job that is cancelled, or stopped without `--drain`, does not.
+- **Live replays.** Input must not arrive unpaced after the job has gone longer than the idleness timeout without any: every partition is then idle, and the first to deliver advances the watermark alone, so the others' older events are late. Start a replay within the timeout of submitting the job, since the rows before `--pace-from` are unpaced. The windows after the feed's last price event stay open until it resumes or the input ends.
+
 ## Counts (D-28)
 
 The job's counts are Flink metrics, exported to Prometheus (see the README). Nothing writes the `stats` topic yet.
@@ -112,7 +127,7 @@ The job's counts are Flink metrics, exported to Prometheus (see the README). Not
 |---|---|---|
 | `ticks` source | `priceEvents`, `nonPriceEvents`, `nonPositivePriceEvents`, `missingTimestampEvents`, `malformedEvents` | Split every `ticks` record: each counts in exactly one. |
 | | `systemDateEvents` | Price events dated from `Date` (D-25), a subset of `priceEvents`. |
-| `q1-ema` | `lateTicks` | Price events whose window had already been evaluated. |
+| `q1-ema` | `lateTicks` | Price events whose window had already been evaluated ([late events](#event-time-late-events-and-end-of-input-d-5-d-38)). |
 | | `evaluatedWindows`, `buyCrossovers`, `sellCrossovers` | Windows and crossovers of every symbol, subscribed or not. |
 | | `emaStates`, `openWindows` (gauges) | Per subtask: symbols whose EMAs it holds, and windows holding a close candidate. They count state entries, not bytes (D-35). |
 | `subscriptions` source | `subscriptionUpdates`, `subscriptionTombstones`, `malformedSubscriptions` | Split every `subscriptions` record. |

@@ -146,7 +146,7 @@ class Config:
         if "--mode" in self.replay_args or "--run-id" in self.replay_args:
             raise ValueError("replayArgs must not set --mode or --run-id; the harness does")
         job = raw["job"]
-        # No defaults: the bound and idleness are open (D-5, #7), so every record states them.
+        # No defaults here, so every record states the bound and idleness it ran with (D-38 has the job's).
         self.bound_ms = int(job["watermarkBoundMs"])
         self.idleness_ms = int(job["idlenessMs"])
         self.zone_offset = job["zoneOffset"]
