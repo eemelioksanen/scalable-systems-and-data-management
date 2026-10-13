@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
@@ -37,26 +38,62 @@ import org.apache.kafka.common.TopicPartitionInfo;
  *   --ema-topic           ema-results
  *   --advisories-topic    advisories
  *   --group-id            trading-trends
- *   --watermark-bound-ms  60000   bounded out-of-orderness (provisional, D-5, D-30)
- *   --idleness-ms         30000   mark a partition idle after this much wall-clock silence; 0 = off
+ *   --watermark-bound-ms  1000    bounded out-of-orderness; 64265001 with --bounded (D-38)
+ *   --idleness-ms         30000   mark a partition idle after this much wall-clock silence,
+ *                                 0 = off; 0 with --bounded (D-38)
  *   --zone-offset         +02:00  offset of trading timestamps: literal CEST (D-3, D-32)
  *   --bounded                     stop both inputs at their startup offsets (finite replay)
  * </pre>
  *
  * <p>The job always reads {@code ticks} and {@code subscriptions} from the earliest offset, so
- * reruns see the same input. With {@code --bounded}, end of input advances the watermark to the
- * maximum. This evaluates every remaining window, including the last one. Subscription changes
- * written after submission are then not read.
+ * reruns see the same input. With {@code --bounded}, the input ends at the startup offsets, and
+ * subscription changes written after submission are not read. End of input, there or on
+ * {@code flink stop --drain}, evaluates every remaining window, including the last one.
+ *
+ * <p>A price event whose window has already been evaluated is late: it is counted in
+ * {@code lateTicks}, goes to the {@code late-ticks} side output and changes no result. The
+ * watermark defaults decide which events those are, and they differ by mode (D-38): see
+ * {@link #LIVE} and {@link #FINITE_REPLAY}.
  */
 public class TradingTrendsJob {
+
+    /**
+     * Watermark defaults of a live job (D-38). A window is published once every partition is a
+     * second of event time past its end, or has been silent for 30 s. The week needs 264 ms
+     * outside one burst (D-30): the 5,506 summary rows of 10 November arrive about 18 h after
+     * their window and are late under this bound.
+     */
+    static final Watermarking LIVE =
+            new Watermarking(Duration.ofSeconds(1), Duration.ofSeconds(30));
+
+    /**
+     * Watermark defaults of a finite replay (D-38). The bound is the tested one that admits every
+     * event of the week, the burst included (D-30). Idleness is off: it runs on wall-clock time,
+     * so it could reject events in one run and not in the next, and end of input evaluates every
+     * remaining window without it.
+     */
+    static final Watermarking FINITE_REPLAY =
+            new Watermarking(Duration.ofMillis(64_265_001), Duration.ZERO);
+
+    /** The out-of-orderness bound and the idleness timeout. Zero idleness turns it off. */
+    record Watermarking(Duration bound, Duration idleness) {
+
+        /** The flags, or for a missing one the default of the job's mode. */
+        static Watermarking from(ParameterTool params) {
+            Watermarking defaults = params.has("bounded") ? FINITE_REPLAY : LIVE;
+            return new Watermarking(
+                    Duration.ofMillis(
+                            params.getLong("watermark-bound-ms", defaults.bound.toMillis())),
+                    Duration.ofMillis(params.getLong("idleness-ms", defaults.idleness.toMillis())));
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         ParameterTool params = ParameterTool.fromArgs(args);
         String bootstrapServers = params.get("bootstrap-servers", "kafka:9092");
         String groupId = params.get("group-id", "trading-trends");
         String subscriptionsTopic = params.get("subscriptions-topic", "subscriptions");
-        Duration watermarkBound = Duration.ofMillis(params.getLong("watermark-bound-ms", 60_000));
-        Duration idleness = Duration.ofMillis(params.getLong("idleness-ms", 30_000));
+        Watermarking watermarking = Watermarking.from(params);
         ZoneOffset zoneOffset = ZoneOffset.of(params.get("zone-offset", "+02:00"));
         boolean bounded = params.has("bounded");
 
@@ -85,7 +122,10 @@ public class TradingTrendsJob {
         }
 
         DataStream<Tick> ticks = env
-                .fromSource(tickSource.build(), watermarks(watermarkBound, idleness), "ticks")
+                .fromSource(
+                        tickSource.build(),
+                        watermarks(watermarking.bound(), watermarking.idleness()),
+                        "ticks")
                 .uid("ticks-source");
         DataStream<SubscriptionUpdate> subscriptions = env
                 .fromSource(subscriptionSource.build(), WatermarkStrategy.noWatermarks(),
@@ -119,12 +159,17 @@ public class TradingTrendsJob {
         return idleness.isZero() ? strategy : strategy.withIdleness(idleness);
     }
 
-    /** Query 1 and Query 2 on timestamped price events, for every symbol. */
+    /**
+     * Query 1 and Query 2 on timestamped price events, for every symbol. End of input evaluates
+     * the windows still open, whether or not the sources were idle by then.
+     */
     static SingleOutputStreamOperator<EmaResult> emaResults(DataStream<Tick> ticks) {
         return ticks
                 .keyBy(tick -> tick.symbol)
-                .process(new EmaCalculator())
-                .name("q1-ema")
+                .transform(
+                        "q1-ema",
+                        TypeInformation.of(EmaResult.class),
+                        new EndOfInputProcessOperator<>(new EmaCalculator()))
                 .uid("q1-ema");
     }
 
