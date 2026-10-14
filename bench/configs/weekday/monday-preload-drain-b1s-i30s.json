@@ -1,0 +1,30 @@
+{
+  "name": "monday-preload-drain-b1s-i30s",
+  "mode": "preload",
+  "finish": "drain",
+  "repeats": 1,
+  "input": [
+    "data/daily/debs2022-gc-trading-day-08-11-21.csv"
+  ],
+  "warmupS": 15,
+  "job": {
+    "watermarkBoundMs": 1000,
+    "idlenessMs": 30000,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "oracle": "oracle/out/monday"
+}

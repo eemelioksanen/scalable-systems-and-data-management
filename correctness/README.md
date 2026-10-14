@@ -57,7 +57,7 @@ The gate passes only if all of these hold:
 
 A run whose late count differs from the oracle's is compared against the wrong reference. The oracle README says [which reference to use](../oracle/README.md#late-events-matching-a-batch-run-to-a-streaming-run).
 
-`lateTicks` is a Flink metric, and a finished `--bounded` job's metrics disappear with it. On a short run the JobManager's REST API can still show 0, because it caches metrics for 10 s. Read the TaskManager's Prometheus endpoint (port 9249) instead, until the job ends.
+`lateTicks` is a Flink metric, and a finished `--bounded` job's metrics disappear with it. On a short run the JobManager's REST API can still show 0, because it caches metrics for 10 s. Read the TaskManager's Prometheus endpoint (port 9249) instead, until the job ends, and keep each subtask's last value: the subtasks finish at different times, so the last scrape can lack some of them. [bounded_defaults.py](../docs/validation/2026-10-13-weekday/bounded_defaults.py) does that for a `--bounded` run without watermark flags.
 
 `--job-late-events` takes CSV or Parquet with `symbol` and `windowEnd` columns. The job does not export its late events yet (D-31).
 
@@ -67,7 +67,7 @@ Outputs: `report.json` (also printed), `ema_differences.parquet`, `advisory_diff
 
 Bounded disorder (`--disorder-ms B`): let M be the largest event time among the price rows read so far. Each price row gets the sort key M + d, with d drawn from [0, B], and every other row gets M. Rows are written in key order. A price row with the same symbol and event time as an earlier one never gets a smaller key, so equal-timestamp events keep their order (D-23) and every window keeps its close. A row written before row i then has an event time of at most M_i + B. In the oracle's admission model, each event therefore needs at most B more bound than in the original file.
 
-So a job run with a bound of at least the original's need plus B, and idleness off, must give exactly the original's oracle output. On Monday's full file, 1 s of disorder raised the needed bound from 25 ms to 923 ms, and the oracle's 373,126 windows and 4,840 advisories were unchanged.
+So a job run with a bound of at least the original's need plus B, and idleness off, must give exactly the original's oracle output. On Monday's full file, 1 s of disorder with `--seed 1` raised the needed bound from 25 ms to 981 ms, and the oracle's 373,126 windows and 4,840 advisories were unchanged. So were the job's, in a preload and live at 100× ([evidence](../docs/validation/2026-10-13-weekday/README.md#reordered-input)).
 
 Late events (`--late-rate p --late-by-ms L`): each price row is chosen with probability p and held back until the rows already written reach its window end plus L. `late_events.parquet` lists each one as `(sourceFile, sourceLine, symbol, minBoundMs)`, which is the oracle's admission model applied to the rewritten file. A held row still pending at the end of its file is written there, and is listed only if that leaves it late. Compare a run on these files against an oracle run on the same files.
 

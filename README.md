@@ -127,6 +127,8 @@ correctness/run.sh export --zone-offset +02:00 --out /out/run-1
 correctness/run.sh compare --oracle oracle/out --job correctness/out/run-1 --job-late-ticks 0 --out /out/run-1-vs-oracle
 ```
 
+[The weekday evidence](docs/validation/2026-10-13-weekday/README.md) has this check for every symbol of 08 November: at both modes' watermark defaults, at replay speeds from 10× to a preload, and on reordered input (D-39).
+
 ## Benchmarks
 
 [bench/README.md](bench/README.md) describes the harness. `bench/run.py` resets the stack, replays an input, runs the job to completion and keeps the raw measurements, the effective configuration, a count reconciliation and, given an oracle run, the correctness check. `bench/summarize.py` turns repeated runs into CSV tables and plots with mean and std:
