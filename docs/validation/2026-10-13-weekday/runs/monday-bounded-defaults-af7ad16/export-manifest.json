@@ -1,0 +1,102 @@
+{
+  "tool": "ema_check.export",
+  "createdUtc": "2026-10-13T19:39:21+00:00",
+  "bootstrap": "kafka:9092",
+  "zoneOffset": "+02:00",
+  "topics": {
+    "ema-results-monday-bounded-defaults": {
+      "file": "ema_results.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 47418,
+          "records": 47418
+        },
+        "1": {
+          "startOffset": 0,
+          "endOffset": 46887,
+          "records": 46887
+        },
+        "2": {
+          "startOffset": 0,
+          "endOffset": 44742,
+          "records": 44742
+        },
+        "3": {
+          "startOffset": 0,
+          "endOffset": 42550,
+          "records": 42550
+        },
+        "4": {
+          "startOffset": 0,
+          "endOffset": 46050,
+          "records": 46050
+        },
+        "5": {
+          "startOffset": 0,
+          "endOffset": 49396,
+          "records": 49396
+        },
+        "6": {
+          "startOffset": 0,
+          "endOffset": 46008,
+          "records": 46008
+        },
+        "7": {
+          "startOffset": 0,
+          "endOffset": 50075,
+          "records": 50075
+        }
+      },
+      "records": 373126,
+      "complete": true
+    },
+    "advisories-monday-bounded-defaults": {
+      "file": "advisories.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 618,
+          "records": 618
+        },
+        "1": {
+          "startOffset": 0,
+          "endOffset": 614,
+          "records": 614
+        },
+        "2": {
+          "startOffset": 0,
+          "endOffset": 589,
+          "records": 589
+        },
+        "3": {
+          "startOffset": 0,
+          "endOffset": 548,
+          "records": 548
+        },
+        "4": {
+          "startOffset": 0,
+          "endOffset": 619,
+          "records": 619
+        },
+        "5": {
+          "startOffset": 0,
+          "endOffset": 615,
+          "records": 615
+        },
+        "6": {
+          "startOffset": 0,
+          "endOffset": 600,
+          "records": 600
+        },
+        "7": {
+          "startOffset": 0,
+          "endOffset": 637,
+          "records": 637
+        }
+      },
+      "records": 4840,
+      "complete": true
+    }
+  }
+}

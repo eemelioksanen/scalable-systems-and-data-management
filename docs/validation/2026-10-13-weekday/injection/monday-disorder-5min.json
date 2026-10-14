@@ -1,0 +1,17 @@
+{
+  "tool": "ema_check.inject",
+  "options": {
+    "disorderMs": 300000,
+    "lateRate": 0.0,
+    "lateByMs": 0,
+    "seed": 1
+  },
+  "files": [
+    {
+      "file": "debs2022-gc-trading-day-08-11-21.csv",
+      "inputMd5": "a08013f09a6b77355dae8b3ce141624d",
+      "outputMd5": "92fe59bdc9a34d3a9fcaffe75a9e8269"
+    }
+  ],
+  "lateEvents": 0
+}

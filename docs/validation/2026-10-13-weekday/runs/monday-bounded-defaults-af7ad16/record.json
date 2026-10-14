@@ -1,0 +1,62 @@
+{
+  "what": "The job jar submitted with --bounded and no watermark flags, on a stack holding a preloaded input",
+  "code": {
+    "revision": "af7ad16ebb27baa5eab9de8b13a464b7083d62d8",
+    "dirty": false
+  },
+  "jarSha256": "b0630775ec0bb2ec569d270734df3a852a433c21704cc827d370fc0db2f46ef4",
+  "command": [
+    "flink",
+    "run",
+    "-d",
+    "-c",
+    "fi.aalto.cse4780.trading.TradingTrendsJob",
+    "/opt/job/flink-job.jar",
+    "--bounded",
+    "--ema-topic",
+    "ema-results-monday-bounded-defaults",
+    "--advisories-topic",
+    "advisories-monday-bounded-defaults"
+  ],
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4,
+    "note": "the stack of monday-preload-drain-admit-all-i0s-20261013T193356Z-r1 after its run, with its preloaded ticks and * subscription"
+  },
+  "oracle": "oracle/out/monday",
+  "job": {
+    "id": "451695e8c3e8dc475c8d13961cb5115d",
+    "state": "FINISHED",
+    "durationMs": 11599,
+    "vertices": {
+      "Source: ticks": {
+        "readRecords": 53994554,
+        "writeRecords": 11794520
+      },
+      "Source: subscriptions": {
+        "readRecords": 1,
+        "writeRecords": 1
+      },
+      "q1-ema": {
+        "readRecords": 11794520,
+        "writeRecords": 373126
+      },
+      "subscription-filter -> (ema-results: Writer -> ema-results: Committer, crossovers -> advisories: Writer -> advisories: Committer)": {
+        "readRecords": 373130,
+        "writeRecords": 377966
+      }
+    }
+  },
+  "counters": {
+    "sleepBetweenSamplesMs": 100,
+    "samples": 102,
+    "lastPerSubtaskSum": {
+      "lateTicks": 0,
+      "q1RecordsIn": 11794520,
+      "subtasks": 4
+    },
+    "final": true
+  }
+}
