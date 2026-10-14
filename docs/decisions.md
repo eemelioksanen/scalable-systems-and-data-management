@@ -45,6 +45,30 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-39: Query 1 on a full weekday against the oracle (2026-10-13, Leo Immonen, issue #21) — proposed
+Context: #21 asks for one full weekday through the replayer and the job, compared with the oracle by the comparer (#20), with values unchanged by replay speed and by bounded reordering. It was written when the job's bound was 60 s in both modes. D-38 has since set the defaults by mode and compared the full week at them. Open were one weekday at every setting and speed, and reordering on a full day file: D-34 reordered 11 symbols. The runs are in [the evidence](validation/2026-10-13-weekday/README.md).
+Decision:
+- **Reference.** Monday 08 November needs 25 ms in the source-order model (D-27), so no supported setting may reject an event of it. Every run is compared with the admit-all oracle output at `+02:00`, and its `lateTicks` must be 0 and final.
+- **Settings and speeds** (`bench/configs/weekday/`): preloads at a `--bounded` job's defaults, at 60 s with 30 s idleness (the defaults #21 names) and at a live job's 1 s with 30 s; `--bounded` without watermark flags; live replays at 1000×, 300×, 100× and 10× at the live defaults.
+- **Reordering.** Monday rewritten by the injector with 1 s of disorder, run as a preload at the `--bounded` defaults and at 60 s, and live at 100× with the 1 s bound; and with 5 min of disorder, a whole window, at a 10 min bound. A run on a rewritten file is compared with the oracle run on that file and with the one on the original.
+- **Unchanged means bit for bit.** Besides the gate's 1e-9, each run's results and advisories are hashed over the D-18 fields. Runs with equal digests published the same closes and EMAs.
+- **`lateTicks` of a `--bounded` job** is the sum of each q1-ema subtask's last sample from the TaskManager's metrics endpoint. It is final when those samples add up to every price event received.
+
+Alternatives considered:
+- *Only the `--bounded` defaults:* their 17.85 h bound outlasts the day, so the watermark passes no window of a one-day input and every window is evaluated at end of input. That run checks parsing, closes, EMAs and end of input, but not event-time firing.
+- *The last scrape of a bounded job for `lateTicks`:* the subtasks finish at different times, and one scrape held three of the four.
+- *1×:* a paced Monday takes 13.4 h.
+
+Consequences / measurements (2026-10-13, Intel i7-11700K with 16 threads and 62.5 GiB, Docker 29.8.2 on Linux; `af7ad16`; 8 partitions, parallelism 4, one `*` subscription; single runs; two stacks shared the host, so nothing here is a performance result):
+- **All 12 runs passed the gate:** 373,126 results and 4,840 advisories, `lateTicks` 0, no difference of any class, no duplicates, complete exports. The 11 harness runs reconciled 53,994,554 rows and 11,794,520 price events, with the source's counters equal to the oracle's.
+- **Bit for bit.** Every run has the oracle's digests. Replay speed, the watermark settings and both reorderings changed no close, EMA or advisory, including the 50 windows where binary64 drifts more than 1e-9 from exact (D-27).
+- **Event-time firing.** At 60 s all but 180 results were published as the watermark passed, and at 1 s all but 97, in the preloads and live from 100× to 1000×. With 5 min of disorder and a 10 min bound, 366 were left for the end of input.
+- **Reordered files.** The oracle's output is the same for all three files. With seed 1, 1 s of disorder needs a 981 ms bound and 5 min needs 298,801 ms. The live default of 1 s admitted the first at 100×.
+- **Live runs.** Each replay started 10.4 to 11.2 s after its job, inside the idleness timeout (D-38). At 1000× the replayer achieved 944× and fell up to 19.6 s behind on the shared host. At 10×, where 30 s of idleness is 5 min of feed time, partitions went idle in the day's last minutes and released 90 of those 97 results before the input ended. No run rejected an event.
+- **Control.** Against an oracle run at a 0 ms bound, which rejects 79 events, the gate refuses the reference and reports 38 differing closes and 2,894 later EMAs in 35 symbols, all as `lateRejection`.
+- **Not covered:** Monday's advisories are all the first-window BUY of D-7, so no SELL or later crossover is checked here. No event is late, so rejection is not exercised. Restart, subscriptions and the weekend files are #9's.
+- `correctness/README.md` gave 923 ms for 1 s of disorder on Monday without naming a seed. Seeds 0 and 1 give 941 ms and 981 ms, so it now cites seed 1.
+
 ### D-38: Watermark bound, idleness and end of input (2026-10-13, Leo Immonen, issue #7) — proposed
 Context: D-5 left the bound and the idleness timeout open, and D-32 found no setting that is both correct by D-30 and real-time. One burst causes the conflict. On 10 November, 5,506 summary rows arrive at 18:56 with `Trading time` 01:00. Under admit-all they open a 01:05 window for 1,812 indices, which changes every later EMA of those symbols. Admit-all's results for that Wednesday therefore depend on rows that arrive at its end, so no job can publish them during the day and also match admit-all. A bound can only choose between waiting 17.85 h and publishing without the burst. D-30's source-order model also left the runtime open: replay speed, preloads and idleness. The runs behind this entry are in [the evidence](validation/2026-10-13-watermark/README.md).
 Decision:
