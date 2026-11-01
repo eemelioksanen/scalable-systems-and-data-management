@@ -1,0 +1,198 @@
+[
+  {
+    "topic": "ema-results",
+    "elapsedSeconds": 0.14347055100370198,
+    "partitions": {
+      "0": {
+        "startOffset": 0,
+        "endOffset": 105,
+        "records": 105
+      },
+      "1": {
+        "startOffset": 0,
+        "endOffset": 324,
+        "records": 324
+      },
+      "2": {
+        "startOffset": 0,
+        "endOffset": 311,
+        "records": 311
+      },
+      "3": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "4": {
+        "startOffset": 0,
+        "endOffset": 206,
+        "records": 206
+      },
+      "5": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "6": {
+        "startOffset": 0,
+        "endOffset": 208,
+        "records": 208
+      },
+      "7": {
+        "startOffset": 0,
+        "endOffset": 234,
+        "records": 234
+      }
+    },
+    "records": 1388,
+    "rows": 1388,
+    "complete": true
+  },
+  {
+    "topic": "advisories",
+    "elapsedSeconds": 0.004341680993093178,
+    "partitions": {
+      "0": {
+        "startOffset": 0,
+        "endOffset": 1,
+        "records": 1
+      },
+      "1": {
+        "startOffset": 0,
+        "endOffset": 2,
+        "records": 2
+      },
+      "2": {
+        "startOffset": 0,
+        "endOffset": 3,
+        "records": 3
+      },
+      "3": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "4": {
+        "startOffset": 0,
+        "endOffset": 2,
+        "records": 2
+      },
+      "5": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "6": {
+        "startOffset": 0,
+        "endOffset": 2,
+        "records": 2
+      },
+      "7": {
+        "startOffset": 0,
+        "endOffset": 2,
+        "records": 2
+      }
+    },
+    "records": 12,
+    "rows": 12,
+    "complete": true
+  },
+  {
+    "topic": "late-ticks",
+    "elapsedSeconds": 0.0012506710190791637,
+    "partitions": {
+      "0": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "1": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "2": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "3": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "4": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "5": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "6": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "7": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      }
+    },
+    "records": 0,
+    "rows": 0,
+    "complete": true
+  },
+  {
+    "topic": "ticks",
+    "elapsedSeconds": 20.47278218899737,
+    "partitions": {
+      "0": {
+        "startOffset": 0,
+        "endOffset": 44946,
+        "records": 44946
+      },
+      "1": {
+        "startOffset": 0,
+        "endOffset": 6590,
+        "records": 6590
+      },
+      "2": {
+        "startOffset": 0,
+        "endOffset": 1546419,
+        "records": 1546419
+      },
+      "3": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "4": {
+        "startOffset": 0,
+        "endOffset": 1641926,
+        "records": 1641926
+      },
+      "5": {
+        "startOffset": 0,
+        "endOffset": 0,
+        "records": 0
+      },
+      "6": {
+        "startOffset": 0,
+        "endOffset": 84080,
+        "records": 84080
+      },
+      "7": {
+        "startOffset": 0,
+        "endOffset": 892920,
+        "records": 892920
+      }
+    },
+    "records": 4216881,
+    "rows": 148465,
+    "complete": true
+  }
+]
