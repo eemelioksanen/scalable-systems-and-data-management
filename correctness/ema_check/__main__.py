@@ -1,4 +1,4 @@
-"""Command line: python -m ema_check export|compare|inject ..."""
+"""Command line: python -m ema_check export|compare|inject|latency ..."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 
-from . import compare, export, inject
+from . import compare, export, inject, latency
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -21,6 +21,7 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--late-topic", default="late-ticks")
     e.add_argument("--replay-report", type=Path, help="completed replay JSON mapping src file indices to filenames")
     e.add_argument("--zone-offset", required=True, help="the job's --zone-offset, recorded for the comparison (D-3)")
+    e.add_argument("--ticks-topic", help="also export this topic's price events, for latency")
     e.add_argument("--stall-seconds", type=float, default=30.0, help="give up after this long without a record before the end offsets")
     e.add_argument("--out", type=Path, required=True)
 
@@ -33,6 +34,18 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--drift-ulps", type=float, default=compare.DRIFT_ULPS, help="EMA differences up to this many ulps count as precision drift")
     c.add_argument("--out", type=Path, required=True)
 
+    lt = sub.add_parser("latency", help="split a live run's latency into its waits (#37)")
+    lt.add_argument("--export", type=Path, required=True, help="export directory with price_events.parquet")
+    lt.add_argument("--replay-report", type=Path, required=True)
+    lt.add_argument("--metrics", type=Path, help="the harness's metrics.json, for watermark lag")
+    lt.add_argument("--bound-ms", type=int, required=True)
+    lt.add_argument("--idleness-ms", type=int, required=True)
+    lt.add_argument("--interval-start-ms", type=int, required=True)
+    lt.add_argument("--interval-end-ms", type=int, required=True)
+    lt.add_argument("--idle-from-ms", type=int, required=True, help="when the job's sources started, for partitions without events")
+    lt.add_argument("--drain-start-ms", type=int, help="results emitted from here on were fired by the drain")
+    lt.add_argument("--out", type=Path, required=True)
+
     i = sub.add_parser("inject", help="rewrite day files with bounded disorder and late events")
     i.add_argument("inputs", nargs="+", type=Path)
     i.add_argument("--disorder-ms", type=int, default=0, help="largest added watermark bound an event can need")
@@ -43,12 +56,16 @@ def main(argv: list[str] | None = None) -> int:
 
     args = p.parse_args(argv)
     if args.command == "export":
-        result = export.export(args.bootstrap_servers, args.ema_topic, args.advisories_topic, args.out, args.zone_offset, args.stall_seconds, args.late_topic, args.replay_report)
+        result = export.export(args.bootstrap_servers, args.ema_topic, args.advisories_topic, args.out, args.zone_offset, args.stall_seconds, args.late_topic, args.replay_report, args.ticks_topic)
     elif args.command == "compare":
         result = compare.compare(compare.Inputs(
             oracle=args.oracle, job=args.job, out=args.out, job_late_ticks=args.job_late_ticks,
             job_late_events=args.job_late_events, tolerance=args.tolerance, drift_ulps=args.drift_ulps,
         ))
+    elif args.command == "latency":
+        result = latency.latency(args.export, args.replay_report, args.metrics, args.bound_ms, args.idleness_ms,
+                                 (args.interval_start_ms, args.interval_end_ms), args.idle_from_ms,
+                                 args.drain_start_ms, args.out)
     else:
         opts = inject.Options(disorder_ms=args.disorder_ms, late_rate=args.late_rate, late_by_ms=args.late_by_ms, seed=args.seed)
         result = inject.inject(args.inputs, args.out, opts)

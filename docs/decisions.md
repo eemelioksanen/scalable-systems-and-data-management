@@ -37,13 +37,29 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 | D-13 | `ticks` content | The replayer forwards every CSV row as 7 raw columns (`ID, SecType, Date, Time, Last, Trading time, Trading date`). All parsing and normalization happen in Flink. | accepted | Normalization belongs to the system and is described in the report. Early filtering in the replayer is a later design comparison. |
 | D-14 | `ticks` encoding | UTF-8 CSV string, verbatim fields, empty = null, no quoting. | accepted | Compare against a binary encoding later as a design comparison. |
 | D-15 | `ticks` key and partitions | Key = symbol, default partitioner, 8 partitions locally. The record timestamp is the replayer's send time. | accepted | Revisit the partition count for the cloud runs. The Kafka offset gives per-symbol arrival order for D-4 ties. |
-| D-16 | Output records | JSON. `ema-results`: `symbol, secType, windowEnd, close, ema38, ema100, maxIngestTs, emitTs`. `advisories`: `symbol, secType, windowEnd, type (BUY/SELL), ema38, ema100, maxIngestTs, emitTs`. | accepted | Which latency definition to report is still open. `secType` enables equity/index filtering in the viz. |
+| D-16 | Output records | JSON. `ema-results`: `symbol, secType, windowEnd, close, ema38, ema100, maxIngestTs, emitTs`. `advisories`: `symbol, secType, windowEnd, type (BUY/SELL), ema38, ema100, maxIngestTs, emitTs`. | accepted | D-40 defines the latency reported from them. `secType` enables equity/index filtering in the viz. |
 | D-17 | `subscriptions` | Key = trader ID. Value = JSON symbol list (`["*"]` = all). A tombstone removes the trader. Compacted topic. | accepted | Results are emitted once per symbol. Fan-out to traders happens in the viz backend. |
 | D-18 | Correctness check | The oracle writes Parquet with the same field names. EMAs are joined on (symbol, windowEnd) with 1e-9 absolute tolerance and exact `close`. Advisories are compared as sets of (symbol, windowEnd, type), reporting precision and recall. | accepted | Flink runs with a `["*"]` subscription for the check. |
 
 ## Log
 
 Add later decisions below, newest first.
+
+### D-40: Live latency from admission to output (2026-11-01, Emilia Repo, issue #37) — proposed
+Context: D-16 left open which latency to report, and D-36 left open how to split `maxIngestTs` to `emitTs` into the watermark wait and the rest. D-38 proposes a 1 s bound and 30 s idleness for live jobs, and the job uses them by default. A first live run at 100x with the earlier 60 s bound took 1.0 s at p50 and 21.3 s at p99 from last admission to emission, mostly the watermark waiting on quiet partitions.
+Decision ([bench/README.md](../bench/README.md#latency)):
+- **Endpoints.** Latency runs from admission, the `ticks` record timestamp the replayer sets when it hands the window's last price event to its producer, to the output record's timestamp. Under the topics' `CreateTime` that is the sink producer's `send()` call. The export keeps each output record's timestamp type, so a `LogAppendTime` topic would show. Neither end is the broker's append.
+- **Stages.** `windowWait` to the feed reaching the window's end, `boundWait` to the end plus the bound, `alignmentWait` to readiness, `queueing` to emission, `sinkHandoff` to the output timestamp. They add up to the total for each result.
+- **Readiness is modelled, not observed.** It is when the watermark of interfaces.md would pass the window's end, computed from every price event's partition, admission and event time, read back from `ticks` after the run. The job is not instrumented, so its semantics and output stay as they are. Everything between admission and the job's watermark, including the model's own error, lands in `queueing`, which can be negative. A queueing split into broker, fetch, watermark emission and network is not identifiable from these timestamps.
+- **Watermark lag** is read from `q1-ema`'s `currentInputWatermark` at each Prometheus scrape, with the scrape's own timestamp, against the event time the feed had admitted by then. The same samples check the model.
+- **Interval.** A result counts when its last price event was admitted in the measurement interval and it was emitted before the drain began. The warm-up and the windows the drain fires are counted, not measured.
+
+Alternatives considered:
+- *Instrumenting the job to record, per window, the record that moved the watermark:* watermarks carry no provenance, and it would change the job that the correctness gate verified.
+- *Readiness from the 5 s watermark gauge:* at 100x a 5 s sample spans 500 s of event time, more than a window.
+- *Subtracting event time from wall-clock time,* as Flink's event-time lag metrics do: the events are from 2021, so the difference measures the replay's start, not the system.
+
+Consequences: no live run has measured this yet. The first run has to show `q1InputWatermark` samples, `modelAheadEventMs` near zero, and few `negativeQueueing` and `unmodelled` results before any figure is reported. Reading `ticks` back lengthens a live run's collection by an amount not yet measured.
 
 ### D-39: Query 1 on a full weekday against the oracle (2026-10-13, Leo Immonen, issue #21) — proposed
 Context: #21 asks for one full weekday through the replayer and the job, compared with the oracle by the comparer (#20), with values unchanged by replay speed and by bounded reordering. It was written when the job's bound was 60 s in both modes. D-38 has since set the defaults by mode and compared the full week at them. Open were one weekday at every setting and speed, and reordering on a full day file: D-34 reordered 11 symbols. The runs are in [the evidence](validation/2026-10-13-weekday/README.md).

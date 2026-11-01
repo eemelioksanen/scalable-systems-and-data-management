@@ -63,10 +63,10 @@ The Flink job emits one JSON record per (symbol, window) when **both** of these 
 | `windowEnd` | long | Exclusive end of the 5-minute window, epoch ms under the timezone interpretation of D-3 (`--zone-offset`, default `+02:00`): the window ending 09:05 on 08-11-2021 is `1636355100000`. |
 | `close` | double | Price of the window's closing event (D-4). |
 | `ema38`, `ema100` | double | EMA values after this window, written at full precision (no rounding). |
-| `maxIngestTs` | long | Latest record timestamp among the window's price events. |
+| `maxIngestTs` | long | Latest `ticks` record timestamp among the window's price events: when the replayer handed the last of them to its producer. |
 | `emitTs` | long | Wall-clock time (epoch ms) when the Flink job emitted the record. |
 
-The last two fields support the latency definitions still under consideration. Which one is reported is an open decision.
+The last two fields, with the output record's own timestamp, give the latency stages of D-40 ([bench/README.md](../bench/README.md#latency)).
 
 ## `advisories` (D-16)
 

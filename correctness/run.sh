@@ -4,6 +4,7 @@
 #   correctness/run.sh export --zone-offset +02:00 --out /out/<name>     # from the Compose stack's Kafka
 #   correctness/run.sh compare --oracle oracle/out --job correctness/out/<export> --out /out/<name> ...
 #   correctness/run.sh inject data/daily/<file>.csv ... --out /data/injected/<name> ...
+#   correctness/run.sh latency --export <run>/export --replay-report <run>/replay.json --out /out/<name> ...
 #   correctness/run.sh test [pytest args]
 #
 # Day files must lie under DATA_DIR (default: data/), which the container mounts read-only
@@ -15,7 +16,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 REPO="$PWD"
 DATA_DIR="$(cd "${DATA_DIR:-data}" 2>/dev/null && pwd -P || echo "$REPO/data")"
-command="${1:?usage: correctness/run.sh export|compare|inject|test ...}"
+command="${1:?usage: correctness/run.sh export|compare|inject|latency|test ...}"
 shift
 
 if [[ "${USE_VENV:-0}" == "1" ]]; then
