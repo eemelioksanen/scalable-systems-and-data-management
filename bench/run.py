@@ -482,6 +482,10 @@ class Run:
             ("records the job wrote = records exported", total(sinks, "write-records"),
              None if exported_ema is None or exported_adv is None else exported_ema + exported_adv),
         ]
+        price_events = topics.get("ticks", {})
+        if price_events:
+            checks.append(("price events out of the source = exported from ticks", total(source, "write-records"),
+                           price_events.get("rows") if price_events.get("complete") else None))
         if self.cfg.all_subscribed:
             checks.append(("q1 outputs = exported ema-results + late-ticks", total(q1, "write-records"),
                            None if exported_ema is None or not late_final else exported_ema + counters["lateTicks"]))

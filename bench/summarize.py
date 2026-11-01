@@ -46,21 +46,26 @@ def interval_mean(metrics: dict, name: str, container: str = "", combine=sum) ->
     return combine(means) if means else None
 
 
-LATENCY_STAGES = ("emitLatency", "outputLatency", "windowWait", "watermarkWait", "queueing", "sinkHandoff")
+LATENCY_STAGES = ("emitLatency", "outputLatency", "windowWait", "boundWait", "alignmentWait", "watermarkWait",
+                  "queueing", "sinkHandoff")
+WATERMARK_LAG = {"watermarkLagEvent": "eventMs", "watermarkLagWall": "wallMs", "modelAheadEvent": "modelAheadEventMs"}
 
 
 def latency_columns(latency: dict | None) -> dict:
-    """A live run's latency percentiles over its measured results, and what the interval left out (#37)."""
-    if not latency:
+    """A live run's latency percentiles over its measured results, and the results it left out."""
+    if not latency or not latency.get("complete"):
         return {}
-    row = {"latencyResults": latency["measured"], "latencyExcludedWarmup": latency["excluded"]["beforeInterval"],
-           "latencyExcludedDrain": latency["excluded"]["drain"], "latencyUnmodelled": latency["unmodelled"]}
+    excluded = latency["excluded"]
+    row = {"latencyResults": latency["measured"], "latencyExcludedWarmup": excluded["beforeInterval"],
+           "latencyExcludedAfter": excluded["afterInterval"], "latencyExcludedDrain": excluded["drain"],
+           "latencyUnmodelled": latency["unmodelled"], "latencyNegativeQueueing": latency["negativeQueueing"],
+           "watermarkSamples": latency["watermarkLag"]["samples"]}
     for stage in LATENCY_STAGES:
         for q in (50, 95, 99):
             row[f"{stage}P{q}Ms"] = latency["stagesMs"][stage].get(f"p{q}")
-    for kind in ("eventMs", "wallMs"):
+    for column, key in WATERMARK_LAG.items():
         for q in (50, 95, 99):
-            row[f"watermarkLag{kind[0].upper()}{kind[1:-2]}P{q}Ms"] = latency["watermarkLag"][kind].get(f"p{q}")
+            row[f"{column}P{q}Ms"] = latency["watermarkLag"][key].get(f"p{q}")
     return row
 
 
