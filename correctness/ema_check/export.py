@@ -4,6 +4,10 @@ Each topic is read from its start offsets up to the end offsets taken when the e
 The manifest records both per partition, and an export is complete only if every partition was
 read from offset 0 to its end with one record per offset. A topic still being written to, or one whose
 oldest records were deleted, is therefore reported rather than compared.
+
+Every exported row keeps its record's Kafka timestamp and timestamp type. With `ticks_topic`,
+the export also keeps each price event's partition, timestamp and event time for the latency
+model (latency.py).
 """
 
 from __future__ import annotations
@@ -16,6 +20,8 @@ from pathlib import Path
 import polars as pl
 from kafka import KafkaConsumer, TopicPartition
 
+from .latency import price_event, zone_offset_ms
+
 EMA_SCHEMA = {
     "symbol": pl.String, "secType": pl.String, "windowEnd": pl.Int64, "close": pl.Float64,
     "ema38": pl.Float64, "ema100": pl.Float64, "maxIngestTs": pl.Int64, "emitTs": pl.Int64,
@@ -25,10 +31,18 @@ ADVISORY_SCHEMA = {
     "ema38": pl.Float64, "ema100": pl.Float64, "maxIngestTs": pl.Int64, "emitTs": pl.Int64,
 }
 LATE_SCHEMA = {"sourceFileIndex": pl.Int32, "sourceLine": pl.Int64, "symbol": pl.String, "windowEnd": pl.Int64}
-POSITION_SCHEMA = {"partition": pl.Int32, "offset": pl.Int64}
+PRICE_EVENT_SCHEMA = {"eventTime": pl.Int64}
+POSITION_SCHEMA = {"partition": pl.Int32, "offset": pl.Int64, "kafkaTs": pl.Int64, "kafkaTsType": pl.String}
+TIMESTAMP_TYPES = {0: "CreateTime", 1: "LogAppendTime"}
 
 
-def _read_topic(consumer: KafkaConsumer, topic: str, schema: dict, stall_s: float) -> tuple[pl.DataFrame, dict]:
+def _json_value(record) -> dict:
+    return json.loads(record.value)
+
+
+def _read_topic(consumer: KafkaConsumer, topic: str, schema: dict, stall_s: float,
+                decode=_json_value) -> tuple[pl.DataFrame, dict]:
+    """Reads `topic` up to its end offsets. `decode` maps a record to its row, or to None to count it without a row."""
     partitions = sorted(consumer.partitions_for_topic(topic) or ())
     if not partitions:
         raise ValueError(f"topic {topic} does not exist")
@@ -48,14 +62,18 @@ def _read_topic(consumer: KafkaConsumer, topic: str, schema: dict, stall_s: floa
             for rec in records:
                 if rec.offset >= end[tp]:
                     break
-                value = json.loads(rec.value)
+                read[tp.partition] += 1
+                value = decode(rec)
+                if value is None:
+                    continue
                 if any(value.get(name) is None for name in schema):
                     incomplete_records += 1
                 for name in schema:
                     columns[name].append(value.get(name))
                 columns["partition"].append(tp.partition)
                 columns["offset"].append(rec.offset)
-                read[tp.partition] += 1
+                columns["kafkaTs"].append(rec.timestamp)
+                columns["kafkaTsType"].append(TIMESTAMP_TYPES.get(rec.timestamp_type, str(rec.timestamp_type)))
             last_progress = time.monotonic()
         pending = {tp for tp in pending if consumer.position(tp) < end[tp]}
 
@@ -75,6 +93,7 @@ def _read_topic(consumer: KafkaConsumer, topic: str, schema: dict, stall_s: floa
     info = {
         "partitions": info_partitions,
         "records": sum(read.values()),
+        "rows": len(columns["offset"]),
         "complete": not problems,
         **({"problem": "; ".join(problems)} if problems else {}),
     }
@@ -98,7 +117,8 @@ def resolve_sources(df: pl.DataFrame, replay_report: Path | None) -> pl.DataFram
 
 
 def export(bootstrap: str, ema_topic: str, advisories_topic: str, out: Path, zone_offset: str,
-           stall_s: float = 30.0, late_topic: str = "late-ticks", replay_report: Path | None = None) -> dict:
+           stall_s: float = 30.0, late_topic: str = "late-ticks", replay_report: Path | None = None,
+           ticks_topic: str | None = None) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     consumer = KafkaConsumer(
         bootstrap_servers=bootstrap,
@@ -133,6 +153,12 @@ def export(bootstrap: str, ema_topic: str, advisories_topic: str, out: Path, zon
                         "duplicate late-event source identities: reset output topics before replaying"]))
             df.sort(["symbol", "windowEnd", "partition", "offset"]).write_parquet(out / f"{name}.parquet")
             manifest["topics"][topic] = {"file": f"{name}.parquet", **info}
+        if ticks_topic:
+            offset_ms = zone_offset_ms(zone_offset)
+            df, info = _read_topic(consumer, ticks_topic, PRICE_EVENT_SCHEMA, stall_s,
+                                   lambda rec: price_event(rec.value, offset_ms))
+            df.sort(["partition", "offset"]).write_parquet(out / "price_events.parquet")
+            manifest["topics"][ticks_topic] = {"file": "price_events.parquet", **info}
     finally:
         consumer.close()
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

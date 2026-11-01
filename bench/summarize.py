@@ -46,6 +46,24 @@ def interval_mean(metrics: dict, name: str, container: str = "", combine=sum) ->
     return combine(means) if means else None
 
 
+LATENCY_STAGES = ("emitLatency", "outputLatency", "windowWait", "watermarkWait", "queueing", "sinkHandoff")
+
+
+def latency_columns(latency: dict | None) -> dict:
+    """A live run's latency percentiles over its measured results, and what the interval left out (#37)."""
+    if not latency:
+        return {}
+    row = {"latencyResults": latency["measured"], "latencyExcludedWarmup": latency["excluded"]["beforeInterval"],
+           "latencyExcludedDrain": latency["excluded"]["drain"], "latencyUnmodelled": latency["unmodelled"]}
+    for stage in LATENCY_STAGES:
+        for q in (50, 95, 99):
+            row[f"{stage}P{q}Ms"] = latency["stagesMs"][stage].get(f"p{q}")
+    for kind in ("eventMs", "wallMs"):
+        for q in (50, 95, 99):
+            row[f"watermarkLag{kind[0].upper()}{kind[1:-2]}P{q}Ms"] = latency["watermarkLag"][kind].get(f"p{q}")
+    return row
+
+
 def mean(values: list[float]) -> float:
     return sum(values) / len(values)
 
@@ -90,6 +108,7 @@ def run_row(run: Path) -> dict:
         "reconciliationOk": s["reconciliation"]["ok"],
         "correctness": correctness.get("verdict"),
         "emaDifferences": correctness.get("emaDifferences"),
+        **latency_columns(s.get("latency")),
     })
     return row
 

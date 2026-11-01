@@ -34,6 +34,8 @@ JOB_CLASS = "fi.aalto.cse4780.trading.TradingTrendsJob"
 CHECKPOINTING = ["-Dexecution.checkpointing.interval=10s", "-Drestart-strategy.type=none"]
 SCRAPE_S = 5
 
+Q1_WATERMARK = 'flink_taskmanager_job_task_operator_currentInputWatermark{operator_name="q1_ema"}'
+
 # The measurements of interfaces.md, "Metrics (D-35)", grouped as that table describes.
 QUERIES = {
     "ticksIntoKafka": 'sum(rate(kafka_server_brokertopicmetrics_messagesin_total{topic="ticks"}[15s]))',
@@ -61,6 +63,8 @@ QUERIES = {
     "topicBytesOutPerS": "sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesout_total[15s]))",
     "brokerRequestHandlerIdle": "kafka_server_request_handler_avg_idle_ratio",
     "brokerNetworkIdle": "kafka_network_processor_avg_idle_ratio",
+    "q1InputWatermark": Q1_WATERMARK,
+    "q1InputWatermarkScrapeTs": f"timestamp({Q1_WATERMARK})",
 }
 
 # interfaces.md, "Counts (D-28)", by the operator that counts them.
@@ -388,10 +392,21 @@ class Run:
         return values
 
     def export(self) -> dict:
+        ticks = ["--ticks-topic", "ticks"] if self.cfg.mode == "live" else []
         self.sh("correctness/run.sh", "export", "--zone-offset", self.cfg.zone_offset,
-                "--replay-report", self.dir / "replay.json",
+                "--replay-report", self.dir / "replay.json", *ticks,
                 "--out", f"/out/bench/{self.id}/export", timeout=1800)
         return self._collect("export", "manifest.json")
+
+    def latency(self) -> dict:
+        interval = self.interval()
+        self.sh("correctness/run.sh", "latency", "--export", self.dir / "export",
+                "--replay-report", self.dir / "replay.json", "--metrics", self.dir / "metrics.json",
+                "--bound-ms", self.cfg.bound_ms, "--idleness-ms", self.cfg.idleness_ms,
+                "--interval-start-ms", interval[0], "--interval-end-ms", interval[1],
+                "--idle-from-ms", self.times["jobRunning"], "--drain-start-ms", self.times["drainStart"],
+                "--out", f"/out/bench/{self.id}/latency", timeout=1800)
+        return self._collect("latency", "latency.json")
 
     def compare(self, late_ticks: int | None) -> dict:
         late = (["--job-late-ticks", str(late_ticks),
@@ -492,6 +507,13 @@ class Run:
                 for name, left, right in checks]
         return {"ok": all(r["ok"] for r in rows), "checks": rows, "countersFinal": final}
 
+    def interval(self) -> tuple[int, int]:
+        """The measurement interval: the job's run in a preload, the replay in a live run, minus the warm-up."""
+        warmup = int(self.cfg.warmup_s * 1000)
+        if self.cfg.mode == "preload":
+            return self.times["jobStart"] + warmup, self.times["jobEnd"]
+        return self.times["replayStart"] + warmup, self.times["replayEnd"]
+
     def summarize(self, report: dict, flink: dict, pulled: dict, counters: dict, recon: dict, outputs: dict) -> dict:
         job = flink["job"]
         duration_ms = job["duration"]
@@ -513,10 +535,7 @@ class Run:
         source = flink["vertices"].get("Source: ticks", {}).get("subtasks", [])
         read = [s["metrics"]["read-records"] for s in source]
         span_ms = max(s["end-time"] for s in source) - min(s["start-time"] for s in source) if source else 0
-        if self.cfg.mode == "preload":
-            interval = (job["start-time"] + int(self.cfg.warmup_s * 1000), job["end-time"])
-        else:
-            interval = (self.times["replayStart"] + int(self.cfg.warmup_s * 1000), self.times["replayEnd"])
+        interval = self.interval()
         series = {}
         for name, entry in pulled["queries"].items():
             series[name] = []
@@ -543,6 +562,8 @@ class Run:
             "outputs": {topic: info.get("records") for topic, info in outputs["export"]["topics"].items()},
             "metrics": series,
         }
+        if "latency" in outputs:
+            summary["latency"] = outputs["latency"]
         if "compare" in outputs:
             c = outputs["compare"]
             identical = (not c["ema"]["differences"] and not c["advisories"]["byKind"]
@@ -569,9 +590,11 @@ class Run:
             else:
                 wait_for("every job task to run", lambda: self.running(job_id),
                          lambda j: all(v["status"] == "RUNNING" for v in j["vertices"]), timeout=180, interval=1)
+                self.mark("jobRunning")
                 if self.cfg.mode == "live":
                     report = self.replay("realtime", job_id)
                 self.wait_drained(job_id, report)
+                self.mark("drainStart")
                 job = self.drain(job_id)
             self.mark("jobStart", job["start-time"])
             self.mark("jobEnd", job["end-time"])
@@ -585,6 +608,8 @@ class Run:
             self.record["stack"] = self.describe()
             outputs = {"export": self.export()}
             recon = self.reconcile(report, flink, counters, outputs)
+            if self.cfg.mode == "live":
+                outputs["latency"] = self.latency()
             if self.cfg.oracle:
                 final = recon["countersFinal"]["lateTicks"]
                 outputs["compare"] = self.compare(counters["lateTicks"] if final else None)
