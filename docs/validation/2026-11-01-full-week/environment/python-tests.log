@@ -1,0 +1,15 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.10, pytest-9.1.1, pluggy-1.7.0
+rootdir: /Users/emiliar/.t3/worktrees/scalable-systems-and-data-management/t3-35f333b1/correctness
+configfile: pyproject.toml
+collected 75 items
+
+correctness/tests/test_benchmark_late.py ..                              [  2%]
+correctness/tests/test_compare.py .......................                [ 33%]
+correctness/tests/test_export.py ........                                [ 44%]
+correctness/tests/test_inject.py ......                                  [ 52%]
+correctness/test_golden.py ..                                            [ 54%]
+correctness/test_semantics.py ............                               [ 70%]
+correctness/test_units.py ......................                         [100%]
+
+============================== 75 passed in 3.29s ==============================

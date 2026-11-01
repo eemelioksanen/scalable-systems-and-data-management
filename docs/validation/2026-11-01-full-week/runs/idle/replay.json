@@ -1,0 +1,103 @@
+{
+  "runId" : "issue9-idle",
+  "status" : "COMPLETE",
+  "mode" : "realtime",
+  "rate" : 60.0,
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/idle-08-11-21.csv",
+    "bytes" : 54045,
+    "lines" : 771,
+    "complete" : true
+  } ],
+  "counts" : {
+    "lines" : 771,
+    "comments" : 0,
+    "headers" : 0,
+    "rejected" : 0,
+    "dataRows" : 771,
+    "excluded" : 0,
+    "attempted" : 771,
+    "acknowledged" : 771,
+    "failed" : 0,
+    "keyBytes" : 5397,
+    "valueBytes" : 27831,
+    "headerBytes" : 6060
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 771,
+    "records" : 771
+  }, {
+    "partition" : 1,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 2,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 3,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 4,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 5,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 6,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 7,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  } ],
+  "timing" : {
+    "startedAt" : "2026-11-01T20:54:10.262Z",
+    "finishedAt" : "2026-11-01T20:54:22.283Z",
+    "durationMs" : 12021,
+    "flushMs" : 11,
+    "recordsPerSecond" : 64.14,
+    "payloadMegabytesPerSecond" : 0.0
+  },
+  "pacing" : {
+    "clockStart" : "2021-11-08T09:00",
+    "paceStart" : "2021-11-08T09:00",
+    "clockEnd" : "2021-11-08T09:12",
+    "pacedRecords" : 771,
+    "achievedRate" : 59.98,
+    "lagP50Ms" : 23,
+    "lagP99Ms" : 31,
+    "lagMaxMs" : 32
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "issue9-idle",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4"
+  }
+}
