@@ -188,3 +188,35 @@ def test_input_problems_fail_the_gate(tmp_path, golden, kw, problem):
     report, _, _ = _run(tmp_path, *golden, **kw)
     assert not report["pass"]
     assert any(problem in p for p in report["problems"])
+
+
+@pytest.mark.parametrize("lines,expected", [([7], True), ([8], False), ([7, 7], False), ([None], False)])
+def test_late_event_identities_must_match(tmp_path, golden, lines, expected):
+    results, advisories = golden
+    oracle = _oracle_dir(tmp_path / "oracle", results, advisories, rejected=len(lines))
+    job = _job_dir(tmp_path / "job", results, advisories)
+    rejected = pl.DataFrame({"sourceFile": ["day.csv"], "sourceLine": [7], "symbol": ["S.NL"], "windowEnd": [300000]})
+    rejected.write_parquet(oracle / "rejected_events.parquet")
+    events = pl.DataFrame({"sourceFile": ["day.csv"] * len(lines), "sourceLine": lines,
+                           "symbol": ["S.NL"] * len(lines), "windowEnd": [300000] * len(lines)},
+                          schema={"sourceFile": pl.String, "sourceLine": pl.Int64, "symbol": pl.String, "windowEnd": pl.Int64})
+    path = job / "late_events.parquet"
+    events.write_parquet(path)
+    report = compare(Inputs(oracle=oracle, job=job, out=tmp_path / "cmp", job_late_ticks=len(lines), job_late_events=path))
+    assert report["pass"] == expected, report["problems"]
+
+
+def test_nonzero_late_count_requires_source_identities(tmp_path, golden):
+    report, _, _ = _run(tmp_path, *golden, late_ticks=1, oracle_rejected=1)
+    assert not report["pass"]
+    assert any("requires --job-late-events" in problem for problem in report["problems"])
+
+
+def test_missing_late_count_is_not_reported_as_length_mismatch(tmp_path, golden):
+    path = tmp_path / "late.parquet"
+    pl.DataFrame(schema={"sourceFile": pl.String, "sourceLine": pl.Int64,
+                         "symbol": pl.String, "windowEnd": pl.Int64}).write_parquet(path)
+    report, _, _ = _run(tmp_path, *golden, late_ticks=None, job_late_events=path)
+    assert not report["pass"]
+    assert any("lateTicks was not given" in problem for problem in report["problems"])
+    assert not any("length differs" in problem for problem in report["problems"])

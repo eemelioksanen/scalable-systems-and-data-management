@@ -2,7 +2,7 @@
 
 The tools the correctness checks run (D-18, #9, #21):
 
-- `export` reads `ema-results` and `advisories` from Kafka into Parquet with the oracle's field names.
+- `export` reads `ema-results`, `advisories` and `late-ticks` from Kafka into Parquet with the oracle's field names.
 - `compare` diffs an export against an [oracle](../oracle/README.md) run and classifies every difference.
 - `inject` rewrites day files with bounded disorder and late events, deterministically from a seed.
 
@@ -57,9 +57,9 @@ The gate passes only if all of these hold:
 
 A run whose late count differs from the oracle's is compared against the wrong reference. The oracle README says [which reference to use](../oracle/README.md#late-events-matching-a-batch-run-to-a-streaming-run).
 
-`lateTicks` is a Flink metric, and a finished `--bounded` job's metrics disappear with it. On a short run the JobManager's REST API can still show 0, because it caches metrics for 10 s. Read the TaskManager's Prometheus endpoint (port 9249) instead, until the job ends, and keep each subtask's last value: the subtasks finish at different times, so the last scrape can lack some of them. [bounded_defaults.py](../docs/validation/2026-10-13-weekday/bounded_defaults.py) does that for a `--bounded` run without watermark flags.
+The completed `late-ticks` export gives the late count even after a bounded job's metrics disappear. Pass `--replay-report <replay.json>` to `export` to resolve source filenames. With no late records, the empty export proves zero without a replay report. Missing source positions, unresolved file indices and duplicate source positions make the export incomplete.
 
-`--job-late-events` takes CSV or Parquet with `symbol` and `windowEnd` columns. The job does not export its late events yet (D-31).
+`--job-late-events` takes the exported `late_events.parquet`, with `sourceFile`, `sourceLine`, `symbol` and `windowEnd`. The comparer checks its length against `--job-late-ticks` and its identities against the oracle's `rejected_events.parquet`. Equal counts alone cannot prove that the same events were rejected. Run the oracle on the replay's input files with `--exclude-events correctness/out/run-1/late_events.parquet`, then compare against that reference. The benchmark harness supplies the export and its count automatically.
 
 Outputs: `report.json` (also printed), `ema_differences.parquet`, `advisory_differences.parquet`, `ema_duplicates.parquet` and `advisory_duplicates.parquet`. The exit code is 0 only if the gate passes.
 

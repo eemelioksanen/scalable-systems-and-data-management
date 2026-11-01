@@ -1,6 +1,7 @@
 package fi.aalto.cse4780.trading;
 
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
@@ -24,6 +25,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> {
 
     private static final long serialVersionUID = 1L;
+    private static final Pattern SOURCE_POSITION = Pattern.compile("[0-9]+:[0-9]+");
 
     private final TickParser parser;
 
@@ -65,6 +67,7 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
                 }
                 tick.sourceOrder = record.offset();
                 tick.ingestTimeMillis = record.timestamp();
+                readSource(record, tick);
                 priceEvents.inc();
                 out.collect(tick);
             }
@@ -72,6 +75,28 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
             case NON_POSITIVE_PRICE -> nonPositivePriceEvents.inc();
             case MISSING_TIMESTAMP -> missingTimestampEvents.inc();
             case MALFORMED -> malformedEvents.inc();
+        }
+    }
+
+    private static void readSource(ConsumerRecord<byte[], byte[]> record, Tick tick) {
+        var header = record.headers().lastHeader("src");
+        if (header == null || header.value() == null) {
+            return;
+        }
+        String source = new String(header.value(), StandardCharsets.US_ASCII);
+        if (!SOURCE_POSITION.matcher(source).matches()) {
+            return;
+        }
+        int separator = source.indexOf(':');
+        try {
+            int file = Integer.parseInt(source.substring(0, separator));
+            long line = Long.parseLong(source.substring(separator + 1));
+            if (line > 0) {
+                tick.sourceFileIndex = file;
+                tick.sourceLine = line;
+            }
+        } catch (NumberFormatException ignored) {
+            return;
         }
     }
 
