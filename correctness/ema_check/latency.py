@@ -1,4 +1,4 @@
-"""Latency of a live replay, from admission to output, split into the waits that make it up (#37).
+"""Latency of a live replay, from admission to output, split into the waits that make it up.
 
 Every timestamp here is wall-clock epoch milliseconds from one host's clock. No 2021 event time
 is ever subtracted from one: event times only decide when the replayed feed and the watermark
@@ -13,6 +13,7 @@ import functools
 import heapq
 import json
 import math
+import re
 from pathlib import Path
 
 import polars as pl
@@ -22,6 +23,8 @@ PERCENTILES = (50, 95, 99)
 
 _SECONDS_PER_DAY = 86_400
 _EPOCH = dt.date(1970, 1, 1).toordinal()
+_JAVA_DECIMAL = re.compile(r"[\x00- ]*[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?[fFdD]?[\x00- ]*")
+_DIGITS = re.compile(r"[0-9]+")
 
 
 def zone_offset_ms(text: str) -> int:
@@ -40,10 +43,9 @@ def price_event(value: bytes | None, zone_offset_ms: int) -> dict | None:
     fields = value.decode("utf-8", "replace").split(",")
     if len(fields) != 7 or not fields[0] or not fields[4]:
         return None
-    try:
-        price = float(fields[4])
-    except ValueError:
+    if not _JAVA_DECIMAL.fullmatch(fields[4]):
         return None
+    price = float(fields[4].strip("\x00 ").rstrip("fFdD"))
     if not math.isfinite(price) or price <= 0:
         return None
     date = fields[6] or fields[2]
@@ -58,7 +60,7 @@ def price_event(value: bytes | None, zone_offset_ms: int) -> dict | None:
 
 @functools.lru_cache(maxsize=64)
 def _epoch_day(date: str) -> int | None:
-    if len(date) != 10 or date[2] != "-" or date[5] != "-" or not (date[:2] + date[3:5] + date[6:]).isdigit():
+    if len(date) != 10 or date[2] != "-" or date[5] != "-" or not _DIGITS.fullmatch(date[:2] + date[3:5] + date[6:]):
         return None
     try:
         return dt.date(int(date[6:]), int(date[3:5]), int(date[:2])).toordinal() - _EPOCH
@@ -67,7 +69,7 @@ def _epoch_day(date: str) -> int | None:
 
 
 def _millis_of_day(time: str) -> int | None:
-    if len(time) < 8 or time[2] != ":" or time[5] != ":" or not (time[:2] + time[3:5] + time[6:8]).isdigit():
+    if len(time) < 8 or time[2] != ":" or time[5] != ":" or not _DIGITS.fullmatch(time[:2] + time[3:5] + time[6:8]):
         return None
     hours, minutes, seconds = int(time[:2]), int(time[3:5]), int(time[6:8])
     if hours > 23 or minutes > 59 or seconds > 59:
@@ -75,7 +77,7 @@ def _millis_of_day(time: str) -> int | None:
     millis = 0
     if len(time) > 8:
         fraction = time[9:]
-        if time[8] != "." or not 1 <= len(fraction) <= 9 or not fraction.isdigit():
+        if time[8] != "." or not 1 <= len(fraction) <= 9 or not _DIGITS.fullmatch(fraction):
             return None
         millis = int(fraction[:3].ljust(3, "0"))
     return ((hours * 60 + minutes) * 60 + seconds) * 1000 + millis
@@ -133,11 +135,16 @@ class Watermark:
 
         def expire(until: float):
             while expiries and expiries[0][0] <= until:
-                at, p = heapq.heappop(expiries)
-                if last[p] + idleness_ms > at:
-                    heapq.heappush(expiries, (last[p] + idleness_ms, p))
-                else:
-                    active.discard(p)
+                at = expiries[0][0]
+                idled = False
+                while expiries and expiries[0][0] == at:
+                    _, p = heapq.heappop(expiries)
+                    if last[p] + idleness_ms > at:
+                        heapq.heappush(expiries, (last[p] + idleness_ms, p))
+                    else:
+                        active.discard(p)
+                        idled = True
+                if idled:
                     update(at)
 
         for at, p, event_time in ordered.iter_rows():
@@ -248,17 +255,25 @@ def prometheus_samples(metrics: dict, values: str, stamps: str) -> list[tuple[in
         return {json.dumps({k: v for k, v in s["metric"].items() if k != "__name__"}, sort_keys=True): dict(s["values"])
                 for s in result}
     stamped = series(stamps)
-    pairs = set()
+    pairs = []
     for labels, points in series(values).items():
         stamps_at = stamped.get(labels, {})
-        for t, value in points.items():
-            if t in stamps_at and value not in ("NaN", "+Inf", "-Inf"):
-                pairs.add((round(float(stamps_at[t]) * 1000), round(float(value))))
+        scrapes = {round(float(stamps_at[t]) * 1000): round(float(value))
+                   for t, value in points.items() if t in stamps_at and value not in ("NaN", "+Inf", "-Inf")}
+        pairs += scrapes.items()
     return sorted(pairs)
 
 
 def latency(export_dir: Path, replay_report: Path, metrics: Path | None, bound_ms: int, idleness_ms: int,
             interval: tuple[int, int], idle_from_ms: int, drain_start_ms: int | None, out: Path) -> dict:
+    out.mkdir(parents=True, exist_ok=True)
+    topics = {t["file"]: t for t in json.loads((export_dir / "manifest.json").read_text())["topics"].values()}
+    problems = [f"{file} is missing or incomplete" for file in ("ema_results.parquet", "price_events.parquet")
+                if not topics.get(file, {}).get("complete")]
+    if problems:
+        report = {"complete": False, "problems": problems}
+        (out / "latency.json").write_text(json.dumps(report, indent=2) + "\n")
+        return report
     results = pl.read_parquet(export_dir / "ema_results.parquet")
     events = pl.read_parquet(export_dir / "price_events.parquet")
     partitions = [p["partition"] for p in json.loads(replay_report.read_text())["offsets"]]
@@ -266,6 +281,7 @@ def latency(export_dir: Path, replay_report: Path, metrics: Path | None, bound_m
     model = Watermark(events, partitions, bound_ms, idleness_ms, idle_from_ms)
     samples = prometheus_samples(json.loads(metrics.read_text()), "q1InputWatermark", "q1InputWatermarkScrapeTs") if metrics else []
     report = {
+        "complete": True,
         "interval": {"startMs": interval[0], "endMs": interval[1]},
         "drainStartMs": drain_start_ms,
         "model": {"boundMs": bound_ms, "idlenessMs": idleness_ms, "partitions": partitions,
@@ -275,6 +291,5 @@ def latency(export_dir: Path, replay_report: Path, metrics: Path | None, bound_m
         **decompose(results, feed, model, bound_ms, interval, drain_start_ms),
         "watermarkLag": watermark_lag(samples, feed, model, interval),
     }
-    out.mkdir(parents=True, exist_ok=True)
     (out / "latency.json").write_text(json.dumps(report, indent=2) + "\n")
     return report

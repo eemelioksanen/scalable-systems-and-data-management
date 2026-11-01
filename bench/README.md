@@ -115,6 +115,7 @@ A bounded job's custom counters vanish when it finishes, and on a short run Prom
 
 - the replay's acknowledged records = records the `ticks` source read
 - price events the source emitted = records q1-ema received
+- in a live run, price events the source emitted = price events exported from `ticks`
 - records the sink chain wrote = records exported from both topics
 - with a `*` subscription, windows q1-ema evaluated = exported `ema-results`
 - with an oracle, replayed data rows and price events equal the oracle's, and, when the source's counters are final, so do the non-price, non-positive and `Date`-dated events
@@ -123,7 +124,7 @@ The source counters come from Prometheus's last sample. `countersFinal.split` is
 
 ## Latency
 
-A live run exports `ticks`' price events with the outputs, and `correctness/run.sh latency` writes `latency/latency.json`, which `summary.json` carries as `latency` (D-40). Preloads report no latency: their records enter Kafka before the job starts.
+A live run exports `ticks`' price events with the outputs, and `correctness/run.sh latency` writes `latency/latency.json`, which `summary.json` carries as `latency` (D-40). It refuses an export whose `ticks` or `ema-results` part is incomplete and reports `complete: false` instead, and reconciliation requires the exported price events to equal those the source emitted. Preloads report no latency: their records enter Kafka before the job starts.
 
 ### What each timestamp is
 

@@ -26,6 +26,10 @@ def tick(last="10.5", trading_time="09:00:00.1234", trading_date="08-11-2021", d
     (tick(trading_date="31-02-2021"), None),
     (tick(trading_time="24:00:00"), None),
     (b"S.NL,E,08-11-2021,09:00:00.000,10.5,09:00:00", None),
+    (tick(last="1_0"), None),
+    (tick(last="inf"), None),
+    (tick(last="1e1d"), DAY * 86_400_000 + 9 * 3_600_000 + 123),
+    (tick(trading_time="09:00:0\u00b2"), None),
 ])
 def test_price_events_follow_the_job_parser(value, expected):
     parsed = price_event(value, 0)
@@ -53,6 +57,12 @@ def test_idleness_releases_a_quiet_partition_and_an_empty_one():
     feed = events([(1_000, 0, 10), (2_000, 1, 10), (3_000, 1, 5 * MINUTE + 1000)])
     model = Watermark(feed, [0, 1, 2], bound_ms=1000, idleness_ms=30_000, start_ms=500)
     assert model.passed(5 * MINUTE - 1) == 31_000
+
+
+def test_partitions_idling_at_the_same_instant_hold_the_watermark():
+    for first, second in ((0, 1), (1, 0)):
+        model = Watermark(events([(0, first, 10), (0, second, 100)]), [0, 1], bound_ms=0, idleness_ms=30, start_ms=0)
+        assert model.at(1_000) == 9
 
 
 def test_watermark_holds_while_every_partition_is_idle_and_never_decreases():
@@ -100,6 +110,10 @@ def test_watermark_lag_pairs_values_with_their_scrape_times():
     }}
     samples = prometheus_samples(metrics, "q1InputWatermark", "q1InputWatermarkScrapeTs")
     assert samples == [(9_500, 120_000), (19_500, -9_200_000_000_000_000_000)]
+    three = {"queries": {name: {"result": [{"metric": {"subtask_index": str(i)}, "values": [[10, v]]}
+                                            for i, v in enumerate(values)]}
+                         for name, values in (("wm", ["100", "100", "200"]), ("ts", ["9.5"] * 3))}}
+    assert prometheus_samples(three, "wm", "ts") == [(9_500, 100), (9_500, 100), (9_500, 200)]
     feed = events([(1_000, 0, 100_000), (2_000, 0, 121_000), (9_000, 0, 125_000)])
     model = Watermark(feed, [0], bound_ms=1000, idleness_ms=0, start_ms=0)
     lag = watermark_lag(samples, Feed(feed), model, (0, 30_000))
@@ -107,7 +121,20 @@ def test_watermark_lag_pairs_values_with_their_scrape_times():
     assert (lag["eventMs"]["p50"], lag["wallMs"]["p50"], lag["modelAheadEventMs"]["p50"]) == (5_000, 7_500, 3_999)
 
 
+def manifest(tmp_path, complete=True):
+    (tmp_path / "manifest.json").write_text(json.dumps({"topics": {
+        "ema-results": {"file": "ema_results.parquet", "complete": True},
+        "ticks": {"file": "price_events.parquet", "complete": complete}}}))
+
+
+def test_latency_refuses_an_incomplete_ticks_export(tmp_path):
+    manifest(tmp_path, complete=False)
+    out = latency(tmp_path, tmp_path / "unused.json", None, 1000, 30_000, (0, 2_000), 0, None, tmp_path / "out")
+    assert out == {"complete": False, "problems": ["price_events.parquet is missing or incomplete"]}
+
+
 def test_latency_writes_its_report(tmp_path):
+    manifest(tmp_path)
     feed = events([(0, 0, 1), (1_000, 0, 5 * MINUTE + 1_000)])
     feed.write_parquet(tmp_path / "price_events.parquet")
     results([(5 * MINUTE, 0, 1_200, 1_201)]).with_columns(kafkaTsType=pl.lit("CreateTime")).write_parquet(tmp_path / "ema_results.parquet")
