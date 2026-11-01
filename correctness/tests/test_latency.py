@@ -28,6 +28,7 @@ def tick(last="10.5", trading_time="09:00:00.1234", trading_date="08-11-2021", d
     (b"S.NL,E,08-11-2021,09:00:00.000,10.5,09:00:00", None),
     (tick(last="1_0"), None),
     (tick(last="inf"), None),
+    (tick(last="\x01 1d\t"), DAY * 86_400_000 + 9 * 3_600_000 + 123),
     (tick(last="1e1d"), DAY * 86_400_000 + 9 * 3_600_000 + 123),
     (tick(trading_time="09:00:0\u00b2"), None),
 ])

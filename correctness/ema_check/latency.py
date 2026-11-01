@@ -25,6 +25,7 @@ _SECONDS_PER_DAY = 86_400
 _EPOCH = dt.date(1970, 1, 1).toordinal()
 _JAVA_DECIMAL = re.compile(r"[\x00- ]*[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?[fFdD]?[\x00- ]*")
 _DIGITS = re.compile(r"[0-9]+")
+_JAVA_WHITESPACE = "".join(map(chr, range(33)))
 
 
 def zone_offset_ms(text: str) -> int:
@@ -45,7 +46,7 @@ def price_event(value: bytes | None, zone_offset_ms: int) -> dict | None:
         return None
     if not _JAVA_DECIMAL.fullmatch(fields[4]):
         return None
-    price = float(fields[4].strip("\x00 ").rstrip("fFdD"))
+    price = float(fields[4].strip(_JAVA_WHITESPACE).rstrip("fFdD"))
     if not math.isfinite(price) or price <= 0:
         return None
     date = fields[6] or fields[2]
