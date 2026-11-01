@@ -1,0 +1,43 @@
+name: issue9
+services:
+  kafka:
+    image: docker.io/trading-trends/kafka:dev
+    command: [/etc/kafka/docker/run]
+    mem_limit: 1400m
+    environment:
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx768m
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+  jobmanager:
+    image: docker.io/library/flink:2.2.1-java17
+    command: jobmanager
+    mem_limit: 1100m
+    ports: ['${ISSUE9_FLINK_PORT:-8109}:8081']
+    volumes: ['${ISSUE9_ROOT}/flink-job/target/flink-job.jar:/opt/job/flink-job.jar:ro']
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        jobmanager.memory.process.size: 768m
+        parallelism.default: 2
+  taskmanager:
+    image: docker.io/library/flink:2.2.1-java17
+    command: taskmanager
+    mem_limit: 3400m
+    volumes: ['${ISSUE9_ROOT}/flink-job/target/flink-job.jar:/opt/job/flink-job.jar:ro']
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        taskmanager.memory.process.size: 3072m
+        parallelism.default: 2

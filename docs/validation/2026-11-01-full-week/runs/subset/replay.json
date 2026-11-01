@@ -1,0 +1,100 @@
+{
+  "runId" : "subset",
+  "status" : "COMPLETE",
+  "mode" : "preload",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/trading-day-08-11-21.csv",
+    "bytes" : 4131,
+    "lines" : 47,
+    "complete" : true
+  }, {
+    "index" : 1,
+    "path" : "/data/trading-day-09-11-21.csv",
+    "bytes" : 5996,
+    "lines" : 63,
+    "complete" : true
+  } ],
+  "counts" : {
+    "lines" : 110,
+    "comments" : 25,
+    "headers" : 2,
+    "rejected" : 3,
+    "dataRows" : 80,
+    "excluded" : 0,
+    "attempted" : 80,
+    "acknowledged" : 80,
+    "failed" : 0,
+    "keyBytes" : 617,
+    "valueBytes" : 5257,
+    "headerBytes" : 560
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 9,
+    "records" : 9
+  }, {
+    "partition" : 1,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 48,
+    "records" : 48
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 3,
+    "records" : 3
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 4,
+    "records" : 4
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 12,
+    "records" : 12
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 1,
+    "records" : 1
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 3,
+    "records" : 3
+  } ],
+  "timing" : {
+    "startedAt" : "2026-11-01T20:48:27.629Z",
+    "finishedAt" : "2026-11-01T20:48:27.685Z",
+    "durationMs" : 56,
+    "flushMs" : 23,
+    "recordsPerSecond" : 1423.62,
+    "payloadMegabytesPerSecond" : 0.11
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "subset",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4",
+    "linger.ms" : "50",
+    "batch.size" : "1048576"
+  }
+}

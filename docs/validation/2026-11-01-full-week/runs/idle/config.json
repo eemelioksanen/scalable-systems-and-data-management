@@ -1,0 +1,11 @@
+{
+  "boundMs": 1000,
+  "idlenessMs": 1000,
+  "zoneOffset": "+02:00",
+  "rate": 60,
+  "partitions": 8,
+  "parallelism": 2,
+  "completedBeforeDrain": 2,
+  "completedAfterDrain": 3,
+  "emptyPartitions": 7
+}

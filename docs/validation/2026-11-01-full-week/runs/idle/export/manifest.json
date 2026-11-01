@@ -1,0 +1,149 @@
+{
+  "tool": "ema_check.export",
+  "createdUtc": "2026-11-01T20:54:26+00:00",
+  "bootstrap": "kafka:9092",
+  "zoneOffset": "+02:00",
+  "topics": {
+    "ema-results": {
+      "file": "ema_results.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 3,
+          "records": 3
+        },
+        "1": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "2": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "3": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "4": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "5": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "6": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "7": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        }
+      },
+      "records": 3,
+      "complete": true
+    },
+    "advisories": {
+      "file": "advisories.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 1,
+          "records": 1
+        },
+        "1": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "2": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "3": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "4": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "5": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "6": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "7": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        }
+      },
+      "records": 1,
+      "complete": true
+    },
+    "late-ticks": {
+      "file": "late_events.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "1": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "2": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "3": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "4": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "5": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "6": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        },
+        "7": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "records": 0
+        }
+      },
+      "records": 0,
+      "complete": true
+    }
+  }
+}
