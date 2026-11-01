@@ -1,0 +1,94 @@
+{
+  "pass": true,
+  "problems": [],
+  "parameters": {
+    "tolerance": 1e-09,
+    "driftUlps": 66
+  },
+  "oracle": {
+    "dir": "/Users/emiliar/.t3/worktrees/scalable-systems-and-data-management/t3-e6cf5d05/correctness/out/issue38-run2/live-oracle",
+    "command": [],
+    "zoneOffset": "+02:00",
+    "watermarkBoundMs": null,
+    "excludeEvents": "/Users/emiliar/.t3/worktrees/scalable-systems-and-data-management/t3-e6cf5d05/correctness/out/issue38-run2/live-export/late_events.parquet",
+    "excluded": 13,
+    "lateRejected": 0
+  },
+  "job": {
+    "dir": "/Users/emiliar/.t3/worktrees/scalable-systems-and-data-management/t3-e6cf5d05/correctness/out/issue38-run2/live-export",
+    "zoneOffset": "+02:00",
+    "lateTicks": 13,
+    "lateEventsListed": 13,
+    "topics": {
+      "ema-results": {
+        "file": "ema_results.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 20,
+            "records": 20
+          }
+        },
+        "records": 20,
+        "complete": true
+      },
+      "advisories": {
+        "file": "advisories.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 1,
+            "records": 1
+          }
+        },
+        "records": 1,
+        "complete": true
+      },
+      "late-ticks": {
+        "file": "late_events.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 13,
+            "records": 13
+          }
+        },
+        "records": 13,
+        "complete": true
+      }
+    }
+  },
+  "ema": {
+    "oracleRows": 20,
+    "jobRows": 20,
+    "differences": 0,
+    "byKind": {},
+    "byClass": {},
+    "symbolsWithDifferences": 0,
+    "duplicateRows": {
+      "oracle": 0,
+      "job": 0
+    },
+    "maxAbsDiffBeyondTolerance": {
+      "ema38": null,
+      "ema100": null
+    },
+    "maxUlpsBeyondTolerance": {
+      "ema38": null,
+      "ema100": null
+    }
+  },
+  "advisories": {
+    "oracle": 1,
+    "job": 1,
+    "common": 1,
+    "precision": 1.0,
+    "recall": 1.0,
+    "byKind": {},
+    "byClass": {},
+    "duplicateRows": {
+      "oracle": 0,
+      "job": 0
+    }
+  }
+}

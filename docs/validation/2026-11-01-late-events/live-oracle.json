@@ -1,0 +1,171 @@
+{
+  "tool": "ema_oracle",
+  "version": "1.0.0",
+  "git": {
+    "revision": "35eb8f69e9d95775256a994469bb333f36e61423",
+    "dirty": false
+  },
+  "command": [],
+  "createdUtc": "2026-11-01T20:24:29+00:00",
+  "environment": {
+    "python": "3.14.10",
+    "polars": "1.44.2",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O"
+  },
+  "parameters": {
+    "zoneOffset": "+02:00",
+    "missingTradingDate": "system-date",
+    "watermarkBoundMs": null,
+    "excludeEvents": "/Users/emiliar/.t3/worktrees/scalable-systems-and-data-management/t3-e6cf5d05/correctness/out/issue38-run2/live-export/late_events.parquet",
+    "excludedEventsListed": 13,
+    "windowMs": 300000,
+    "alpha38": 0.05128205128205128,
+    "alpha100": 0.019801980198019802,
+    "initialEma": 0.0
+  },
+  "inputs": [
+    {
+      "file": "synthetic-08-11-21.csv",
+      "fileDate": "2021-11-08",
+      "bytes": 1827200,
+      "md5": "4e1e571a1269e6ad4db9fbcc5de50e07"
+    }
+  ],
+  "counts": {
+    "total": {
+      "comment": 0,
+      "header": 0,
+      "blank": 0,
+      "malformedRow": 0,
+      "nonPrice": 25600,
+      "malformedPrice": 0,
+      "nonPositivePrice": 0,
+      "missingTimestamp": 0,
+      "malformedTimestamp": 0,
+      "accepted": 100,
+      "systemDateEvents": 0,
+      "staleTradingDateEvents": 0,
+      "lines": 25700,
+      "dataRows": 25700,
+      "excluded": 13,
+      "lateRejected": 0,
+      "admitted": 87
+    },
+    "perFile": {
+      "synthetic-08-11-21.csv": {
+        "comment": 0,
+        "header": 0,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 25600,
+        "malformedPrice": 0,
+        "nonPositivePrice": 0,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 100,
+        "systemDateEvents": 0,
+        "staleTradingDateEvents": 0,
+        "lines": 25700,
+        "dataRows": 25700,
+        "excluded": 13,
+        "lateRejected": 0,
+        "admitted": 87
+      }
+    }
+  },
+  "admission": {
+    "model": "price events in source order, per-event watermark = max event time seen - bound - 1",
+    "eventsWithPositiveMinBound": 13,
+    "smallestBoundWithNoLateEventsMs": 660001,
+    "positiveMinBoundQuantilesMs": {
+      "0.5": 600001,
+      "0.9": 660001,
+      "0.99": 660001,
+      "0.999": 660001
+    },
+    "lateEventsByBoundMs": {
+      "0": 13,
+      "1": 13,
+      "10": 13,
+      "100": 13,
+      "250": 13,
+      "500": 13,
+      "1000": 13,
+      "2000": 13,
+      "5000": 13,
+      "10000": 13,
+      "30000": 13,
+      "60000": 13,
+      "300000": 12,
+      "3600000": 0
+    }
+  },
+  "results": {
+    "windows": 20,
+    "symbols": 1,
+    "symbolsWithSeveralSecTypes": 0,
+    "advisories": {
+      "BUY": 1,
+      "SELL": 0
+    },
+    "firstWindowEnd": 1636355100000,
+    "lastWindowEnd": 1636360800000
+  },
+  "precision": {
+    "windows": 20,
+    "max_abs_error_ema38": 2.842170943040401e-14,
+    "max_abs_error_ema100": 7.105427357601002e-15,
+    "max_error_ulps": 2.0,
+    "worst_symbol": "SYNTH.NL",
+    "windows_over_tolerance": 0,
+    "symbols_over_tolerance": 0,
+    "advisory_disagreements": 0,
+    "near_ties": 0
+  },
+  "outputs": {
+    "ema_results.parquet": {
+      "rows": 20,
+      "sha256": "cceb9532e971247d697af7844f8052756fb539a253ebfbbf66f9a0734ad15315",
+      "contentSha256": "7b23a5f920a532a78e47061198070db04b7d76826fb66f91341a74667eb7170d"
+    },
+    "advisories.parquet": {
+      "rows": 1,
+      "sha256": "eb8400dc0d45639c02acba1dae5cf0a3cdc489a7135c556daec1ee665fc3d3ad",
+      "contentSha256": "4a936f2bafdc8196352b501bb09425980930a48166ac5073fd03ccbd0abf7b45"
+    },
+    "crossover_summary.parquet": {
+      "rows": 1,
+      "sha256": "eb86c96f687abcbad6439cc26b9a996ee37c1c170b7689774301c447e6214358",
+      "contentSha256": "b9fb08be3ddc665125398d0beec9f15d87b1b16495c52ec4b0b3167367bb2156"
+    },
+    "window_summary.parquet": {
+      "rows": 1,
+      "sha256": "0c54b5d669a37c25f9e35cf8e4e9b1162d28b0b7d710a72e2c69d30c52e68824",
+      "contentSha256": "1a76e6ee27c7b557fb8dc00272349a4c0baf7440968d6c5f178fdc2ee002b47b"
+    },
+    "symbol_summary.parquet": {
+      "rows": 1,
+      "sha256": "214654486b84d7ad3736a879d1f192c5b58654d4a4241f8646151214e5e58755",
+      "contentSha256": "f3f6b4a54a5cd6f047a34453bd58a0c4d872929ae276003fbb4cd772d90d5de1"
+    },
+    "input_counts.parquet": {
+      "rows": 1,
+      "sha256": "fdec68e9116d2fdd0b5fa6d97d4a539db8e8827bfce90f69eef8a5acd6ce6e38",
+      "contentSha256": "0ab8f51ae24f32375f08ba8ffca19173f300fd53d6066112ddfefc3233c9b15d"
+    },
+    "rejected_events.parquet": {
+      "rows": 13,
+      "sha256": "e9922c20400be6e75ab3e3c59041d208cb6d12da7e0afc6272972f2654bee2c4",
+      "contentSha256": "60a423a53af2f773b72bdda965ca935c306dbff0b3da061283aed90856ed5124"
+    }
+  },
+  "timingsSeconds": {
+    "read:synthetic-08-11-21.csv": 0.041,
+    "ema": 0.005,
+    "precisionCheck": 0.0,
+    "write": 0.01,
+    "inputChecksums": 0.003,
+    "total": 0.105
+  },
+  "peakAnonMemoryMb": null
+}

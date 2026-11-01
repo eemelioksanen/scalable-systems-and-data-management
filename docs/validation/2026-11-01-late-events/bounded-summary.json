@@ -1,0 +1,239 @@
+{
+  "runId": "issue38-bounded",
+  "mode": "preload",
+  "finish": "bounded",
+  "jobState": "FINISHED",
+  "measurementInterval": {
+    "startMs": 1793564697013,
+    "endMs": 1793564697905
+  },
+  "replay": {
+    "records": 25700,
+    "durationMs": 49518,
+    "recordsPerSecond": 519.0,
+    "pacing": {
+      "clockStart": "2021-11-08T09:00",
+      "paceStart": "2021-11-08T09:00",
+      "clockEnd": "2021-11-08T10:39",
+      "pacedRecords": 25700,
+      "achievedRate": 120.0,
+      "lagP50Ms": 1,
+      "lagP99Ms": 30,
+      "lagMaxMs": 35
+    }
+  },
+  "job": {
+    "durationMs": 892,
+    "sourceSpanMs": 783,
+    "recordsRead": 25700,
+    "recordsPerSecond": 32822.5,
+    "vertices": {
+      "Source: ticks": {
+        "parallelism": 1,
+        "readRecords": [
+          25700
+        ],
+        "writeRecords": [
+          100
+        ],
+        "busyMs": [
+          574.0
+        ],
+        "idleMs": [
+          145
+        ],
+        "backPressuredMs": [
+          0
+        ],
+        "durationMs": [
+          783
+        ],
+        "readSkew": 1.0
+      },
+      "Source: subscriptions": {
+        "parallelism": 1,
+        "readRecords": [
+          1
+        ],
+        "writeRecords": [
+          1
+        ],
+        "busyMs": [
+          527.0
+        ],
+        "idleMs": [
+          111
+        ],
+        "backPressuredMs": [
+          0
+        ],
+        "durationMs": [
+          756
+        ],
+        "readSkew": 1.0
+      },
+      "q1-ema": {
+        "parallelism": 1,
+        "readRecords": [
+          100
+        ],
+        "writeRecords": [
+          20
+        ],
+        "busyMs": [
+          2.0
+        ],
+        "idleMs": [
+          725
+        ],
+        "backPressuredMs": [
+          0
+        ],
+        "durationMs": [
+          783
+        ],
+        "readSkew": 1.0
+      },
+      "late-ticks: Writer": {
+        "parallelism": 1,
+        "readRecords": [
+          0
+        ],
+        "writeRecords": [
+          1
+        ],
+        "busyMs": [
+          6.0
+        ],
+        "idleMs": [
+          670
+        ],
+        "backPressuredMs": [
+          0
+        ],
+        "durationMs": [
+          787
+        ],
+        "readSkew": null
+      },
+      "late-ticks: Committer": {
+        "parallelism": 1,
+        "readRecords": [
+          1
+        ],
+        "writeRecords": [
+          0
+        ],
+        "busyMs": [
+          0.0
+        ],
+        "idleMs": [
+          739
+        ],
+        "backPressuredMs": [
+          0
+        ],
+        "durationMs": [
+          788
+        ],
+        "readSkew": 1.0
+      },
+      "subscription-filter -> (ema-results: Writer -> ema-results: Committer, crossovers -> advisories: Writer -> advisories: Committer)": {
+        "parallelism": 1,
+        "readRecords": [
+          21
+        ],
+        "writeRecords": [
+          21
+        ],
+        "busyMs": [
+          23.0
+        ],
+        "idleMs": [
+          644
+        ],
+        "backPressuredMs": [
+          0
+        ],
+        "durationMs": [
+          788
+        ],
+        "readSkew": 1.0
+      }
+    }
+  },
+  "counters": {
+    "priceEvents": null,
+    "nonPriceEvents": null,
+    "nonPositivePriceEvents": null,
+    "missingTimestampEvents": null,
+    "malformedEvents": null,
+    "systemDateEvents": null,
+    "lateTicks": 0,
+    "evaluatedWindows": null,
+    "buyCrossovers": null,
+    "sellCrossovers": null,
+    "publishedResults": null,
+    "publishedAdvisories": null,
+    "suppressedResults": null
+  },
+  "reconciliation": {
+    "ok": true,
+    "checks": [
+      {
+        "check": "replayed records = records the job read",
+        "left": 25700,
+        "right": 25700,
+        "ok": true
+      },
+      {
+        "check": "price events out of the source = into q1-ema",
+        "left": 100,
+        "right": 100,
+        "ok": true
+      },
+      {
+        "check": "records the job wrote = records exported",
+        "left": 21,
+        "right": 21,
+        "ok": true
+      },
+      {
+        "check": "q1 outputs = exported ema-results + late-ticks",
+        "left": 20,
+        "right": 20,
+        "ok": true
+      },
+      {
+        "check": "replayed data rows = oracle data rows",
+        "left": 25700,
+        "right": 25700,
+        "ok": true
+      },
+      {
+        "check": "price events = oracle price events",
+        "left": 100,
+        "right": 100,
+        "ok": true
+      }
+    ],
+    "countersFinal": {
+      "split": false,
+      "lateTicks": true
+    }
+  },
+  "outputs": {
+    "ema-results": 20,
+    "advisories": 1,
+    "late-ticks": 0
+  },
+  "metrics": {},
+  "correctness": {
+    "verdict": "pass",
+    "problems": [],
+    "emaDifferences": 0,
+    "advisoryDifferences": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  }
+}
