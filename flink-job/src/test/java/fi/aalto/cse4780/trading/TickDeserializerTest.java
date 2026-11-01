@@ -2,6 +2,7 @@ package fi.aalto.cse4780.trading;
 
 import static fi.aalto.cse4780.trading.EmaCalculatorTest.millis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -101,6 +102,25 @@ class TickDeserializerTest {
         assertEquals(1, counters.get("nonPositivePriceEvents").getCount());
         assertEquals(1, counters.get("missingTimestampEvents").getCount());
         assertEquals(2, counters.get("malformedEvents").getCount());
+    }
+
+    @Test
+    void retainsSourcePositionWithoutChangingPriceAdmission() {
+        String value = "RDSA.NL,E,08-11-2021,09:00:01.234,19.28,09:00:01.100,";
+        for (String source : List.of("2:17", "bad", "0:0", "-1:2", "0:999999999999999999999")) {
+            ConsumerRecord<byte[], byte[]> record = new ConsumerRecord<>(
+                    "ticks", 0, 42, null, value.getBytes(StandardCharsets.UTF_8));
+            record.headers().add("src", source.getBytes(StandardCharsets.US_ASCII));
+            deserializer.deserialize(record, new ListCollector<>(emitted));
+        }
+        assertEquals(5, emitted.size());
+        assertEquals(2, emitted.get(0).sourceFileIndex);
+        assertEquals(17L, emitted.get(0).sourceLine);
+        for (Tick tick : emitted.subList(1, emitted.size())) {
+            assertNull(tick.sourceFileIndex);
+            assertNull(tick.sourceLine);
+        }
+        assertEquals(5, counters.get("priceEvents").getCount());
     }
 
     private void deserialize(long offset, long timestamp, String value) {

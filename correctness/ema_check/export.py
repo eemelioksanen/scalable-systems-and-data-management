@@ -24,6 +24,7 @@ ADVISORY_SCHEMA = {
     "symbol": pl.String, "secType": pl.String, "windowEnd": pl.Int64, "type": pl.String,
     "ema38": pl.Float64, "ema100": pl.Float64, "maxIngestTs": pl.Int64, "emitTs": pl.Int64,
 }
+LATE_SCHEMA = {"sourceFileIndex": pl.Int32, "sourceLine": pl.Int64, "symbol": pl.String, "windowEnd": pl.Int64}
 POSITION_SCHEMA = {"partition": pl.Int32, "offset": pl.Int64}
 
 
@@ -80,7 +81,24 @@ def _read_topic(consumer: KafkaConsumer, topic: str, schema: dict, stall_s: floa
     return pl.DataFrame(columns, schema={**schema, **POSITION_SCHEMA}), info
 
 
-def export(bootstrap: str, ema_topic: str, advisories_topic: str, out: Path, zone_offset: str, stall_s: float = 30.0) -> dict:
+def resolve_sources(df: pl.DataFrame, replay_report: Path | None) -> pl.DataFrame:
+    files = {}
+    if replay_report is not None:
+        report = json.loads(replay_report.read_text())
+        if report.get("status") != "COMPLETE" or report.get("dryRun"):
+            raise ValueError("late-event provenance requires a completed, non-dry replay report")
+        for file in report["files"]:
+            index, name = file["index"], Path(file["path"]).name
+            if index in files or name in files.values():
+                raise ValueError("replay files must have unique indices and basenames")
+            files[index] = name
+    return df.with_columns(sourceFile=pl.Series(
+        [files.get(index) for index in df["sourceFileIndex"]], dtype=pl.String,
+    ))
+
+
+def export(bootstrap: str, ema_topic: str, advisories_topic: str, out: Path, zone_offset: str,
+           stall_s: float = 30.0, late_topic: str = "late-ticks", replay_report: Path | None = None) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     consumer = KafkaConsumer(
         bootstrap_servers=bootstrap,
@@ -97,8 +115,22 @@ def export(bootstrap: str, ema_topic: str, advisories_topic: str, out: Path, zon
             "zoneOffset": zone_offset,
             "topics": {},
         }
-        for topic, schema, name in ((ema_topic, EMA_SCHEMA, "ema_results"), (advisories_topic, ADVISORY_SCHEMA, "advisories")):
+        for topic, schema, name in (
+            (ema_topic, EMA_SCHEMA, "ema_results"),
+            (advisories_topic, ADVISORY_SCHEMA, "advisories"),
+            (late_topic, LATE_SCHEMA, "late_events"),
+        ):
             df, info = _read_topic(consumer, topic, schema, stall_s)
+            if name == "late_events":
+                df = resolve_sources(df, replay_report)
+                if df["sourceFile"].null_count():
+                    info["complete"] = False
+                    info["problem"] = "; ".join(filter(None, [info.get("problem"),
+                        "late events lack source filenames: supply the matching --replay-report"]))
+                if df.select("sourceFileIndex", "sourceLine").is_duplicated().any():
+                    info["complete"] = False
+                    info["problem"] = "; ".join(filter(None, [info.get("problem"),
+                        "duplicate late-event source identities: reset output topics before replaying"]))
             df.sort(["symbol", "windowEnd", "partition", "offset"]).write_parquet(out / f"{name}.parquet")
             manifest["topics"][topic] = {"file": f"{name}.parquet", **info}
     finally:

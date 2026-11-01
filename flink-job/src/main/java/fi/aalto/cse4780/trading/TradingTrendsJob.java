@@ -133,8 +133,15 @@ public class TradingTrendsJob {
                 .setParallelism(1)
                 .uid("subscriptions-source");
 
+        SingleOutputStreamOperator<EmaResult> results = emaResults(ticks);
+        results.getSideOutput(EmaCalculator.LATE_TICKS)
+                .sinkTo(sink(bootstrapServers,
+                        new LateTickSerializer(params.get("late-topic", "late-ticks"))))
+                .name("late-ticks")
+                .disableChaining()
+                .uid("late-ticks-sink");
         DataStream<EmaResult> published =
-                published(emaResults(ticks), subscriptions, subscriptionsEnd.nonEmpty());
+                published(results, subscriptions, subscriptionsEnd.nonEmpty());
         published
                 .sinkTo(sink(bootstrapServers,
                         new EmaResultSerializer(params.get("ema-topic", "ema-results"))))
@@ -191,9 +198,9 @@ public class TradingTrendsJob {
                 .uid("subscription-filter");
     }
 
-    private static KafkaSink<EmaResult> sink(
-            String bootstrapServers, KafkaRecordSerializationSchema<EmaResult> serializer) {
-        return KafkaSink.<EmaResult>builder()
+    private static <T> KafkaSink<T> sink(
+            String bootstrapServers, KafkaRecordSerializationSchema<T> serializer) {
+        return KafkaSink.<T>builder()
                 .setBootstrapServers(bootstrapServers)
                 .setRecordSerializer(serializer)
                 .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
