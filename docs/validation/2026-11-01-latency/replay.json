@@ -1,0 +1,104 @@
+{
+  "runId" : "issue37-latency-subset12-live-100x-20261101T210052Z-r1",
+  "status" : "COMPLETE",
+  "mode" : "realtime",
+  "rate" : 100.0,
+  "paceFrom" : "2021-11-08T09:00",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/subset12/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 341752527,
+    "lines" : 4216894,
+    "complete" : true
+  } ],
+  "counts" : {
+    "lines" : 4216894,
+    "comments" : 12,
+    "headers" : 1,
+    "rejected" : 0,
+    "dataRows" : 4216881,
+    "excluded" : 0,
+    "attempted" : 4216881,
+    "acknowledged" : 4216881,
+    "failed" : 0,
+    "keyBytes" : 28472902,
+    "valueBytes" : 172149386,
+    "headerBytes" : 49491542
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 44946,
+    "records" : 44946
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 6590,
+    "records" : 6590
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 1546419,
+    "records" : 1546419
+  }, {
+    "partition" : 3,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 1641926,
+    "records" : 1641926
+  }, {
+    "partition" : 5,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 84080,
+    "records" : 84080
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 892920,
+    "records" : 892920
+  } ],
+  "timing" : {
+    "startedAt" : "2026-11-01T21:01:16.767Z",
+    "finishedAt" : "2026-11-01T21:08:58.595Z",
+    "durationMs" : 461828,
+    "flushMs" : 0,
+    "recordsPerSecond" : 9130.83,
+    "payloadMegabytesPerSecond" : 0.54
+  },
+  "pacing" : {
+    "clockStart" : "2021-11-08T05:14",
+    "paceStart" : "2021-11-08T09:00",
+    "clockEnd" : "2021-11-08T21:49:30",
+    "pacedRecords" : 4209506,
+    "achievedRate" : 100.0,
+    "lagP50Ms" : 0,
+    "lagP99Ms" : 4,
+    "lagMaxMs" : 42
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "issue37-latency-subset12-live-100x-20261101T210052Z-r1",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "metrics.json": {
+    "bytes": 459634,
+    "sha256": "db3a756a412b3f1768f20b1d5e4ed4944e0e39fc371d0ce7bbb4e6a17ae329a3"
+  },
+  "summary.json": {
+    "bytes": 22261,
+    "sha256": "68d7b405e8d62ad07b385c0ad772a110853cb5d3d414718af8e5240e45a2989c"
+  },
+  "config.json": {
+    "bytes": 19736,
+    "sha256": "05a0f03486b8251f154d2730e7c7227c24d9b9dc75a408a7d6cc1d8502a34b38"
+  },
+  "commands.log": {
+    "bytes": 139808,
+    "sha256": "7cbd39f27409bc8373d1bd66a8a7e66bdc004d0837fdb34d0070ca0dbf6e47cb"
+  },
+  "replay.json": {
+    "bytes": 2397,
+    "sha256": "50b0977c0bc5cd26c5b92c8de6bbd80c5a39c349fdcbf68c7427f434defdb216"
+  },
+  "flink-job.json": {
+    "bytes": 41397,
+    "sha256": "7e3e3bc0df95b65361dd3908da21bf142cb9db96b379df464488c8315cc53d77"
+  },
+  "compose.yml": {
+    "bytes": 6320,
+    "sha256": "d1f68c2fbfde4cb3da3711f79eea31893fea2e892bdc9b5a74e94bc830bd5027"
+  },
+  "latency/latency.json": {
+    "bytes": 2416,
+    "sha256": "8443769e18360fe6633cd7e0e5a15311ed17c082e6f34dff2072f0ca9e3009cd"
+  },
+  "export/manifest.json": {
+    "bytes": 4158,
+    "sha256": "36878059ee54837985b1f3d881c76b8fc9d8d6c2cbb78f8b547d43da41a64c22"
+  },
+  "export/ema_results.parquet": {
+    "bytes": 38729,
+    "sha256": "79bff2b95ac59edc454c5ab3bd86353a56b0abd558d981b507d63a7a2b438de9"
+  },
+  "export/late_events.parquet": {
+    "bytes": 995,
+    "sha256": "a053ed01a9060a705e0d28c50b248918b5734e7ce0aa122f29a8985663fcaccc"
+  },
+  "export/price_events.parquet": {
+    "bytes": 849116,
+    "sha256": "3438f63c10949945eac240c489430cbccf93d6f4671b01f7440a4bb5f5456969"
+  },
+  "export/advisories.parquet": {
+    "bytes": 4595,
+    "sha256": "d94beca991fcb67f75ae3dd9c3a5ebe65548db6939b36d99fd22df47e128fa44"
+  }
+}

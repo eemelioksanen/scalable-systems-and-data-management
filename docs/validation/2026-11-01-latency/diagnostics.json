@@ -1,0 +1,191 @@
+{
+  "verified": true,
+  "partitions": [
+    {
+      "partition": 0,
+      "prices": 6961,
+      "maxAdmissionGapMs": 2730
+    },
+    {
+      "partition": 1,
+      "prices": 6406,
+      "maxAdmissionGapMs": 18448
+    },
+    {
+      "partition": 2,
+      "prices": 45919,
+      "maxAdmissionGapMs": 2420
+    },
+    {
+      "partition": 3,
+      "prices": 0,
+      "maxAdmissionGapMs": null
+    },
+    {
+      "partition": 4,
+      "prices": 49441,
+      "maxAdmissionGapMs": 3261
+    },
+    {
+      "partition": 5,
+      "prices": 0,
+      "maxAdmissionGapMs": null
+    },
+    {
+      "partition": 6,
+      "prices": 14892,
+      "maxAdmissionGapMs": 2380
+    },
+    {
+      "partition": 7,
+      "prices": 24846,
+      "maxAdmissionGapMs": 2248
+    }
+  ],
+  "distinctWatermarkScrapes": 88,
+  "largeModelJumps": [
+    {
+      "sampleMs": 1793567222007,
+      "actual": 1636387501015,
+      "model": 1636392749134,
+      "aheadEventMs": 5248119,
+      "modelAdvancedBeforeSampleMs": 110,
+      "nextSample": [
+        1793567227003,
+        1636392749134
+      ]
+    }
+  ],
+  "queueing": {
+    "n": 1269,
+    "mean": 179.45784081954295,
+    "p50": 160,
+    "p95": 292,
+    "p99": 586,
+    "max": 586,
+    "min": 27
+  },
+  "negativeQueueing": {
+    "count": 0,
+    "examples": []
+  },
+  "modelAheadEventMs": {
+    "n": 176,
+    "mean": 72894.54545454546,
+    "p50": 14629,
+    "p95": 37928,
+    "p99": 5248119,
+    "max": 5248119,
+    "min": 0,
+    "negative": 0
+  },
+  "watermarkSampleAgeSinceModelReadyMs": {
+    "n": 176,
+    "mean": 1353.8863636363637,
+    "p50": 208,
+    "p95": 10106,
+    "p99": 23105,
+    "max": 23105,
+    "min": 48
+  },
+  "excludedBySymbol": {
+    "warmup": [
+      {
+        "symbol": "623100.ETR",
+        "len": 8
+      },
+      {
+        "symbol": "710000.ETR",
+        "len": 8
+      },
+      {
+        "symbol": "716460.ETR",
+        "len": 8
+      },
+      {
+        "symbol": "766403.ETR",
+        "len": 8
+      },
+      {
+        "symbol": "823212.ETR",
+        "len": 8
+      },
+      {
+        "symbol": "AIR.FR",
+        "len": 8
+      },
+      {
+        "symbol": "ASML.NL",
+        "len": 8
+      },
+      {
+        "symbol": "RDSA.NL",
+        "len": 8
+      },
+      {
+        "symbol": "TTE.FR",
+        "len": 8
+      },
+      {
+        "symbol": "WLENV.NL",
+        "len": 8
+      },
+      {
+        "symbol": "WLESG.FR",
+        "len": 8
+      },
+      {
+        "symbol": "XEDRI.FR",
+        "len": 29
+      }
+    ],
+    "drain": [
+      {
+        "symbol": "WLENV.NL",
+        "windowEnd": 1636403400000,
+        "maxIngestTs": 1793567338444,
+        "emitTs": 1793567350653
+      },
+      {
+        "symbol": "WLESG.FR",
+        "windowEnd": 1636403400000,
+        "maxIngestTs": 1793567338594,
+        "emitTs": 1793567350653
+      }
+    ]
+  },
+  "replay": {
+    "counts": {
+      "lines": 4216894,
+      "comments": 12,
+      "headers": 1,
+      "rejected": 0,
+      "dataRows": 4216881,
+      "excluded": 0,
+      "attempted": 4216881,
+      "acknowledged": 4216881,
+      "failed": 0,
+      "keyBytes": 28472902,
+      "valueBytes": 172149386,
+      "headerBytes": 49491542
+    },
+    "timing": {
+      "startedAt": "2026-11-01T21:01:16.767Z",
+      "finishedAt": "2026-11-01T21:08:58.595Z",
+      "durationMs": 461828,
+      "flushMs": 0,
+      "recordsPerSecond": 9130.83,
+      "payloadMegabytesPerSecond": 0.54
+    },
+    "pacing": {
+      "clockStart": "2021-11-08T05:14",
+      "paceStart": "2021-11-08T09:00",
+      "clockEnd": "2021-11-08T21:49:30",
+      "pacedRecords": 4209506,
+      "achievedRate": 100.0,
+      "lagP50Ms": 0,
+      "lagP99Ms": 4,
+      "lagMaxMs": 42
+    }
+  }
+}

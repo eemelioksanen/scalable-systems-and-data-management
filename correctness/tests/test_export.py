@@ -52,8 +52,9 @@ class Consumer:
         pass
 
     def poll(self, **kwargs):
-        return {TopicPartition(self.topic, 0): [SimpleNamespace(offset=i, value=json.dumps(row))
-                for i, row in enumerate(self.records.get(self.topic, []))]}
+        return {TopicPartition(self.topic, 0): [
+            SimpleNamespace(offset=i, value=row if isinstance(row, bytes) else json.dumps(row), timestamp=1_000 + i, timestamp_type=0)
+            for i, row in enumerate(self.records.get(self.topic, []))]}
 
     def position(self, tp):
         return len(self.records.get(tp.topic, []))
@@ -87,3 +88,18 @@ def test_empty_late_export_proves_zero_without_report(tmp_path, monkeypatch):
     manifest = export("unused", "ema-results", "advisories", tmp_path, "Z")
     assert manifest["topics"]["late-ticks"]["complete"]
     assert manifest["topics"]["late-ticks"]["records"] == 0
+
+
+def test_export_keeps_output_timestamps_and_the_price_events_of_ticks(tmp_path, monkeypatch):
+    from ema_check import export as module
+    result = {"symbol": "S.NL", "secType": "E", "windowEnd": 300000, "close": 1.0, "ema38": 1.0, "ema100": 1.0,
+              "maxIngestTs": 900, "emitTs": 950}
+    ticks = [b"S.NL,E,08-11-2021,09:00:00.000,,,", b"S.NL,E,08-11-2021,09:00:00.000,10.5,09:00:01.000,"]
+    monkeypatch.setattr(module, "KafkaConsumer", lambda **kw: Consumer({"ema-results": [result], "ticks": ticks}))
+    manifest = export("unused", "ema-results", "advisories", tmp_path, "+02:00", ticks_topic="ticks")
+    exported = pl.read_parquet(tmp_path / "ema_results.parquet")
+    assert exported.select("kafkaTs", "kafkaTsType").row(0) == (1_000, "CreateTime")
+    assert manifest["topics"]["ticks"] | {"partitions": None} == {
+        "file": "price_events.parquet", "partitions": None, "records": 2, "rows": 1, "complete": True}
+    events = pl.read_parquet(tmp_path / "price_events.parquet")
+    assert events.select("offset", "kafkaTs", "eventTime").row(0) == (1, 1_001, 1636354801000)

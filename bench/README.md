@@ -84,17 +84,18 @@ Each repeat writes `bench/results/raw/<name>-<stamp>/r<k>/`. The run ID is `<nam
 | `compose.yml` | `docker compose config` for this run: the stack as Compose resolved it. |
 | `replay.json` | The replayer's report: status, counts, offsets per partition, timing, pacing. |
 | `flink-job.json` | Flink's REST view of the finished job, per vertex and subtask: records and bytes in and out, busy, idle and backpressured time. Flink keeps it after the job ends, so these counts are exact. |
-| `metrics.json` | Every D-35 query as a 5 s range query over the run, raw. |
-| `export/` | The correctness export: `ema_results.parquet`, `advisories.parquet` (with `maxIngestTs` and `emitTs`) and its `manifest.json`. |
+| `metrics.json` | Every D-35 query as a 5 s range query over the run, raw, and `q1-ema`'s input watermark with the time of each scrape. |
+| `export/` | The correctness export: `ema_results.parquet`, `advisories.parquet` (with `maxIngestTs`, `emitTs` and each record's `kafkaTs` and `kafkaTsType`), `late_events.parquet` and its `manifest.json`. A live run adds `price_events.parquet`: each price event's partition, offset, record timestamp and event time. |
+| `latency/` | Live runs: `latency.json` ([Latency](#latency)). |
 | `compare/` | With an `oracle`: the comparison report and differences ([correctness/README.md](../correctness/README.md)). |
-| `summary.json` | What the run derived: throughput, per-subtask load and skew, the metric summaries over the measurement interval, the counters, the reconciliation and the correctness verdict: `pass`, `unverified` (no differences, but `lateTicks` unknown) or `fail`. |
+| `summary.json` | What the run derived: throughput, per-subtask load and skew, the metric summaries over the measurement interval, the counters, the reconciliation and the correctness verdict: `pass`, `unverified` (no differences, but `lateTicks` unknown) or `fail`. A live run adds `latency`. |
 | `commands.log` | Every command and its stderr. |
 
 `summarize.py` writes into the experiment directory, or `--out`:
 
 | File | Contents |
 |---|---|
-| `runs.csv` | One row per run: status, stack size, replay and job throughput, subtask read skew (max over mean), busy ratios, output counts, `lateTicks` when final, reconciliation and correctness verdict. A busy ratio is 1 − (idle + backpressured) / duration over the tasks' whole run, from Flink's record of the job (D-35's definition of busy). The busy skew is the busiest subtask's busy time over the mean. CPU cores (the TaskManagers' summed, Kafka's, the replayer's and the host's) and the broker's request handler idle ratio are means over the measurement interval. |
+| `runs.csv` | One row per run: status, stack size, replay and job throughput, subtask read skew (max over mean), busy ratios, output counts, `lateTicks` when final, reconciliation and correctness verdict. A live run adds the latency percentiles of each stage and of the watermark lag, the measured results and those excluded or unmodelled. A busy ratio is 1 − (idle + backpressured) / duration over the tasks' whole run, from Flink's record of the job (D-35's definition of busy). The busy skew is the busiest subtask's busy time over the mean. CPU cores (the TaskManagers' summed, Kafka's, the replayer's and the host's) and the broker's request handler idle ratio are means over the measurement interval. |
 | `summary.csv` | Per experiment and metric: n, mean, sample standard deviation, min and max, over the `COMPLETE` runs. |
 | `throughput.png` | Job and replayer records per second: mean, standard deviation and each run. |
 | `timeseries.png` | Ticks read per second and lag over time, one line per repeat. A preload of a few seconds has no samples. |
@@ -114,6 +115,7 @@ A bounded job's custom counters vanish when it finishes, and on a short run Prom
 
 - the replay's acknowledged records = records the `ticks` source read
 - price events the source emitted = records q1-ema received
+- in a live run, price events the source emitted = price events exported from `ticks`
 - records the sink chain wrote = records exported from both topics
 - with a `*` subscription, windows q1-ema evaluated = exported `ema-results`
 - with an oracle, replayed data rows and price events equal the oracle's, and, when the source's counters are final, so do the non-price, non-positive and `Date`-dated events
@@ -122,10 +124,57 @@ The source counters come from Prometheus's last sample. `countersFinal.split` is
 
 ## Latency
 
-Every run's export keeps each result's `maxIngestTs` (when the window's last contributing price event entered Kafka) and `emitTs` (when the job emitted it). The harness computes no latency from them yet. Their difference includes the watermark wait, which depends on the bound and idleness (D-38), and how to separate it from queueing and processing is open (D-36, #37).
+A live run exports `ticks`' price events with the outputs, and `correctness/run.sh latency` writes `latency/latency.json`, which `summary.json` carries as `latency` (D-40). It refuses an export whose `ticks` or `ema-results` part is incomplete and reports `complete: false` instead, and reconciliation requires the exported price events to equal those the source emitted. Preloads report no latency: their records enter Kafka before the job starts.
+
+### What each timestamp is
+
+All of them come from one clock. The replayer, the TaskManagers and Prometheus run as containers on one host and read its kernel clock.
+
+| Timestamp | Where it comes from | What it is not |
+|---|---|---|
+| admission, `maxIngestTs` | the `ticks` record timestamp of the window's last price event: `CreateTime`, set by the replayer when it hands the row to its Kafka producer | the broker's append, which comes later and is not observed |
+| emission, `emitTs` | the TaskManager's clock when `q1-ema`'s timer fires and evaluates the window | |
+| output, `kafkaTs` | the `ema-results` record timestamp, kept with its `kafkaTsType`. Under `CreateTime`, the topics' default, the sink's Kafka producer stamps it when `send()` is called | publication: the broker's append and a consumer seeing it are not observed. Only a `LogAppendTime` topic would make it the append time |
+| readiness | modelled: when the watermark would pass the window's end if every price event reached the job the instant it was admitted | an observation: Flink's watermark gauges are sampled every 5 s |
+
+No 2021 event time is ever subtracted from a wall-clock time. Event times only decide when the feed and the watermark reached a window's end.
+
+### Stages
+
+For each result, the stages run along one chain of instants. Each instant is at least the one before it, except emission, so the stages add up to the total.
+
+| Stage | From | To |
+|---|---|---|
+| `windowWait` | admission of the window's last price event | the first admission, on any partition, of a price event at or after `windowEnd`. This is the rest of the five-minute window, which no setting can shorten |
+| `boundWait` | the end of `windowWait` | the first admission of a price event at or after `windowEnd` plus the bound |
+| `alignmentWait` | the end of `boundWait` | modelled readiness: every partition that is not idle has had such an event, or the quiet ones have gone idle |
+| `queueing` | modelled readiness | emission. Broker append, fetch, the source, the periodic watermark emission (200 ms by default), the idleness check, network buffers and `q1-ema` itself. These cannot be told apart with these timestamps |
+| `sinkHandoff` | emission | the output record's timestamp: the shuffle to `subscription-filter`, the filter and serialization, up to the sink's `send()` |
+
+`watermarkWait` is `boundWait` plus `alignmentWait`. `emitLatency` is admission to emission and `outputLatency` admission to the output timestamp. Each stage reports n, mean, the nearest-rank p50, p95 and p99, and the maximum. Percentiles of the stages do not add up to the total's; the means do.
+
+The model is the one in [interfaces.md](../docs/interfaces.md#event-time-late-events-and-end-of-input-d-5-d-38): a partition's watermark is its largest event time minus the bound minus 1 ms, a partition is idle after `idlenessMs` without a price event, and the job's watermark is the minimum over partitions that are not idle, never decreasing. A partition that has had no event counts its silence from when the job's tasks were all running (`times.jobRunning`). `queueing` is therefore the job's delay behind the model, and the model's error lands in it too. It is negative where the job's watermark passed the window before the model's, for example when Flink declared a partition idle earlier than the model did. `negativeQueueing` counts those results.
+
+### Which results count
+
+A result is measured when its last price event was admitted inside the measurement interval and the job emitted it before `flink stop --drain` began (`times.drainStart`). `excluded` counts the rest: `beforeInterval` (the warm-up, including the unpaced rows before `--pace-from`), `afterInterval` and `drain`, the windows the drain fired, among them the day's last windows that wait for input that never comes (D-38). `unmodelled` counts measured results whose window the model never released; they count in `emitLatency` and `outputLatency` but in no stage.
+
+### Watermark lag
+
+Prometheus reads `q1-ema`'s `currentInputWatermark` every 5 s, and `timestamp()` of the same series gives the instant of each read. At each read inside the interval:
+
+- `eventMs`: the largest event time the feed had admitted, minus the watermark.
+- `wallMs`: how long before the read the feed had first admitted the watermark's event time.
+- `modelAheadEventMs`: the modelled watermark minus the job's, a check on the model.
+
+Both lags include the bound: 1 s of event time is 10 ms of wall-clock time at 100x.
+
+### Several hosts
+
+The harness runs on one host. A run across hosts would put the replayer's clock in admission and a TaskManager's in emission, so every stage would carry their offset. Such a run has to record each host's offset and its error bound (`chronyc tracking`: system time offset and root dispersion) before and after, and a stage smaller than that bound cannot be measured. #12 owns those runs.
 
 ## Not covered
 
-- Multi-VM runs, clock synchronization between hosts, and Docker Swarm (#12).
+- Multi-VM runs, clock synchronization between hosts, and Docker Swarm (#12). [Several hosts](#several-hosts) says what latency would need.
 - State bytes per subtask: the harness keeps `flink_jobmanager_job_lastCheckpointFullSize` when checkpointing is on, but not the REST checkpoint details.
-- Publication time: the export does not keep the output records' Kafka timestamps.
+- Publication time: the broker's append of output records and the moment a consumer sees them.
