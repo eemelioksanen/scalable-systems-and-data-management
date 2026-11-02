@@ -1,0 +1,381 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Trading Trends (CS-E4780 course project)                           [pom]
+[INFO] Producer: CSV tick-data replayer to Kafka                          [jar]
+[INFO] Flink job: Query 1 (EMA) + Query 2 (crossover advisories)          [jar]
+[INFO] Viz: dashboard backend over ema-results                            [jar]
+[INFO] 
+[INFO] ------------------< fi.aalto.cse4780:trading-trends >-------------------
+[INFO] Building Trading Trends (CS-E4780 course project) 0.1.0-SNAPSHOT   [1/4]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ trading-trends ---
+[INFO] 
+[INFO] ---------------------< fi.aalto.cse4780:producer >----------------------
+[INFO] Building Producer: CSV tick-data replayer to Kafka 0.1.0-SNAPSHOT  [2/4]
+[INFO]   from producer/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ producer ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ producer ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ producer ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 10 source files with javac [debug release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ producer ---
+[INFO] skip non existing resourceDirectory /src/producer/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ producer ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.6.0:test (default-test) @ producer ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running fi.aalto.cse4780.replay.ReplayOptionsTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.066 s -- in fi.aalto.cse4780.replay.ReplayOptionsTest
+[INFO] Running fi.aalto.cse4780.replay.ReplayVerifierTest
+20:31:07.374 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-10706210504781652379/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.384 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-10706210504781652379/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.385 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-10706210504781652379/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.470 [main] INFO fi.aalto.cse4780.replay.ReplayVerifier - Re-reading /tmp/junit-10706210504781652379/debs2022-gc-trading-day-08-11-21.csv
+20:31:07.471 [main] INFO fi.aalto.cse4780.replay.ReplayVerifier - Re-reading /tmp/junit-10706210504781652379/debs2022-gc-trading-day-09-11-21.csv
+20:31:07.482 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-15106291636947148141/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.483 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-15106291636947148141/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.483 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-15106291636947148141/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.484 [main] INFO fi.aalto.cse4780.replay.ReplayVerifier - Re-reading /tmp/junit-15106291636947148141/debs2022-gc-trading-day-08-11-21.csv
+20:31:07.485 [main] INFO fi.aalto.cse4780.replay.ReplayVerifier - Re-reading /tmp/junit-15106291636947148141/debs2022-gc-trading-day-09-11-21.csv
+20:31:07.487 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-80367482306411131/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.488 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-80367482306411131/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.489 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-80367482306411131/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.563 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-3270645577658056143/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.563 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-3270645577658056143/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.563 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-3270645577658056143/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.564 [main] INFO fi.aalto.cse4780.replay.ReplayVerifier - Re-reading /tmp/junit-3270645577658056143/debs2022-gc-trading-day-08-11-21.csv
+20:31:07.565 [main] INFO fi.aalto.cse4780.replay.ReplayVerifier - Re-reading /tmp/junit-3270645577658056143/debs2022-gc-trading-day-09-11-21.csv
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.202 s -- in fi.aalto.cse4780.replay.ReplayVerifierTest
+[INFO] Running fi.aalto.cse4780.replay.PacerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in fi.aalto.cse4780.replay.PacerTest
+[INFO] Running fi.aalto.cse4780.replay.SourceClockTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in fi.aalto.cse4780.replay.SourceClockTest
+[INFO] Running fi.aalto.cse4780.replay.ReplayTest
+20:31:07.588 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-4739894650973847856/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.589 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-4739894650973847856/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.589 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-4739894650973847856/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.599 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-30842686754500929/debs2022-gc-trading-day-08-11-21.csv (1 of 1)
+20:31:07.608 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-2666839567743588972/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.609 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-2666839567743588972/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.609 [main] ERROR fi.aalto.cse4780.replay.Replay - Replay failed; stopping after the records already sent: org.apache.kafka.common.errors.TimeoutException: delivery timed out
+20:31:07.611 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-12161452463185047338/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.612 [main] ERROR fi.aalto.cse4780.replay.Replay - Replay failed; stopping after the records already sent: org.apache.kafka.common.KafkaException: producer closed
+20:31:07.613 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-110312150662014969/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.614 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-110312150662014969/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.615 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-110312150662014969/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.619 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-11305650113578765211/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.621 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-8993438170893118060/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.622 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-8993438170893118060/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.622 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-8993438170893118060/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.628 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-11376160789423230545/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.628 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-11376160789423230545/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.628 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-11376160789423230545/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.629 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-11376160789423230545/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.629 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-11376160789423230545/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+20:31:07.629 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-11376160789423230545/debs2022-gc-trading-day-09-11-21.csv (2 of 2)
+20:31:07.630 [main] INFO fi.aalto.cse4780.replay.Replay - Replaying /tmp/junit-11376160789423230545/debs2022-gc-trading-day-08-11-21.csv (1 of 2)
+20:31:07.630 [main] WARN fi.aalto.cse4780.replay.Replay - Rejected /tmp/junit-11376160789423230545/debs2022-gc-trading-day-08-11-21.csv line 16: not 39 fields or 40 with an empty last one
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.045 s -- in fi.aalto.cse4780.replay.ReplayTest
+[INFO] Running fi.aalto.cse4780.replay.CsvLineTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in fi.aalto.cse4780.replay.CsvLineTest
+[INFO] Running fi.aalto.cse4780.replay.InputFilesTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in fi.aalto.cse4780.replay.InputFilesTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 37, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ producer ---
+[INFO] Building jar: /src/producer/target/producer.jar
+[INFO] 
+[INFO] --- shade:3.6.2:shade (default) @ producer ---
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] jackson-annotations-2.18.2.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar define 2 overlapping resources: 
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, slf4j-api-2.0.20.jar, slf4j-simple-2.0.20.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] slf4j-api-2.0.20.jar, slf4j-simple-2.0.20.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] jackson-annotations-2.18.2.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, kafka-clients-4.3.1.jar, lz4-java-1.10.2.jar, producer.jar, slf4j-api-2.0.20.jar, slf4j-simple-2.0.20.jar, snappy-java-1.1.10.7.jar, zstd-jni-1.5.6-10.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] 
+[INFO] ---------------------< fi.aalto.cse4780:flink-job >---------------------
+[INFO] Building Flink job: Query 1 (EMA) + Query 2 (crossover advisories) 0.1.0-SNAPSHOT [3/4]
+[INFO]   from flink-job/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ flink-job ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ flink-job ---
+[INFO] skip non existing resourceDirectory /src/flink-job/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ flink-job ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 16 source files with javac [debug release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ flink-job ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ flink-job ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 13 source files with javac [debug release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.6.0:test (default-test) @ flink-job ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running fi.aalto.cse4780.trading.AdvisorySerializerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in fi.aalto.cse4780.trading.AdvisorySerializerTest
+[INFO] Running fi.aalto.cse4780.trading.EmaCalculatorTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.432 s -- in fi.aalto.cse4780.trading.EmaCalculatorTest
+[INFO] Running fi.aalto.cse4780.trading.SubscriptionFilterTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.078 s -- in fi.aalto.cse4780.trading.SubscriptionFilterTest
+[INFO] Running fi.aalto.cse4780.trading.TickDeserializerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in fi.aalto.cse4780.trading.TickDeserializerTest
+[INFO] Running fi.aalto.cse4780.trading.EmaResultSerializerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in fi.aalto.cse4780.trading.EmaResultSerializerTest
+[INFO] Running fi.aalto.cse4780.trading.TradingTrendsJobTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.841 s -- in fi.aalto.cse4780.trading.TradingTrendsJobTest
+[INFO] Running fi.aalto.cse4780.trading.WatermarkingTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in fi.aalto.cse4780.trading.WatermarkingTest
+[INFO] Running fi.aalto.cse4780.trading.GoldenFixturesTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.095 s -- in fi.aalto.cse4780.trading.GoldenFixturesTest
+[INFO] Running fi.aalto.cse4780.trading.TickParserTest
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in fi.aalto.cse4780.trading.TickParserTest
+[INFO] Running fi.aalto.cse4780.trading.EndOfInputProcessOperatorTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in fi.aalto.cse4780.trading.EndOfInputProcessOperatorTest
+[INFO] Running fi.aalto.cse4780.trading.CrossoverTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in fi.aalto.cse4780.trading.CrossoverTest
+[INFO] Running fi.aalto.cse4780.trading.SubscriptionDeserializerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in fi.aalto.cse4780.trading.SubscriptionDeserializerTest
+[INFO] Running fi.aalto.cse4780.trading.LateTickSerializerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in fi.aalto.cse4780.trading.LateTickSerializerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 93, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ flink-job ---
+[INFO] Building jar: /src/flink-job/target/flink-job.jar
+[INFO] 
+[INFO] --- shade:3.6.2:shade (default) @ flink-job ---
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] commons-lang3-3.18.0.jar, flink-connector-kafka-5.0.0-2.2.jar, flink-job.jar, jackson-annotations-2.18.2.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, jackson-datatype-jdk8-2.18.2.jar, jackson-datatype-jsr310-2.18.2.jar, kafka-clients-4.3.1.jar, lz4-java-1.10.2.jar, snappy-java-1.1.10.7.jar, zstd-jni-1.5.6-10.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] commons-lang3-3.18.0.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, jackson-datatype-jdk8-2.18.2.jar, jackson-datatype-jsr310-2.18.2.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] flink-connector-kafka-5.0.0-2.2.jar, jackson-annotations-2.18.2.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, jackson-datatype-jdk8-2.18.2.jar, jackson-datatype-jsr310-2.18.2.jar define 2 overlapping resources: 
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] 
+[INFO] ------------------------< fi.aalto.cse4780:viz >------------------------
+[INFO] Building Viz: dashboard backend over ema-results 0.1.0-SNAPSHOT    [4/4]
+[INFO]   from viz/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ viz ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ viz ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ viz ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 10 source files with javac [debug release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ viz ---
+[INFO] skip non existing resourceDirectory /src/viz/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ viz ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 9 source files with javac [debug release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.6.0:test (default-test) @ viz ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running fi.aalto.cse4780.viz.DashboardTest
+20:31:15.578 [viz-results] INFO fi.aalto.cse4780.viz.ResultsConsumer - Reading 1 partitions of ema-results from the earliest offset
+20:31:15.638 [main] INFO io.javalin.Javalin - Starting Javalin ...
+20:31:15.643 [main] INFO org.eclipse.jetty.server.Server - jetty-11.0.25; built: 2025-03-13T00:15:57.301Z; git: a2e9fae3ad8320f2a713d4fa29bba356a99d1295; jvm 17.0.20.1+1
+20:31:15.674 [main] INFO org.eclipse.jetty.server.session.DefaultSessionIdManager - Session workerName=node0
+20:31:15.681 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@1c25b8a7{/,null,AVAILABLE}
+20:31:15.684 [main] INFO org.eclipse.jetty.server.AbstractConnector - Started ServerConnector@5fd62371{HTTP/1.1, (http/1.1)}{0.0.0.0:36151}
+20:31:15.694 [main] INFO org.eclipse.jetty.server.Server - Started Server@6fa590ba{STARTING}[11.0.25,sto=0] @674ms
+20:31:15.695 [main] INFO io.javalin.Javalin - Javalin started in 119ms \o/
+20:31:15.701 [main] INFO io.javalin.Javalin - Listening on http://localhost:36151/
+20:31:15.707 [main] INFO io.javalin.Javalin - You are running Javalin 6.7.0 (released June 22, 2025. Your Javalin version is 497 days old. Consider checking for a newer version.).
+20:31:15.707 [main] INFO fi.aalto.cse4780.viz.Dashboard - Dashboard on http://localhost:36151 reading ema-results and ticks from localhost:29092
+20:31:15.853 [main] INFO io.javalin.Javalin - Stopping Javalin ...
+20:31:15.854 [main] INFO org.eclipse.jetty.server.Server - Stopped Server@6fa590ba{STOPPING}[11.0.25,sto=0]
+20:31:15.855 [main] INFO org.eclipse.jetty.server.AbstractConnector - Stopped ServerConnector@5fd62371{HTTP/1.1, (http/1.1)}{0.0.0.0:0}
+20:31:15.856 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@1c25b8a7{/,null,STOPPED}
+20:31:15.857 [main] INFO io.javalin.Javalin - Javalin has stopped
+20:31:15.863 [viz-results] INFO fi.aalto.cse4780.viz.ResultsConsumer - Reading 1 partitions of ema-results from the earliest offset
+20:31:15.864 [main] INFO io.javalin.Javalin - Starting Javalin ...
+20:31:15.865 [main] INFO org.eclipse.jetty.server.Server - jetty-11.0.25; built: 2025-03-13T00:15:57.301Z; git: a2e9fae3ad8320f2a713d4fa29bba356a99d1295; jvm 17.0.20.1+1
+20:31:15.867 [main] INFO org.eclipse.jetty.server.session.DefaultSessionIdManager - Session workerName=node0
+20:31:15.868 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@1a1d3c1a{/,null,AVAILABLE}
+20:31:15.869 [main] INFO org.eclipse.jetty.server.AbstractConnector - Started ServerConnector@5aa360ea{HTTP/1.1, (http/1.1)}{0.0.0.0:35109}
+20:31:15.869 [main] INFO org.eclipse.jetty.server.Server - Started Server@e27ba81{STARTING}[11.0.25,sto=0] @849ms
+20:31:15.870 [main] INFO io.javalin.Javalin - Javalin started in 6ms \o/
+20:31:15.870 [main] INFO io.javalin.Javalin - Listening on http://localhost:35109/
+20:31:15.870 [main] INFO io.javalin.Javalin - You are running Javalin 6.7.0 (released June 22, 2025. Your Javalin version is 497 days old. Consider checking for a newer version.).
+20:31:15.871 [main] INFO fi.aalto.cse4780.viz.Dashboard - Dashboard on http://localhost:35109 reading ema-results and ticks from localhost:29092
+20:31:15.873 [main] INFO io.javalin.Javalin - Stopping Javalin ...
+20:31:15.873 [main] INFO org.eclipse.jetty.server.Server - Stopped Server@e27ba81{STOPPING}[11.0.25,sto=0]
+20:31:15.873 [main] INFO org.eclipse.jetty.server.AbstractConnector - Stopped ServerConnector@5aa360ea{HTTP/1.1, (http/1.1)}{0.0.0.0:0}
+20:31:15.874 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@1a1d3c1a{/,null,STOPPED}
+20:31:15.874 [main] INFO io.javalin.Javalin - Javalin has stopped
+20:31:15.877 [viz-results] INFO fi.aalto.cse4780.viz.ResultsConsumer - Reading 1 partitions of ema-results from the earliest offset
+20:31:15.877 [main] INFO io.javalin.Javalin - Starting Javalin ...
+20:31:15.878 [main] INFO org.eclipse.jetty.server.Server - jetty-11.0.25; built: 2025-03-13T00:15:57.301Z; git: a2e9fae3ad8320f2a713d4fa29bba356a99d1295; jvm 17.0.20.1+1
+20:31:15.880 [main] INFO org.eclipse.jetty.server.session.DefaultSessionIdManager - Session workerName=node0
+20:31:15.880 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@4fdf8f12{/,null,AVAILABLE}
+20:31:15.881 [main] INFO org.eclipse.jetty.server.AbstractConnector - Started ServerConnector@5c371e13{HTTP/1.1, (http/1.1)}{0.0.0.0:42883}
+20:31:15.881 [main] INFO org.eclipse.jetty.server.Server - Started Server@1e34c607{STARTING}[11.0.25,sto=0] @861ms
+20:31:15.881 [main] INFO io.javalin.Javalin - Javalin started in 4ms \o/
+20:31:15.881 [main] INFO io.javalin.Javalin - Listening on http://localhost:42883/
+20:31:15.882 [main] INFO io.javalin.Javalin - You are running Javalin 6.7.0 (released June 22, 2025. Your Javalin version is 497 days old. Consider checking for a newer version.).
+20:31:15.882 [main] INFO fi.aalto.cse4780.viz.Dashboard - Dashboard on http://localhost:42883 reading ema-results and ticks from localhost:29092
+20:31:15.900 [main] INFO io.javalin.Javalin - Stopping Javalin ...
+20:31:15.900 [main] INFO org.eclipse.jetty.server.Server - Stopped Server@1e34c607{STOPPING}[11.0.25,sto=0]
+20:31:15.901 [main] INFO org.eclipse.jetty.server.AbstractConnector - Stopped ServerConnector@5c371e13{HTTP/1.1, (http/1.1)}{0.0.0.0:0}
+20:31:15.901 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@4fdf8f12{/,null,STOPPED}
+20:31:15.902 [main] INFO io.javalin.Javalin - Javalin has stopped
+20:31:15.904 [viz-results] INFO fi.aalto.cse4780.viz.ResultsConsumer - Reading 1 partitions of ema-results from the earliest offset
+20:31:15.905 [main] INFO io.javalin.Javalin - Starting Javalin ...
+20:31:15.905 [main] INFO org.eclipse.jetty.server.Server - jetty-11.0.25; built: 2025-03-13T00:15:57.301Z; git: a2e9fae3ad8320f2a713d4fa29bba356a99d1295; jvm 17.0.20.1+1
+20:31:15.907 [main] INFO org.eclipse.jetty.server.session.DefaultSessionIdManager - Session workerName=node0
+20:31:15.907 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@6c2d4cc6{/,null,AVAILABLE}
+20:31:15.908 [main] INFO org.eclipse.jetty.server.AbstractConnector - Started ServerConnector@5bb3d42d{HTTP/1.1, (http/1.1)}{0.0.0.0:36345}
+20:31:15.908 [main] INFO org.eclipse.jetty.server.Server - Started Server@2c1dc8e{STARTING}[11.0.25,sto=0] @888ms
+20:31:15.908 [main] INFO io.javalin.Javalin - Javalin started in 4ms \o/
+20:31:15.908 [main] INFO io.javalin.Javalin - Listening on http://localhost:36345/
+20:31:15.909 [main] INFO io.javalin.Javalin - You are running Javalin 6.7.0 (released June 22, 2025. Your Javalin version is 497 days old. Consider checking for a newer version.).
+20:31:15.909 [main] INFO fi.aalto.cse4780.viz.Dashboard - Dashboard on http://localhost:36345 reading ema-results and ticks from localhost:29092
+20:31:15.973 [main] INFO io.javalin.Javalin - Stopping Javalin ...
+20:31:15.973 [main] INFO org.eclipse.jetty.server.Server - Stopped Server@2c1dc8e{STOPPING}[11.0.25,sto=0]
+20:31:15.974 [main] INFO org.eclipse.jetty.server.AbstractConnector - Stopped ServerConnector@5bb3d42d{HTTP/1.1, (http/1.1)}{0.0.0.0:0}
+20:31:15.974 [main] INFO org.eclipse.jetty.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@6c2d4cc6{/,null,STOPPED}
+20:31:15.975 [main] INFO io.javalin.Javalin - Javalin has stopped
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.663 s -- in fi.aalto.cse4780.viz.DashboardTest
+[INFO] Running fi.aalto.cse4780.viz.ResultTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in fi.aalto.cse4780.viz.ResultTest
+[INFO] Running fi.aalto.cse4780.viz.StoreTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in fi.aalto.cse4780.viz.StoreTest
+[INFO] Running fi.aalto.cse4780.viz.DashboardOptionsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in fi.aalto.cse4780.viz.DashboardOptionsTest
+[INFO] Running fi.aalto.cse4780.viz.ResultsConsumerTest
+20:31:16.001 [main] WARN fi.aalto.cse4780.viz.ResultsConsumer - Topic ema-results does not exist yet; waiting for it
+20:31:16.002 [main] INFO fi.aalto.cse4780.viz.ResultsConsumer - Reading 2 partitions of ema-results from the earliest offset
+20:31:16.008 [main] INFO fi.aalto.cse4780.viz.ResultsConsumer - Reading 1 partitions of ema-results from the earliest offset
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in fi.aalto.cse4780.viz.ResultsConsumerTest
+[INFO] Running fi.aalto.cse4780.viz.FeedClockTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in fi.aalto.cse4780.viz.FeedClockTest
+[INFO] Running fi.aalto.cse4780.viz.TicksTailTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in fi.aalto.cse4780.viz.TicksTailTest
+[INFO] Running fi.aalto.cse4780.viz.BroadcasterTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in fi.aalto.cse4780.viz.BroadcasterTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 38, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ viz ---
+[INFO] Building jar: /src/viz/target/viz.jar
+[INFO] 
+[INFO] --- shade:3.6.2:shade (default) @ viz ---
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, kotlin-stdlib-1.9.25.jar, kotlin-stdlib-jdk7-1.9.25.jar, kotlin-stdlib-jdk8-1.9.25.jar, slf4j-api-2.0.20.jar, slf4j-simple-2.0.20.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] jackson-annotations-2.18.2.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/NOTICE
+[WARNING] jetty-http-11.0.25.jar, jetty-io-11.0.25.jar, jetty-security-11.0.25.jar, jetty-server-11.0.25.jar, jetty-servlet-11.0.25.jar, jetty-util-11.0.25.jar, jetty-webapp-11.0.25.jar, jetty-xml-11.0.25.jar, websocket-core-common-11.0.25.jar, websocket-core-server-11.0.25.jar, websocket-jetty-api-11.0.25.jar, websocket-jetty-common-11.0.25.jar, websocket-jetty-server-11.0.25.jar, websocket-servlet-11.0.25.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/NOTICE.txt
+[WARNING] annotations-13.0.jar, jackson-annotations-2.18.2.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, javalin-6.7.0.jar, jetty-http-11.0.25.jar, jetty-io-11.0.25.jar, jetty-jakarta-servlet-api-5.0.2.jar, jetty-security-11.0.25.jar, jetty-server-11.0.25.jar, jetty-servlet-11.0.25.jar, jetty-util-11.0.25.jar, jetty-webapp-11.0.25.jar, jetty-xml-11.0.25.jar, kafka-clients-4.3.1.jar, kotlin-stdlib-1.9.25.jar, kotlin-stdlib-jdk7-1.9.25.jar, kotlin-stdlib-jdk8-1.9.25.jar, lz4-java-1.10.2.jar, slf4j-api-2.0.20.jar, slf4j-simple-2.0.20.jar, snappy-java-1.1.10.7.jar, viz.jar, websocket-core-common-11.0.25.jar, websocket-core-server-11.0.25.jar, websocket-jetty-api-11.0.25.jar, websocket-jetty-common-11.0.25.jar, websocket-jetty-server-11.0.25.jar, websocket-servlet-11.0.25.jar, zstd-jni-1.5.6-10.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] jackson-annotations-2.18.2.jar, jackson-core-2.18.2.jar, jackson-databind-2.18.2.jar, javalin-6.7.0.jar, jetty-http-11.0.25.jar, jetty-io-11.0.25.jar, jetty-security-11.0.25.jar, jetty-server-11.0.25.jar, jetty-servlet-11.0.25.jar, jetty-util-11.0.25.jar, jetty-webapp-11.0.25.jar, jetty-xml-11.0.25.jar, websocket-core-common-11.0.25.jar, websocket-core-server-11.0.25.jar, websocket-jetty-api-11.0.25.jar, websocket-jetty-common-11.0.25.jar, websocket-jetty-server-11.0.25.jar, websocket-servlet-11.0.25.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE
+[WARNING] slf4j-api-2.0.20.jar, slf4j-simple-2.0.20.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Trading Trends (CS-E4780 course project) 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] Trading Trends (CS-E4780 course project) ........... SUCCESS [  0.056 s]
+[INFO] Producer: CSV tick-data replayer to Kafka .......... SUCCESS [  3.446 s]
+[INFO] Flink job: Query 1 (EMA) + Query 2 (crossover advisories) SUCCESS [  5.276 s]
+[INFO] Viz: dashboard backend over ema-results ............ SUCCESS [  3.593 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.428 s
+[INFO] Finished at: 2026-11-01T20:31:18Z
+[INFO] ------------------------------------------------------------------------

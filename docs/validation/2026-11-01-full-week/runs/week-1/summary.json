@@ -1,0 +1,30 @@
+{
+  "checks": {
+    "sevenWholeInputs": true,
+    "acknowledgedEqualsOracleDataRows": true,
+    "freshInputOffsets": true,
+    "allFilesComplete": true,
+    "noReplaySelection": true,
+    "acknowledgedEqualsRead": true,
+    "sourcePricesEqualOracle": true,
+    "pricesReachQ1": true,
+    "q1EqualsAllWindowsPlusLate": true,
+    "sinkEqualsExports": true,
+    "jobFinished": true,
+    "exportComplete": true,
+    "admitAll": true,
+    "comparisonPasses": true
+  },
+  "rows": 289116808,
+  "prices": 59391670,
+  "outputs": {
+    "ema-results": 1857457,
+    "advisories": 11355,
+    "late-ticks": 0
+  },
+  "digests": {
+    "ema_results.parquet": "e5e7d5ae99b30b2944949ee47580b1aa6d318bd71ac4215c9c6a9f38a782d2a6",
+    "advisories.parquet": "1ca6988634bb34a27445919daf5ad4ba0d67a0586af76c0bcd1eb925d69765e8"
+  },
+  "exactOracleValues": true
+}

@@ -1,0 +1,44 @@
+{
+  "weekend": {
+    "debs2022-gc-trading-day-13-11-21.csv": {
+      "comment": 12,
+      "header": 1,
+      "blank": 0,
+      "malformedRow": 0,
+      "nonPrice": 28219,
+      "malformedPrice": 0,
+      "nonPositivePrice": 5179,
+      "missingTimestamp": 0,
+      "malformedTimestamp": 0,
+      "accepted": 0,
+      "systemDateEvents": 0,
+      "staleTradingDateEvents": 0,
+      "lines": 33411,
+      "dataRows": 33398,
+      "excluded": 0,
+      "lateRejected": 0,
+      "admitted": 0
+    },
+    "debs2022-gc-trading-day-14-11-21.csv": {
+      "comment": 12,
+      "header": 1,
+      "blank": 0,
+      "malformedRow": 0,
+      "nonPrice": 26113,
+      "malformedPrice": 0,
+      "nonPositivePrice": 0,
+      "missingTimestamp": 0,
+      "malformedTimestamp": 0,
+      "accepted": 0,
+      "systemDateEvents": 0,
+      "staleTradingDateEvents": 0,
+      "lines": 26126,
+      "dataRows": 26113,
+      "excluded": 0,
+      "lateRejected": 0,
+      "admitted": 0
+    }
+  },
+  "sparseSymbolsWithOneWindow": 36,
+  "symbolsAcrossSeveralDays": 4916
+}

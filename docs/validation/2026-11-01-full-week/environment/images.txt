@@ -1,0 +1,4 @@
+075f65876830cb65365c10a942a4cba19a96eb3ccecf22ede0c59c39f8aeddc1 [docker.io/library/flink:2.2.1-java17]
+b113124780856d64ca79c1ec93416ea0436a95b1619eafc3959a775ebae12133 [docker.io/trading-trends/kafka:dev]
+9e6c59c746646bea5035006daf4c80e901841fdfe628072ce269e38dbc68dd53 [localhost/trading-trends/oracle:dev]
+f7e97c77043d83b9bfb845f2bccdc443351eac7bd676119c716b2265d3644208 [localhost/trading-trends/correctness:dev]

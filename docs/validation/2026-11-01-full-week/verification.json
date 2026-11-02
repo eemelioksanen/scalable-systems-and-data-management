@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "fullWeek": true,
+  "cleanReplay": true,
+  "handDerivedEdges": true,
+  "subsetPublication": true,
+  "boundedDisorder": true,
+  "idlePartitions": true,
+  "finalWindow": true,
+  "negativeControls": true,
+  "lateInjection": "Reused unchanged parent runtime evidence: ../2026-11-01-late-events/verification.json",
+  "tests": {
+    "java": 168,
+    "python": 75
+  }
+}

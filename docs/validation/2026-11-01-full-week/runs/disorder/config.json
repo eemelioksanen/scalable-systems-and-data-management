@@ -1,0 +1,27 @@
+{
+  "inputs": [
+    "trading-day-08-11-21.csv",
+    "trading-day-09-11-21.csv"
+  ],
+  "dataset": "/Users/emiliar/.t3/worktrees/scalable-systems-and-data-management/t3-35f333b1/data/issue9/disorder",
+  "jobArgs": [
+    "--bounded",
+    "--watermark-bound-ms",
+    "86400000",
+    "--idleness-ms",
+    "0",
+    "--zone-offset",
+    "+02:00"
+  ],
+  "subscriptions": [
+    {
+      "trader": "issue9",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "project": "issue9",
+  "partitions": 8,
+  "parallelism": 2
+}
