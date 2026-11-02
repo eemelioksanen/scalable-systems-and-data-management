@@ -1,0 +1,23 @@
+{
+  "tool": "ema_check.inject",
+  "options": {
+    "disorderMs": 300000,
+    "lateRate": 0.0,
+    "lateByMs": 0,
+    "seed": 9
+  },
+  "files": [
+    {
+      "file": "trading-day-08-11-21.csv",
+      "inputMd5": "e39c8bf79991d98997ffef9d149ebd2f",
+      "outputMd5": "7a650717afdfc82a3661d7e6abcafb58"
+    },
+    {
+      "file": "trading-day-09-11-21.csv",
+      "inputMd5": "2a0da61355f95b471f3f23230b771ce1",
+      "outputMd5": "4403d356d71bcda2af9cbf074778c7ef"
+    }
+  ],
+  "lateEvents": 0,
+  "equalTimestampTiesPreserved": true
+}

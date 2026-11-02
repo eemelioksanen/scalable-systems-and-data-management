@@ -1,0 +1,467 @@
+{
+  "passed": true,
+  "reconciliation": {
+    "semantics": {
+      "priceEvents": 71,
+      "evaluatedWindows": 61,
+      "topics": {
+        "ema-results": {
+          "file": "ema_results.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 7,
+              "records": 7
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 48,
+              "records": 48
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 2,
+              "records": 2
+            }
+          },
+          "records": 61,
+          "complete": true
+        },
+        "advisories": {
+          "file": "advisories.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 3,
+              "records": 3
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 3,
+              "records": 3
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            }
+          },
+          "records": 11,
+          "complete": true
+        },
+        "late-ticks": {
+          "file": "late_events.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            }
+          },
+          "records": 0,
+          "complete": true
+        }
+      }
+    },
+    "disorder": {
+      "priceEvents": 71,
+      "evaluatedWindows": 61,
+      "topics": {
+        "ema-results": {
+          "file": "ema_results.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 7,
+              "records": 7
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 48,
+              "records": 48
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 2,
+              "records": 2
+            }
+          },
+          "records": 61,
+          "complete": true
+        },
+        "advisories": {
+          "file": "advisories.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 3,
+              "records": 3
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 3,
+              "records": 3
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            }
+          },
+          "records": 11,
+          "complete": true
+        },
+        "late-ticks": {
+          "file": "late_events.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            }
+          },
+          "records": 0,
+          "complete": true
+        }
+      }
+    },
+    "subset": {
+      "priceEvents": 71,
+      "evaluatedWindows": 61,
+      "topics": {
+        "ema-results": {
+          "file": "ema_results.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 3,
+              "records": 3
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 48,
+              "records": 48
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            }
+          },
+          "records": 51,
+          "complete": true
+        },
+        "advisories": {
+          "file": "advisories.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 1,
+              "records": 1
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 3,
+              "records": 3
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            }
+          },
+          "records": 4,
+          "complete": true
+        },
+        "late-ticks": {
+          "file": "late_events.parquet",
+          "partitions": {
+            "0": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "1": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "2": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "3": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "4": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "5": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "6": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            },
+            "7": {
+              "startOffset": 0,
+              "endOffset": 0,
+              "records": 0
+            }
+          },
+          "records": 0,
+          "complete": true
+        }
+      }
+    }
+  },
+  "handDerivedWindows": 61,
+  "handDerivedAdvisories": 11,
+  "subsetSymbols": [
+    "EDGE.NL",
+    "SWING.FR"
+  ],
+  "subsetWindows": 51,
+  "subsetAdvisories": 4,
+  "disorderInvariant": true,
+  "equalTimestampClose": 6.0,
+  "cases": [
+    "exact boundary and millisecond straggler",
+    "equal timestamps after millisecond truncation",
+    "sparse windows without decay",
+    "missing trading date and time",
+    "stale prior-day close",
+    "simultaneously open windows",
+    "overnight EMA carry",
+    "finite final window",
+    "publication filters both result and advisory identities"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "runtimeRevision": "e144981b3246cca5a4c1860513584e24fe17fa5a",
+  "files": {
+    "flink-job/target/flink-job.jar": "510bc3770ba573575a62ee38dac681e7f10e47ea4fc21d4c823c1e93ef74189c",
+    "producer/target/producer.jar": "64c624613d0fb12682407cb050133330e2db341677edfb75060afdd76116cf19",
+    "oracle/ema_oracle/run.py": "f653a95a263bce196b494141ff004fc8a61b9d252157dfedf17120f7133a5590",
+    "correctness/ema_check/compare.py": "c31741a0b8cb3bcee8255fc908bd8b7a68b3dd60786367ef2e978f20b7fd50d3",
+    "correctness/ema_check/export.py": "397c34db0cef62b447a3ec181e6899a778a16090f124b9ed654e4d73465436be"
+  },
+  "javaTests": 168,
+  "pythonTests": 75,
+  "idleRerunJarSha256": {
+    "flink-job/target/flink-job.jar": "844435a0cdec8d7e7135c2eba27f9b2afa6ba374892ac9ae13e6dd928010d838",
+    "producer/target/producer.jar": "07143b4175aa87f4490453d220c78d7b90cf967a219fdeea0eb9d34d798d32da"
+  }
+}

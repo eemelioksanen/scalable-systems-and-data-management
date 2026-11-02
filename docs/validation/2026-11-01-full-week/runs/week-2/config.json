@@ -1,0 +1,32 @@
+{
+  "inputs": [
+    "debs2022-gc-trading-day-08-11-21.csv",
+    "debs2022-gc-trading-day-09-11-21.csv",
+    "debs2022-gc-trading-day-10-11-21.csv",
+    "debs2022-gc-trading-day-11-11-21.csv",
+    "debs2022-gc-trading-day-12-11-21.csv",
+    "debs2022-gc-trading-day-13-11-21.csv",
+    "debs2022-gc-trading-day-14-11-21.csv"
+  ],
+  "dataset": "/Users/emiliar/.t3/worktrees/scalable-systems-and-data-management/t3-61410f3a/data/daily",
+  "jobArgs": [
+    "--bounded",
+    "--watermark-bound-ms",
+    "64265001",
+    "--idleness-ms",
+    "0",
+    "--zone-offset",
+    "+02:00"
+  ],
+  "subscriptions": [
+    {
+      "trader": "issue9",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "project": "issue9",
+  "partitions": 8,
+  "parallelism": 2
+}
