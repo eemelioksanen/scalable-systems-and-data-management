@@ -1,0 +1,171 @@
+{
+  "tool": "ema_oracle",
+  "version": "1.0.0",
+  "git": {
+    "revision": "35eb8f69e9d95775256a994469bb333f36e61423",
+    "dirty": false
+  },
+  "command": [],
+  "createdUtc": "2026-11-01T20:25:00+00:00",
+  "environment": {
+    "python": "3.14.10",
+    "polars": "1.44.2",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O"
+  },
+  "parameters": {
+    "zoneOffset": "+02:00",
+    "missingTradingDate": "system-date",
+    "watermarkBoundMs": null,
+    "excludeEvents": null,
+    "excludedEventsListed": 0,
+    "windowMs": 300000,
+    "alpha38": 0.05128205128205128,
+    "alpha100": 0.019801980198019802,
+    "initialEma": 0.0
+  },
+  "inputs": [
+    {
+      "file": "synthetic-08-11-21.csv",
+      "fileDate": "2021-11-08",
+      "bytes": 1827200,
+      "md5": "4e1e571a1269e6ad4db9fbcc5de50e07"
+    }
+  ],
+  "counts": {
+    "total": {
+      "comment": 0,
+      "header": 0,
+      "blank": 0,
+      "malformedRow": 0,
+      "nonPrice": 25600,
+      "malformedPrice": 0,
+      "nonPositivePrice": 0,
+      "missingTimestamp": 0,
+      "malformedTimestamp": 0,
+      "accepted": 100,
+      "systemDateEvents": 0,
+      "staleTradingDateEvents": 0,
+      "lines": 25700,
+      "dataRows": 25700,
+      "excluded": 0,
+      "lateRejected": 0,
+      "admitted": 100
+    },
+    "perFile": {
+      "synthetic-08-11-21.csv": {
+        "comment": 0,
+        "header": 0,
+        "blank": 0,
+        "malformedRow": 0,
+        "nonPrice": 25600,
+        "malformedPrice": 0,
+        "nonPositivePrice": 0,
+        "missingTimestamp": 0,
+        "malformedTimestamp": 0,
+        "accepted": 100,
+        "systemDateEvents": 0,
+        "staleTradingDateEvents": 0,
+        "lines": 25700,
+        "dataRows": 25700,
+        "excluded": 0,
+        "lateRejected": 0,
+        "admitted": 100
+      }
+    }
+  },
+  "admission": {
+    "model": "price events in source order, per-event watermark = max event time seen - bound - 1",
+    "eventsWithPositiveMinBound": 13,
+    "smallestBoundWithNoLateEventsMs": 660001,
+    "positiveMinBoundQuantilesMs": {
+      "0.5": 600001,
+      "0.9": 660001,
+      "0.99": 660001,
+      "0.999": 660001
+    },
+    "lateEventsByBoundMs": {
+      "0": 13,
+      "1": 13,
+      "10": 13,
+      "100": 13,
+      "250": 13,
+      "500": 13,
+      "1000": 13,
+      "2000": 13,
+      "5000": 13,
+      "10000": 13,
+      "30000": 13,
+      "60000": 13,
+      "300000": 12,
+      "3600000": 0
+    }
+  },
+  "results": {
+    "windows": 20,
+    "symbols": 1,
+    "symbolsWithSeveralSecTypes": 0,
+    "advisories": {
+      "BUY": 1,
+      "SELL": 0
+    },
+    "firstWindowEnd": 1636355100000,
+    "lastWindowEnd": 1636360800000
+  },
+  "precision": {
+    "windows": 20,
+    "max_abs_error_ema38": 2.842170943040401e-14,
+    "max_abs_error_ema100": 3.552713678800501e-15,
+    "max_error_ulps": 2.0,
+    "worst_symbol": "SYNTH.NL",
+    "windows_over_tolerance": 0,
+    "symbols_over_tolerance": 0,
+    "advisory_disagreements": 0,
+    "near_ties": 0
+  },
+  "outputs": {
+    "ema_results.parquet": {
+      "rows": 20,
+      "sha256": "b770f07d448706d9d8c7e4e13b8d23b42ec34b0faceea490a375ef25ca03a39c",
+      "contentSha256": "4277cf13b00942114c6fa132e9388084283ac0e931de2d3ae4fd810819d2175e"
+    },
+    "advisories.parquet": {
+      "rows": 1,
+      "sha256": "eb8400dc0d45639c02acba1dae5cf0a3cdc489a7135c556daec1ee665fc3d3ad",
+      "contentSha256": "4a936f2bafdc8196352b501bb09425980930a48166ac5073fd03ccbd0abf7b45"
+    },
+    "crossover_summary.parquet": {
+      "rows": 1,
+      "sha256": "eb86c96f687abcbad6439cc26b9a996ee37c1c170b7689774301c447e6214358",
+      "contentSha256": "b9fb08be3ddc665125398d0beec9f15d87b1b16495c52ec4b0b3167367bb2156"
+    },
+    "window_summary.parquet": {
+      "rows": 1,
+      "sha256": "581f3a60b530e8dc4a5153fc89993d4f793f7115c1058293752c9cc3aac636f2",
+      "contentSha256": "53fc0c0025d407101a6b142151d1345b37d78df8a7f8afcf21e8c59675d2af8e"
+    },
+    "symbol_summary.parquet": {
+      "rows": 1,
+      "sha256": "d53175d462b9b766726143f81fadbe354b4943097dec1278f38f04a7f01da947",
+      "contentSha256": "48d86c200d6f9350c47a030f617d2ea3cae09f00b7d9b94a7fca76d9cf804c8c"
+    },
+    "input_counts.parquet": {
+      "rows": 1,
+      "sha256": "687fc70da479168fb079be362082efe53a60f70f7c32d6c54441b6b4713b8900",
+      "contentSha256": "ed499cd95a97aee21c7d80b97ceba7a82976ae31d820c176e7c8c23dd0af43fe"
+    },
+    "rejected_events.parquet": {
+      "rows": 0,
+      "sha256": "7a0f58dc42cd264639db6104d1ea0fe21ae21ca4b5ea58731babaff3e4fb321d",
+      "contentSha256": "952044d778addab5af79ccf6403caf4712afe9305c6200850238a4c199ddced5"
+    }
+  },
+  "timingsSeconds": {
+    "read:synthetic-08-11-21.csv": 0.013,
+    "ema": 0.003,
+    "precisionCheck": 0.0,
+    "write": 0.007,
+    "inputChecksums": 0.003,
+    "total": 0.07
+  },
+  "peakAnonMemoryMb": null
+}

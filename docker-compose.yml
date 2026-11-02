@@ -62,6 +62,7 @@ services:
         $$create --topic ticks --partitions ${TICKS_PARTITIONS:-8} --config retention.ms=-1
         $$create --topic ema-results --partitions ${TICKS_PARTITIONS:-8}
         $$create --topic advisories --partitions ${TICKS_PARTITIONS:-8}
+        $$create --topic late-ticks --partitions ${TICKS_PARTITIONS:-8}
         $$create --topic stats --partitions 1
         $$create --topic subscriptions --partitions 1 --config cleanup.policy=compact
     restart: "no"

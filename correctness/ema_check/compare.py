@@ -156,7 +156,30 @@ def _export_problems(manifest: dict) -> list[str]:
         topic, info = exported[file]
         if not info.get("complete"):
             problems.append(f"the export of {topic} is incomplete: {info.get('problem', 'see its manifest')}")
+    for topic, info in manifest.get("topics", {}).items():
+        if info.get("file") == "late_events.parquet" and not info.get("complete"):
+            problems.append(f"the export of {topic} is incomplete: {info.get('problem', 'see its manifest')}")
     return problems
+
+
+def _late_identity_problems(events: pl.DataFrame, rejected: pl.DataFrame | None, count: int | None) -> list[str]:
+    key = ["sourceFile", "sourceLine", "symbol", "windowEnd"]
+    if count is not None and events.height != count:
+        return ["late-event export length differs from the job's lateTicks"]
+    if not set(key).issubset(events.columns):
+        return ["late events need sourceFile, sourceLine, symbol and windowEnd to prove rejection identities"]
+    if events.select(pl.any_horizontal(pl.col(key).is_null()).any()).item():
+        return ["late events contain null identities"]
+    if events.select("sourceFile", "sourceLine").is_duplicated().any():
+        return ["late-event export contains duplicate source identities"]
+    if events.is_empty() and (rejected is None or rejected.is_empty()):
+        return []
+    if rejected is None or not set(key).issubset(rejected.columns):
+        return ["oracle rejected_events.parquet is missing rejection identities"]
+    if (events.join(rejected, on=key, how="anti").height
+            or rejected.join(events, on=key, how="anti").height):
+        return ["job and oracle rejected different source events"]
+    return []
 
 
 def compare(cfg: Inputs) -> dict:
@@ -181,6 +204,10 @@ def compare(cfg: Inputs) -> dict:
     late_events = _read_table(cfg.job_late_events) if cfg.job_late_events else None
     oracle_rejected_path = cfg.oracle / "rejected_events.parquet"
     oracle_rejected = pl.read_parquet(oracle_rejected_path) if oracle_rejected_path.exists() else None
+    if late_events is not None:
+        problems += _late_identity_problems(late_events, oracle_rejected, cfg.job_late_ticks)
+    elif cfg.job_late_ticks:
+        problems.append("nonzero lateTicks requires --job-late-events to prove rejection identities")
     late = _first_rejected(late_events, oracle_rejected)
 
     oracle = pl.read_parquet(cfg.oracle / "ema_results.parquet")

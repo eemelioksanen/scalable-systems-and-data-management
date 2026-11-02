@@ -118,7 +118,7 @@ A bounded job's custom counters vanish when it finishes, and on a short run Prom
 - with a `*` subscription, windows q1-ema evaluated = exported `ema-results`
 - with an oracle, replayed data rows and price events equal the oracle's, and, when the source's counters are final, so do the non-price, non-positive and `Date`-dated events
 
-The counters (interfaces.md, "Counts") come from Prometheus's last sample. `countersFinal` says whether the source's split and `lateTicks` are exact: the split when it adds up to the records the source read, `lateTicks` when q1-ema's last sampled input equals the records it received. Both are final in drained runs and seldom in bounded ones, so `compare` gets `--job-late-ticks` only when it is final; without it the verdict is at best `unverified`. For the correctness gate, use `"finish": "drain"`. The window, crossover and publication counters are never final in a drained run, because the drain fires windows after the last scrape: the job graph's counts replace them.
+The source counters come from Prometheus's last sample. `countersFinal.split` is true when they reconcile with the records the source read. `lateTicks` comes from the completed `late-ticks` export, with source filenames resolved through this run's `replay.json`; `countersFinal.lateTicks` records export completeness. This works for bounded and drained jobs. `compare` receives both the count and exported source identities. The q1 output reconciliation includes both evaluated windows and late events. Window, crossover and publication counters remain sampled; the job graph's counts replace them in reconciliation.
 
 ## Latency
 

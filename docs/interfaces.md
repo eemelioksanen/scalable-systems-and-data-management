@@ -12,6 +12,7 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 | `ticks` | replayer | Flink job; viz reads the tail for its replay clock | symbol (`ID`) | CSV line, 7 raw fields | 8 locally (`TICKS_PARTITIONS`) |
 | `ema-results` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `advisories` | Flink job | viz, correctness check | symbol | JSON | 8 |
+| `late-ticks` | Flink job | correctness check | symbol | JSON source position and window end | 8 |
 | `subscriptions` | subscription generator | Flink job (broadcast) | trader ID | JSON, or a tombstone | 1, compacted |
 | `stats` | not written yet: counts are Flink metrics (D-28, [Counts](#counts-d-28)) | – | – | – | 1 |
 
@@ -36,7 +37,7 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
   RDSA.NL,E,08-11-2021,09:00:01.456,,,
   ```
 
-- **Header `src`:** the record's source position, `<file index>:<line number>` in ASCII, e.g. `0:14`. The file index points into the replay report's `files`, and lines count from 1 including comment lines. It is the oracle's `(sourceFile, sourceLine)`, with `sourceFile` the file name of `files[index].path`, which lets late events be matched to the oracle's `--exclude-events`. The Flink job does not read it yet: it counts its late events but does not export them. Consumers of the value can ignore it.
+- **Header `src`:** the record's source position, `<file index>:<line number>` in ASCII, e.g. `0:14`. The file index points into the replay report's `files`, and lines count from 1 including comment lines. It is the oracle's `(sourceFile, sourceLine)`, with `sourceFile` the file name of `files[index].path`, which lets late events be matched to the oracle's `--exclude-events`. The Flink job retains this position on price events and publishes rejected events to `late-ticks`. Consumers of the value can ignore it.
 - **Record timestamp:** the wall-clock time (epoch ms) when the replayer sent the record. This is the ingest time used for latency measurements.
 - **Compression:** lz4 by default (D-31). Consumers decompress transparently.
 - **Ordering:** the replayer keeps file order per symbol: day files in date order, lines in file order. It sends from one thread with an idempotent producer and `acks=all`, so retries don't reorder records.
@@ -179,7 +180,7 @@ Each measurement and its query:
 
 Checkpointing is not enabled, so the job does not recover from a failure: it fails. The supported way to run again is a **clean replay**:
 
-1. Recreate `ema-results` and `advisories`, or write to new topics with `--ema-topic` and `--advisories-topic`.
+1. Recreate `ema-results`, `advisories` and `late-ticks`, or write to new topics with `--ema-topic`, `--advisories-topic` and `--late-topic`.
 2. Submit the job again.
 
 Both inputs are read from the earliest offset, so the same `ticks` and a preloaded `subscriptions` give the same records apart from `emitTs`. Without step 1 the outputs hold a second copy of every record. The sinks are at-least-once, so a checkpoint restore would also be able to duplicate records if checkpointing were turned on later.
@@ -199,3 +200,9 @@ Both inputs are read from the earliest offset, so the same `ticks` and a preload
   Report the mismatch counts. They must all be 0.
 - **Advisory check:** compare the two sets of (`symbol`, `windowEnd`, `type`). Report precision and recall. Both must be 1.0.
 - **Tools:** [`correctness/`](../correctness/README.md) exports the topics, runs both checks and classifies every difference (D-34).
+
+## `late-ticks`
+
+Every rejected price event is published independently of subscriptions, keyed by symbol, with `sourceFileIndex`, `sourceLine`, `symbol` and exclusive `windowEnd` in epoch milliseconds. `--late-topic` overrides the default topic. Missing or malformed `src` headers leave the source fields null; they do not change price-event admission. The exporter keeps those records but marks their provenance incomplete.
+
+`correctness/run.sh export --replay-report <replay.json>` resolves the file index through the completed replay report and writes `late_events.parquet`, adding `sourceFile` as the input basename. This file can be passed to the oracle's `--exclude-events` and the comparer's `--job-late-events`. Use the report for the same replay and fresh output topics. Multiple replays can reuse file indices, so their output must not be mixed. Duplicate late source positions make the export incomplete. The Kafka sink uses the same at-least-once guarantee as the result sinks.
