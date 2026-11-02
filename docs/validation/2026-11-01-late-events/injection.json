@@ -1,0 +1,17 @@
+{
+  "tool": "ema_check.inject",
+  "options": {
+    "disorderMs": 0,
+    "lateRate": 0.15,
+    "lateByMs": 600000,
+    "seed": 7
+  },
+  "files": [
+    {
+      "file": "synthetic-08-11-21.csv",
+      "inputMd5": "2a0a1a7b470384c671abc15407a8f745",
+      "outputMd5": "4e1e571a1269e6ad4db9fbcc5de50e07"
+    }
+  ],
+  "lateEvents": 13
+}

@@ -63,7 +63,7 @@ docker compose up -d --build
 | Dashboard | http://localhost:8088 |
 | Kafka from the host | `localhost:29092` |
 
-Kafka has no persistent data volume. `stop` retains data in its container; `down`, including without `--volumes`, removes that container and loses its topics, records, subscriptions, and consumer offsets. On the next start, `kafka-init` recreates the five empty application topics. `--volumes` also removes anonymous volumes used by the monitoring images.
+Kafka has no persistent data volume. `stop` retains data in its container; `down`, including without `--volumes`, removes that container and loses its topics, records, subscriptions, and consumer offsets. On the next start, `kafka-init` recreates the six empty application topics. `--volumes` also removes anonymous volumes used by the monitoring images.
 
 The Flink job computes both queries for every symbol (`ticks` → `ema-results` and `advisories`), but publishes only symbols that some trader subscribes to. Write the subscriptions first: at startup the job holds its results back until it has read the `subscriptions` topic as it was at submission. This subscribes to every symbol:
 

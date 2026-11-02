@@ -1,0 +1,24 @@
+{
+  "revision": "35eb8f69e9d95775256a994469bb333f36e61423",
+  "javaTests": {
+    "producer": 37,
+    "flinkJob": 93,
+    "viz": 38,
+    "failures": 0,
+    "errors": 0
+  },
+  "pythonTests": 39,
+  "liveIdentitiesMatchInjector": true,
+  "liveLateCount": 13,
+  "liveComparisonPass": true,
+  "boundedComparisonPass": true,
+  "boundedLateCount": 0,
+  "boundedLateCountFinal": true,
+  "boundedBenchmarkVerdict": "pass",
+  "liveQ1RecordsOut": 33,
+  "liveEmaRecords": 20,
+  "liveAdvisoryRecords": 1,
+  "scope": "Synthetic one-partition verification; benchmark reconcile and summarize methods with actual Flink records. No Prometheus/cAdvisor performance run.",
+  "jobJarSha256": "00d127f0566035db630d0209cf40a235b891656c95afc4a37802015be645fa14",
+  "producerJarSha256": "602cc18acdb9b42a142b4a233a6b06998dca3e97893d13a71bbff1c972441486"
+}

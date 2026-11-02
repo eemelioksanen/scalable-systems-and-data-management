@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "check": "replayed records = records the job read",
+      "left": 25700,
+      "right": 25700,
+      "ok": true
+    },
+    {
+      "check": "price events out of the source = into q1-ema",
+      "left": 100,
+      "right": 100,
+      "ok": true
+    },
+    {
+      "check": "records the job wrote = records exported",
+      "left": 21,
+      "right": 21,
+      "ok": true
+    },
+    {
+      "check": "q1 outputs = exported ema-results + late-ticks",
+      "left": 33,
+      "right": 33,
+      "ok": true
+    },
+    {
+      "check": "replayed data rows = oracle data rows",
+      "left": 25700,
+      "right": 25700,
+      "ok": true
+    },
+    {
+      "check": "price events = oracle price events",
+      "left": 100,
+      "right": 100,
+      "ok": true
+    }
+  ],
+  "countersFinal": {
+    "split": false,
+    "lateTicks": true
+  }
+}

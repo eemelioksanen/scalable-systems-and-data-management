@@ -21,7 +21,7 @@ from kafka.admin import ConfigResource, ConfigResourceType, KafkaAdminClient, Ne
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "scripts" / "validation"
-TOPICS = {"ticks": 8, "ema-results": 8, "advisories": 8, "stats": 1, "subscriptions": 1}
+TOPICS = {"ticks": 8, "ema-results": 8, "advisories": 8, "late-ticks": 8, "stats": 1, "subscriptions": 1}
 INPUT = "stack-check-in"
 OUTPUT = "stack-check-out"
 RECORD = b"VERIFY.NL,E,08-11-2021,09:00:01.1234,19.2800,09:00:01.1000,08-11-2021"
@@ -252,7 +252,7 @@ class Verification:
             require(set(admin.list_topics()) == set(TOPICS), "Reset retained unexpected Kafka topics")
         finally:
             admin.close()
-        self.record("reset", "synthetic topics and data removed; five application topics recreated")
+        self.record("reset", "synthetic topics and data removed; six application topics recreated")
         self.compose("down", "--volumes", timeout=180)
         if devcontainer:
             self.devcontainer(devcontainer)

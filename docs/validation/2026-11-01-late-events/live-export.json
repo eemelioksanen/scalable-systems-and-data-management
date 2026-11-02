@@ -1,0 +1,44 @@
+{
+  "tool": "ema_check.export",
+  "createdUtc": "2026-11-01T20:24:29+00:00",
+  "bootstrap": "localhost:29138",
+  "zoneOffset": "+02:00",
+  "topics": {
+    "ema-results": {
+      "file": "ema_results.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 20,
+          "records": 20
+        }
+      },
+      "records": 20,
+      "complete": true
+    },
+    "advisories": {
+      "file": "advisories.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 1,
+          "records": 1
+        }
+      },
+      "records": 1,
+      "complete": true
+    },
+    "late-ticks": {
+      "file": "late_events.parquet",
+      "partitions": {
+        "0": {
+          "startOffset": 0,
+          "endOffset": 13,
+          "records": 13
+        }
+      },
+      "records": 13,
+      "complete": true
+    }
+  }
+}

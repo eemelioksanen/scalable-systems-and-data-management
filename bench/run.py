@@ -385,17 +385,18 @@ class Run:
                           else "flink_taskmanager_job_task_operator_") + name
                 value = scalar(f"sum(last_over_time({metric}[{window}s]))", at=at)
                 values[name] = None if value is None else int(value)
-        q1_in = scalar(f'sum(last_over_time(flink_taskmanager_job_task_operator_numRecordsIn{{operator_name="q1_ema"}}[{window}s]))', at=at)
-        values["q1RecordsIn"] = None if q1_in is None else int(q1_in)
         return values
 
     def export(self) -> dict:
         self.sh("correctness/run.sh", "export", "--zone-offset", self.cfg.zone_offset,
+                "--replay-report", self.dir / "replay.json",
                 "--out", f"/out/bench/{self.id}/export", timeout=1800)
         return self._collect("export", "manifest.json")
 
     def compare(self, late_ticks: int | None) -> dict:
-        late = ["--job-late-ticks", str(late_ticks)] if late_ticks is not None else []
+        late = (["--job-late-ticks", str(late_ticks),
+                 "--job-late-events", self.dir / "export" / "late_events.parquet"]
+                if late_ticks is not None else [])
         self.sh("correctness/run.sh", "compare", "--oracle", self.cfg.oracle, "--job", self.dir / "export",
                 *late, "--out", f"/out/bench/{self.id}/compare", timeout=1800, check=False)
         return self._collect("compare", "report.json")
@@ -453,6 +454,9 @@ class Run:
         topics = outputs["export"]["topics"]
         exported_ema = topics.get("ema-results", {}).get("records")
         exported_adv = topics.get("advisories", {}).get("records")
+        late_export = topics.get("late-ticks", {})
+        late_final = late_export.get("complete", False)
+        counters["lateTicks"] = late_export.get("records") if late_final else None
 
         def total(metrics, key):
             return metrics.get(key, {}).get("sum")
@@ -464,12 +468,13 @@ class Run:
              None if exported_ema is None or exported_adv is None else exported_ema + exported_adv),
         ]
         if self.cfg.all_subscribed:
-            checks.append(("evaluated windows = exported ema-results", total(q1, "write-records"), exported_ema))
+            checks.append(("q1 outputs = exported ema-results + late-ticks", total(q1, "write-records"),
+                           None if exported_ema is None or not late_final else exported_ema + counters["lateTicks"]))
         # A counter is final when its last scrape agrees with the job graph Flink keeps after the job ends.
         final = {
             "split": sum(counters[n] or 0 for n in SPLIT) == total(source, "read-records")
                      and counters["priceEvents"] == total(source, "write-records"),
-            "lateTicks": counters["q1RecordsIn"] == total(q1, "read-records"),
+            "lateTicks": late_final,
         }
         if self.cfg.oracle:
             oracle = json.loads((ROOT / self.cfg.oracle / "manifest.json").read_text())["counts"]["total"]

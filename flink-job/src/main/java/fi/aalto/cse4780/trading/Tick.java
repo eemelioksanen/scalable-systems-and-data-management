@@ -31,6 +31,10 @@ public class Tick {
     /** Wall-clock time (epoch ms) when the replayer sent the record: the Kafka record timestamp. */
     public long ingestTimeMillis;
 
+    public Integer sourceFileIndex;
+
+    public Long sourceLine;
+
     public Tick() {}
 
     public Tick(
