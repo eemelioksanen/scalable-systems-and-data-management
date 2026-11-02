@@ -1,0 +1,133 @@
+\section{Introduction}
+The course task asks for EMA38 and EMA100 over five-minute tumbling windows,
+followed by buy and sell advisories at crossovers, with publication restricted
+to subscribed symbols~\cite{brief}. The input is a recorded week of market
+events, rather than a live exchange connection~\cite{dataset}.
+\pending{State the final scope, motivating question and contributions. Cite
+implementation PRs and retained experiments for every headline result.}
+
+\section{Dataset analysis}
+The source covers 8--14 November 2021 and includes price, quote and
+housekeeping events~\cite{dataset,brief}. The report must distinguish all
+input rows from valid price events and calculated windows. Dataset analysis
+has its own space because the academic-writing rubric calls for a strong
+focus on event distribution~\cite{rubric}.
+\pending{Select final figures from \texttt{analysis/out/} and explain their
+provenance via \texttt{docs/eda-week.md} and the daily manifests. Include event
+taxonomy, per-exchange rates and peaks, long-tail symbol skew, timestamp
+quality and empty-window frequency. Report the selected file checksums and
+subset, rather than quoting rounded brief totals as measured totals.}
+\pending{Explain which measured properties justify watermark bounds and
+partitioning. Attribute the dataset to Frischbier et al. and retain its
+CC BY-NC-SA 4.0 notice when adapting data figures~\cite{dataset}.}
+
+\section{System architecture}
+\pending{Draw and verify the final data path against the submitted revision:
+CSV replayer, Kafka ticks and subscriptions, Flink keyed EMA/crossover state,
+subscription filtering, result topics, dashboard and monitoring. Label which
+components share a host. The roadmap is a plan, not proof of deployment.}
+\pending{Explain keying by symbol, partition load, normalization, metadata
+handling, event time, watermarks, idleness and late-event policy. Explain
+finite-input final-window completion and the distinction from a live stream.
+Link each design trade-off to its D-number in the existing
+\path{docs/decisions.md}; do not create a second architecture decision log.}
+\pending{Compare the chosen state/windowing approach with measured alternatives
+where available. Mark proposed ablations as unperformed until evidence exists.}
+
+\section{Implementation}
+\pending{Verify the implementation description from source and PR evidence:
+price versus housekeeping classification, malformed timestamp handling,
+latest-event-time close and equal-time ties, EMA initialization, empty windows,
+overnight state, crossover inequalities, subscription bootstrap and updates.}
+\pending{Record hardware, runtime versions, programming and GUI tools, effective
+resource limits and deployment topology from each experiment. Describe restart
+and replay guarantees only to the extent tested; fresh-topic replay does not
+prove checkpoint recovery or exactly-once sinks.}
+\pending{Insert source and PR links for the final code revision. Reuse the
+interfaces and decisions documentation; validate it against code before
+turning these prompts into factual prose.}
+
+\section{Evaluation}
+\subsection{Method and provenance}
+\pending{Define correctness, throughput denominators and latency boundaries.
+Use one completed \path{report/experiments/template.json} record per run,
+with raw paths, configurations and checksums. Separate preload throughput
+from paced live latency. Use the roadmap's three repetitions for comparable
+performance configurations and report mean and standard deviation. Explain
+warm-up, drain exclusions, clock uncertainty and failed attempts.}
+
+\subsection{Existing evidence to reuse}
+The following retained checks are starting points, not final benchmark claims.
+The synthetic late-event check used runtime revision
+\texttt{35eb8f6} and verifies injected/exported identities and the matching
+oracle exclusions~\cite{late}. It is not full-week or performance evidence.
+The full-week gate used runtime revision \texttt{e144981}, with the
+\texttt{week-1} and \texttt{week-2} clean replays~\cite{week}. It checks both
+queries against the oracle; these are correctness runs, not throughput
+measurements. The live latency run at revision \texttt{065eaa6} is
+\path{issue37-latency-subset12-live-100x-20261101T210052Z-r1}~\cite{latency}.
+It exercises the measurement path on a 12-symbol Monday subset once, without
+an oracle comparison. It establishes neither repeatability nor saturation.
+Full revisions, configurations and limitations remain in the cited records.
+
+\subsection{Correctness}
+\pending{Summarize the retained full-week oracle checks, including exact closing
+prices, absolute EMA tolerance, advisory precision/recall, duplicate detection,
+late-event identities, all exchanges and weekend coverage. Include sparse and
+boundary fixtures, timestamp fallbacks, ties, overnight state and a negative
+control. Distinguish binary64/decimal diagnostics from accepted tolerance.}
+\begin{table}[ht]
+\caption{Planned correctness summary. Every result is pending selection and
+verification for the final report.}
+\label{tab:correctness}
+\begin{tabular}{ll}
+\toprule
+Check & Final result \\
+\midrule
+Full-week EMA and advisory comparison & Pending \\
+Missing, extra and duplicate outputs & Pending \\
+Disorder and beyond-bound late events & Pending \\
+Subset publication and final windows & Pending \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Throughput, latency and scalability}
+\pending{Add full-week preload throughput and speedup by parallelism; live
+latency percentiles under load, with inherent window wait separated from
+system delay. Document resource ceilings and the actual bottleneck.}
+\pending{Compare exchange count, input rate including peaks, symbol skew,
+subscriber count and CPU/TaskManager resources. Report per-subtask imbalance,
+CPU, memory, GC, network and lag where observed. A local VM is not evidence of
+multi-node or cloud scaling. GPU use is pending applicability, not an implied
+measurement.}
+\begin{figure}[ht]
+\centering
+\fbox{\parbox[c][1.15in][c]{0.88\columnwidth}{\centering
+Reserved for measured throughput and scalability.\\
+Pending figure, raw CSV and run IDs.}}
+\caption{Figure slot for comparable repeated runs. No measurements plotted.}
+\Description{An empty labeled figure slot reserved for future throughput and scalability measurements.}
+\end{figure}
+\begin{figure}[ht]
+\centering
+\fbox{\parbox[c][1.15in][c]{0.88\columnwidth}{\centering
+Reserved for latency and resource utilization.\\
+Pending figure, clock limits and run IDs.}}
+\caption{Figure slot for live latency and resource observations.}
+\Description{An empty labeled figure slot reserved for future live latency and resource utilization measurements.}
+\end{figure}
+\pending{Analyze watermark/late-rate trade-offs and any completed ablations.
+List remaining experiments honestly. Preserve the evaluation allocation when
+compressing the introduction or implementation text.}
+
+\section{Visualization}
+\pending{Select a screenshot from the actual dashboard and explain how it helps
+interpret EMA and crossover outputs, skew or replay time. Verify each shown
+view against the submitted version. Separate planned views from implemented
+ones and operational Grafana metrics from query results.}
+
+\section{Conclusion}
+\pending{Answer the motivating question using measured evidence. State remaining
+limits, untested recovery/scaling paths and the next experiment. Remove all
+pending markers only when their evidence and author text are complete.}

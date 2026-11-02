@@ -10,6 +10,7 @@ CS-E4780 Scalable Systems and Data Management course project (Aalto, 2026). This
 - Plan: [docs/ROADMAP.md](docs/ROADMAP.md)
 - Decisions: [docs/decisions.md](docs/decisions.md)
 - Interfaces (topic formats, oracle comparison): [docs/interfaces.md](docs/interfaces.md)
+- Report skeleton, PDF build and Overleaf workflow: [report/README.md](report/README.md)
 
 ## Requirements
 

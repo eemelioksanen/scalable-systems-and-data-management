@@ -1,0 +1,122 @@
+{
+  "$schema": "./schema.json",
+  "status": "planned",
+  "run_id": null,
+  "question": null,
+  "revision": {
+    "source_commit": null,
+    "dirty_patch": null,
+    "evidence_commit": null,
+    "implementation_prs": []
+  },
+  "dataset": {
+    "source_url": null,
+    "license": null,
+    "input_manifest": null,
+    "checksum_algorithm": null,
+    "original_checksums": null,
+    "derived_checksums": null,
+    "dates": [],
+    "exchanges": [],
+    "symbols": [],
+    "filter_command": null,
+    "disorder_seed": null
+  },
+  "hardware": {
+    "host_os": null,
+    "host_architecture": null,
+    "host_cpu": null,
+    "host_logical_cpus": null,
+    "host_memory_bytes": null,
+    "vm_os": null,
+    "vm_architecture": null,
+    "vm_cpus": null,
+    "vm_memory_bytes": null,
+    "storage": null,
+    "other_load": null
+  },
+  "software": {
+    "container_engine": null,
+    "compose": null,
+    "java": null,
+    "flink": null,
+    "kafka": null,
+    "python": null,
+    "client_versions": null,
+    "image_digests": null,
+    "lockfiles": []
+  },
+  "deployment": {
+    "topology": null,
+    "node_count": null,
+    "service_placement": null,
+    "compose_project": null,
+    "effective_config": null,
+    "kafka_partitions_by_topic": null,
+    "flink_parallelism": null,
+    "taskmanagers": null,
+    "slots_per_taskmanager": null
+  },
+  "resources": {
+    "cpu_limits_by_service": null,
+    "memory_bytes_by_service": null,
+    "heap_limits_by_service": null,
+    "state_backend": null,
+    "checkpoint_config": null
+  },
+  "event_time": {
+    "zone_offset": null,
+    "watermark_bound_ms": null,
+    "idleness_ms": null,
+    "late_policy": null,
+    "end_of_input_policy": null
+  },
+  "replay": {
+    "argv": null,
+    "mode": null,
+    "target_rate": null,
+    "achieved_rate": null,
+    "startup_order": null,
+    "report": null
+  },
+  "subscriptions": {
+    "payload_or_file": null,
+    "trader_count": null,
+    "symbol_selection": null,
+    "seed": null,
+    "bootstrap_order": null
+  },
+  "repetitions": {
+    "configuration_group": null,
+    "index": null,
+    "planned_count": 3,
+    "completed_count": null,
+    "failed_or_excluded_runs": [],
+    "summary_method": "mean and sample standard deviation for comparable performance runs"
+  },
+  "measurement": {
+    "started_at_utc": null,
+    "ended_at_utc": null,
+    "interval_definition": null,
+    "warmup_seconds": null,
+    "drain_exclusion": null,
+    "throughput_numerator": null,
+    "throughput_denominator": null,
+    "latency_boundaries": null,
+    "clock_source_and_uncertainty": null,
+    "oracle_admission_profile": null
+  },
+  "results": {
+    "raw_locations": [],
+    "checksum_manifest": null,
+    "command_log": null,
+    "effective_configuration": null,
+    "reconciliation": null,
+    "oracle_comparison": null,
+    "summary_tables": [],
+    "figures": []
+  },
+  "limitations": [
+    "Planned template only. All unknown values remain null; no experimental results are claimed."
+  ]
+}

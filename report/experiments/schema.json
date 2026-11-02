@@ -1,0 +1,276 @@
+{
+  "type": "object",
+  "required": [
+    "$schema",
+    "status",
+    "run_id",
+    "question",
+    "revision",
+    "dataset",
+    "hardware",
+    "software",
+    "deployment",
+    "resources",
+    "event_time",
+    "replay",
+    "subscriptions",
+    "repetitions",
+    "measurement",
+    "results",
+    "limitations"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "status": {"enum": ["planned", "partial", "recorded"]},
+    "run_id": {"type": ["string", "null"], "minLength": 1},
+    "question": {"type": ["string", "null"], "minLength": 1},
+    "revision": {
+      "type": "object",
+      "required": ["source_commit", "dirty_patch", "evidence_commit", "implementation_prs"],
+      "additionalProperties": false,
+      "properties": {
+        "source_commit": {"type": ["string", "null"], "minLength": 1},
+        "dirty_patch": {"type": ["string", "null"], "minLength": 1},
+        "evidence_commit": {"type": ["string", "null"], "minLength": 1},
+        "implementation_prs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "required": [
+        "source_url",
+        "license",
+        "input_manifest",
+        "checksum_algorithm",
+        "original_checksums",
+        "derived_checksums",
+        "dates",
+        "exchanges",
+        "symbols",
+        "filter_command",
+        "disorder_seed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_url": {"type": ["string", "null"], "minLength": 1},
+        "license": {"type": ["string", "null"], "minLength": 1},
+        "input_manifest": {"type": ["string", "null"], "minLength": 1},
+        "checksum_algorithm": {"type": ["string", "null"], "minLength": 1},
+        "original_checksums": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "derived_checksums": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "dates": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "exchanges": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "symbols": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "filter_command": {"type": ["string", "null"], "minLength": 1},
+        "disorder_seed": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "required": [
+        "host_os",
+        "host_architecture",
+        "host_cpu",
+        "host_logical_cpus",
+        "host_memory_bytes",
+        "vm_os",
+        "vm_architecture",
+        "vm_cpus",
+        "vm_memory_bytes",
+        "storage",
+        "other_load"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "host_os": {"type": ["string", "null"], "minLength": 1},
+        "host_architecture": {"type": ["string", "null"], "minLength": 1},
+        "host_cpu": {"type": ["string", "null"], "minLength": 1},
+        "host_logical_cpus": {"type": ["integer", "null"], "minimum": 1},
+        "host_memory_bytes": {"type": ["integer", "null"], "minimum": 1},
+        "vm_os": {"type": ["string", "null"], "minLength": 1},
+        "vm_architecture": {"type": ["string", "null"], "minLength": 1},
+        "vm_cpus": {"type": ["integer", "null"], "minimum": 1},
+        "vm_memory_bytes": {"type": ["integer", "null"], "minimum": 1},
+        "storage": {"type": ["string", "null"], "minLength": 1},
+        "other_load": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "software": {
+      "type": "object",
+      "required": [
+        "container_engine",
+        "compose",
+        "java",
+        "flink",
+        "kafka",
+        "python",
+        "client_versions",
+        "image_digests",
+        "lockfiles"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "container_engine": {"type": ["string", "null"], "minLength": 1},
+        "compose": {"type": ["string", "null"], "minLength": 1},
+        "java": {"type": ["string", "null"], "minLength": 1},
+        "flink": {"type": ["string", "null"], "minLength": 1},
+        "kafka": {"type": ["string", "null"], "minLength": 1},
+        "python": {"type": ["string", "null"], "minLength": 1},
+        "client_versions": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "image_digests": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "lockfiles": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "required": [
+        "topology",
+        "node_count",
+        "service_placement",
+        "compose_project",
+        "effective_config",
+        "kafka_partitions_by_topic",
+        "flink_parallelism",
+        "taskmanagers",
+        "slots_per_taskmanager"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "topology": {"type": ["string", "null"], "minLength": 1},
+        "node_count": {"type": ["integer", "null"], "minimum": 1},
+        "service_placement": {"type": ["string", "null"], "minLength": 1},
+        "compose_project": {"type": ["string", "null"], "minLength": 1},
+        "effective_config": {"type": ["string", "null"], "minLength": 1},
+        "kafka_partitions_by_topic": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "flink_parallelism": {"type": ["integer", "null"], "minimum": 1},
+        "taskmanagers": {"type": ["integer", "null"], "minimum": 1},
+        "slots_per_taskmanager": {"type": ["integer", "null"], "minimum": 1}
+      }
+    },
+    "resources": {
+      "type": "object",
+      "required": [
+        "cpu_limits_by_service",
+        "memory_bytes_by_service",
+        "heap_limits_by_service",
+        "state_backend",
+        "checkpoint_config"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cpu_limits_by_service": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "memory_bytes_by_service": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "heap_limits_by_service": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "number", "object", "array"]}},
+        "state_backend": {"type": ["string", "null"], "minLength": 1},
+        "checkpoint_config": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "event_time": {
+      "type": "object",
+      "required": ["zone_offset", "watermark_bound_ms", "idleness_ms", "late_policy", "end_of_input_policy"],
+      "additionalProperties": false,
+      "properties": {
+        "zone_offset": {"type": ["string", "null"], "minLength": 1},
+        "watermark_bound_ms": {"type": ["integer", "null"], "minimum": 0},
+        "idleness_ms": {"type": ["integer", "null"], "minimum": 0},
+        "late_policy": {"type": ["string", "null"], "minLength": 1},
+        "end_of_input_policy": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "replay": {
+      "type": "object",
+      "required": ["argv", "mode", "target_rate", "achieved_rate", "startup_order", "report"],
+      "additionalProperties": false,
+      "properties": {
+        "argv": {"type": ["string", "null"], "minLength": 1},
+        "mode": {"type": ["string", "null"], "minLength": 1},
+        "target_rate": {"type": ["number", "null"], "minimum": 0},
+        "achieved_rate": {"type": ["number", "null"], "minimum": 0},
+        "startup_order": {"type": ["string", "null"], "minLength": 1},
+        "report": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "subscriptions": {
+      "type": "object",
+      "required": ["payload_or_file", "trader_count", "symbol_selection", "seed", "bootstrap_order"],
+      "additionalProperties": false,
+      "properties": {
+        "payload_or_file": {"type": ["string", "null"], "minLength": 1},
+        "trader_count": {"type": ["integer", "null"], "minimum": 1},
+        "symbol_selection": {"type": ["string", "null"], "minLength": 1},
+        "seed": {"type": ["integer", "null"], "minimum": 0},
+        "bootstrap_order": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "repetitions": {
+      "type": "object",
+      "required": ["configuration_group", "index", "planned_count", "completed_count", "failed_or_excluded_runs", "summary_method"],
+      "additionalProperties": false,
+      "properties": {
+        "configuration_group": {"type": ["string", "null"], "minLength": 1},
+        "index": {"type": ["integer", "null"], "minimum": 1},
+        "planned_count": {"type": ["integer", "null"], "minimum": 1},
+        "completed_count": {"type": ["integer", "null"], "minimum": 0},
+        "failed_or_excluded_runs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "summary_method": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "required": [
+        "started_at_utc",
+        "ended_at_utc",
+        "interval_definition",
+        "warmup_seconds",
+        "drain_exclusion",
+        "throughput_numerator",
+        "throughput_denominator",
+        "latency_boundaries",
+        "clock_source_and_uncertainty",
+        "oracle_admission_profile"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "started_at_utc": {"type": ["string", "null"], "minLength": 1},
+        "ended_at_utc": {"type": ["string", "null"], "minLength": 1},
+        "interval_definition": {"type": ["string", "null"], "minLength": 1},
+        "warmup_seconds": {"type": ["number", "null"], "minimum": 0},
+        "drain_exclusion": {"type": ["string", "null"], "minLength": 1},
+        "throughput_numerator": {"type": ["string", "null"], "minLength": 1},
+        "throughput_denominator": {"type": ["string", "null"], "minLength": 1},
+        "latency_boundaries": {"type": ["string", "null"], "minLength": 1},
+        "clock_source_and_uncertainty": {"type": ["string", "null"], "minLength": 1},
+        "oracle_admission_profile": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "results": {
+      "type": "object",
+      "required": [
+        "raw_locations",
+        "checksum_manifest",
+        "command_log",
+        "effective_configuration",
+        "reconciliation",
+        "oracle_comparison",
+        "summary_tables",
+        "figures"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "raw_locations": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "checksum_manifest": {"type": ["string", "null"], "minLength": 1},
+        "command_log": {"type": ["string", "null"], "minLength": 1},
+        "effective_configuration": {"type": ["string", "null"], "minLength": 1},
+        "reconciliation": {"type": ["string", "null"], "minLength": 1},
+        "oracle_comparison": {"type": ["string", "null"], "minLength": 1},
+        "summary_tables": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "figures": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Trading trends experiment record",
+  "description": "Required provenance fields; null is explicitly unknown. Shape validation does not certify completeness."
+}

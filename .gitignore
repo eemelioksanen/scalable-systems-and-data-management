@@ -36,3 +36,8 @@ analysis/out/.tmp/
 viz/web/node_modules/
 viz/web/dist/
 viz/src/main/resources/static/
+
+# Report outputs and task-local review evidence
+report/build/
+output/pdf/
+.scratch/
