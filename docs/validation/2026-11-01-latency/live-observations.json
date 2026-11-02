@@ -1,0 +1,2648 @@
+[
+  {
+    "at": 1793566923.76724,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793566923.778,
+            "1636359254400"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793566923.778,
+            "1636359254400"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793566923.781,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793566923.783,
+            "34133"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793566923.784,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793566923.786,
+            "0.980112528725078"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "889.815ms",
+        "cpu_percent": "1.26%",
+        "avg_cpu": "1.26%",
+        "mem_usage": "49.35MB / 8.29GB",
+        "mem_percent": "0.60%",
+        "net_io": "21.9kB / 384.1kB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "361.092ms",
+        "cpu_percent": "0.51%",
+        "avg_cpu": "0.51%",
+        "mem_usage": "183.4MB / 8.29GB",
+        "mem_percent": "2.21%",
+        "net_io": "833.5kB / 46.49kB",
+        "block_io": "140MB / 458.8kB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "11.43678s",
+        "cpu_percent": "16.24%",
+        "avg_cpu": "16.24%",
+        "mem_usage": "497MB / 8.29GB",
+        "mem_percent": "6.00%",
+        "net_io": "1.502MB / 25.06MB",
+        "block_io": "1.102MB / 70.85MB",
+        "pids": "112"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "30.555767s",
+        "cpu_percent": "43.35%",
+        "avg_cpu": "43.35%",
+        "mem_usage": "824.9MB / 8.29GB",
+        "mem_percent": "9.95%",
+        "net_io": "15.86MB / 18.41MB",
+        "block_io": "14.91MB / 11.28MB",
+        "pids": "120"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "2.27595s",
+        "cpu_percent": "3.24%",
+        "avg_cpu": "3.24%",
+        "mem_usage": "412.4MB / 8.29GB",
+        "mem_percent": "4.98%",
+        "net_io": "21.67MB / 163.1kB",
+        "block_io": "303.9MB / 86.19MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "17.029502s",
+        "cpu_percent": "24.21%",
+        "avg_cpu": "24.21%",
+        "mem_usage": "760.5MB / 8.29GB",
+        "mem_percent": "9.17%",
+        "net_io": "41.43MB / 4.718MB",
+        "block_io": "0B / 46.27MB",
+        "pids": "123"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "2.503131s",
+        "cpu_percent": "4.15%",
+        "avg_cpu": "4.15%",
+        "mem_usage": "183.5MB / 8.29GB",
+        "mem_percent": "2.21%",
+        "net_io": "774.3kB / 80.93kB",
+        "block_io": "29.02MB / 254kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "6.313403s",
+        "cpu_percent": "13.32%",
+        "avg_cpu": "13.32%",
+        "mem_usage": "231.9MB / 8.29GB",
+        "mem_percent": "2.80%",
+        "net_io": "1.176MB / 12.87MB",
+        "block_io": "0B / 241.7kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793566953.885973,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793566953.885,
+            "1636362284436"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793566953.885,
+            "1636362284436"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793566953.887,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793566953.888,
+            "46978"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793566953.889,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793566953.891,
+            "0.9860871561815703"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "1.407921s",
+        "cpu_percent": "1.40%",
+        "avg_cpu": "1.40%",
+        "mem_usage": "49.3MB / 8.29GB",
+        "mem_percent": "0.59%",
+        "net_io": "27.45kB / 552.1kB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "456.52ms",
+        "cpu_percent": "0.45%",
+        "avg_cpu": "0.45%",
+        "mem_usage": "185.4MB / 8.29GB",
+        "mem_percent": "2.24%",
+        "net_io": "1.224MB / 66.9kB",
+        "block_io": "140MB / 671.7kB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "12.3067s",
+        "cpu_percent": "12.24%",
+        "avg_cpu": "12.24%",
+        "mem_usage": "479.3MB / 8.29GB",
+        "mem_percent": "5.78%",
+        "net_io": "2.27MB / 25.09MB",
+        "block_io": "1.102MB / 70.86MB",
+        "pids": "111"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "42.568682s",
+        "cpu_percent": "42.32%",
+        "avg_cpu": "42.32%",
+        "mem_usage": "963.1MB / 8.29GB",
+        "mem_percent": "11.62%",
+        "net_io": "24.47MB / 28.45MB",
+        "block_io": "14.96MB / 19.28MB",
+        "pids": "143"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "2.371439s",
+        "cpu_percent": "2.36%",
+        "avg_cpu": "2.36%",
+        "mem_usage": "412.4MB / 8.29GB",
+        "mem_percent": "4.97%",
+        "net_io": "21.67MB / 164.5kB",
+        "block_io": "303.9MB / 86.22MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "21.039872s",
+        "cpu_percent": "20.94%",
+        "avg_cpu": "20.94%",
+        "mem_usage": "767.9MB / 8.29GB",
+        "mem_percent": "9.26%",
+        "net_io": "50.29MB / 7.392MB",
+        "block_io": "0B / 46.29MB",
+        "pids": "123"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "3.09893s",
+        "cpu_percent": "3.42%",
+        "avg_cpu": "3.42%",
+        "mem_usage": "184.6MB / 8.29GB",
+        "mem_percent": "2.23%",
+        "net_io": "1.243MB / 127.8kB",
+        "block_io": "29.02MB / 266.2kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "9.072789s",
+        "cpu_percent": "11.71%",
+        "avg_cpu": "11.71%",
+        "mem_usage": "232.1MB / 8.29GB",
+        "mem_percent": "2.80%",
+        "net_io": "1.876MB / 19.71MB",
+        "block_io": "0B / 258kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793566983.991209,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793566983.992,
+            "1636365260817"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793566983.992,
+            "1636365260817"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793566983.996,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793566983.999,
+            "58524"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793566984.003,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793566984.006,
+            "0.9897951001888649"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "2.01498s",
+        "cpu_percent": "1.54%",
+        "avg_cpu": "1.54%",
+        "mem_usage": "48.92MB / 8.29GB",
+        "mem_percent": "0.59%",
+        "net_io": "33.2kB / 719.9kB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "570.518ms",
+        "cpu_percent": "0.44%",
+        "avg_cpu": "0.44%",
+        "mem_usage": "185.7MB / 8.29GB",
+        "mem_percent": "2.24%",
+        "net_io": "1.613MB / 87.15kB",
+        "block_io": "140MB / 913.4kB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "13.094553s",
+        "cpu_percent": "10.02%",
+        "avg_cpu": "10.02%",
+        "mem_usage": "489.4MB / 8.29GB",
+        "mem_percent": "5.90%",
+        "net_io": "3.037MB / 25.12MB",
+        "block_io": "1.102MB / 70.88MB",
+        "pids": "110"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "53.371042s",
+        "cpu_percent": "40.82%",
+        "avg_cpu": "40.82%",
+        "mem_usage": "847.7MB / 8.29GB",
+        "mem_percent": "10.23%",
+        "net_io": "32.52MB / 37.81MB",
+        "block_io": "14.96MB / 26.44MB",
+        "pids": "120"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "2.586564s",
+        "cpu_percent": "1.98%",
+        "avg_cpu": "1.98%",
+        "mem_usage": "401.7MB / 8.29GB",
+        "mem_percent": "4.85%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.25MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "25.086265s",
+        "cpu_percent": "19.21%",
+        "avg_cpu": "19.21%",
+        "mem_usage": "733.9MB / 8.29GB",
+        "mem_percent": "8.85%",
+        "net_io": "58.53MB / 10.02MB",
+        "block_io": "0B / 46.31MB",
+        "pids": "122"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "3.755724s",
+        "cpu_percent": "3.11%",
+        "avg_cpu": "3.11%",
+        "mem_usage": "185.6MB / 8.29GB",
+        "mem_percent": "2.24%",
+        "net_io": "1.687MB / 175.1kB",
+        "block_io": "29.02MB / 278.5kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "11.62333s",
+        "cpu_percent": "10.80%",
+        "avg_cpu": "10.80%",
+        "mem_usage": "232.5MB / 8.29GB",
+        "mem_percent": "2.80%",
+        "net_io": "2.555MB / 26.03MB",
+        "block_io": "0B / 274.4kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567014.1367412,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567014.139,
+            "1636368299116"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567014.139,
+            "1636368299116"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567014.145,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567014.149,
+            "67414"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567014.154,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567014.159,
+            "0.9919776200097437"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "2.576059s",
+        "cpu_percent": "1.60%",
+        "avg_cpu": "1.60%",
+        "mem_usage": "51.46MB / 8.29GB",
+        "mem_percent": "0.62%",
+        "net_io": "38.74kB / 888.4kB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "677.512ms",
+        "cpu_percent": "0.42%",
+        "avg_cpu": "0.42%",
+        "mem_usage": "186.4MB / 8.29GB",
+        "mem_percent": "2.25%",
+        "net_io": "2.001MB / 107.6kB",
+        "block_io": "140MB / 1.102MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "13.847829s",
+        "cpu_percent": "8.61%",
+        "avg_cpu": "8.61%",
+        "mem_usage": "514.8MB / 8.29GB",
+        "mem_percent": "6.21%",
+        "net_io": "3.803MB / 25.15MB",
+        "block_io": "1.102MB / 70.9MB",
+        "pids": "111"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "1m3.792489s",
+        "cpu_percent": "39.65%",
+        "avg_cpu": "39.65%",
+        "mem_usage": "857MB / 8.29GB",
+        "mem_percent": "10.34%",
+        "net_io": "39.58MB / 46.1MB",
+        "block_io": "14.96MB / 32.83MB",
+        "pids": "120"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "2.680073s",
+        "cpu_percent": "1.67%",
+        "avg_cpu": "1.67%",
+        "mem_usage": "401.7MB / 8.29GB",
+        "mem_percent": "4.85%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.28MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "29.087122s",
+        "cpu_percent": "18.09%",
+        "avg_cpu": "18.09%",
+        "mem_usage": "751.4MB / 8.29GB",
+        "mem_percent": "9.06%",
+        "net_io": "65.73MB / 12.56MB",
+        "block_io": "0B / 46.33MB",
+        "pids": "122"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "4.185246s",
+        "cpu_percent": "2.78%",
+        "avg_cpu": "2.78%",
+        "mem_usage": "186MB / 8.29GB",
+        "mem_percent": "2.24%",
+        "net_io": "2.136MB / 222.5kB",
+        "block_io": "29.02MB / 290.8kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "13.854504s",
+        "cpu_percent": "10.05%",
+        "avg_cpu": "10.05%",
+        "mem_usage": "233.1MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "3.204MB / 31.44MB",
+        "block_io": "0B / 290.8kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567044.302164,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567044.303,
+            "1636371276433"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567044.303,
+            "1636371276433"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567044.306,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567044.308,
+            "78335"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567044.31,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567044.312,
+            "0.9936601880258357"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "3.129s",
+        "cpu_percent": "1.64%",
+        "avg_cpu": "1.64%",
+        "mem_usage": "51.14MB / 8.29GB",
+        "mem_percent": "0.62%",
+        "net_io": "44.08kB / 1.056MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "789.138ms",
+        "cpu_percent": "0.41%",
+        "avg_cpu": "0.41%",
+        "mem_usage": "186.6MB / 8.29GB",
+        "mem_percent": "2.25%",
+        "net_io": "2.39MB / 128kB",
+        "block_io": "140MB / 1.323MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "14.573736s",
+        "cpu_percent": "7.63%",
+        "avg_cpu": "7.63%",
+        "mem_usage": "545MB / 8.29GB",
+        "mem_percent": "6.57%",
+        "net_io": "4.57MB / 25.18MB",
+        "block_io": "1.102MB / 70.91MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "1m14.3388s",
+        "cpu_percent": "38.92%",
+        "avg_cpu": "38.92%",
+        "mem_usage": "855.9MB / 8.29GB",
+        "mem_percent": "10.33%",
+        "net_io": "47.63MB / 55.46MB",
+        "block_io": "14.96MB / 38.85MB",
+        "pids": "123"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "2.824971s",
+        "cpu_percent": "1.48%",
+        "avg_cpu": "1.48%",
+        "mem_usage": "401.5MB / 8.29GB",
+        "mem_percent": "4.84%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.31MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "33.391641s",
+        "cpu_percent": "17.49%",
+        "avg_cpu": "17.49%",
+        "mem_usage": "764.6MB / 8.29GB",
+        "mem_percent": "9.22%",
+        "net_io": "73.93MB / 15.2MB",
+        "block_io": "0B / 46.34MB",
+        "pids": "120"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "4.795717s",
+        "cpu_percent": "2.65%",
+        "avg_cpu": "2.65%",
+        "mem_usage": "186.2MB / 8.29GB",
+        "mem_percent": "2.25%",
+        "net_io": "2.613MB / 270.1kB",
+        "block_io": "29.02MB / 303.1kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "16.338621s",
+        "cpu_percent": "9.73%",
+        "avg_cpu": "9.73%",
+        "mem_usage": "232.7MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "3.884MB / 37.74MB",
+        "block_io": "0B / 307.2kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567074.421162,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567074.425,
+            "1636374257073"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567074.425,
+            "1636374257073"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567074.43,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567074.435,
+            "87167"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567074.439,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567074.443,
+            "0.9936742717513073"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "3.697348s",
+        "cpu_percent": "1.67%",
+        "avg_cpu": "1.67%",
+        "mem_usage": "50.45MB / 8.29GB",
+        "mem_percent": "0.61%",
+        "net_io": "49.48kB / 1.225MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "888.782ms",
+        "cpu_percent": "0.40%",
+        "avg_cpu": "0.40%",
+        "mem_usage": "186.7MB / 8.29GB",
+        "mem_percent": "2.25%",
+        "net_io": "2.779MB / 148.1kB",
+        "block_io": "140MB / 1.548MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "15.291539s",
+        "cpu_percent": "6.91%",
+        "avg_cpu": "6.91%",
+        "mem_usage": "573.1MB / 8.29GB",
+        "mem_percent": "6.91%",
+        "net_io": "5.336MB / 25.21MB",
+        "block_io": "1.102MB / 70.93MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "1m25.634966s",
+        "cpu_percent": "38.72%",
+        "avg_cpu": "38.72%",
+        "mem_usage": "851.1MB / 8.29GB",
+        "mem_percent": "10.27%",
+        "net_io": "54.83MB / 63.91MB",
+        "block_io": "14.96MB / 45.3MB",
+        "pids": "120"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "2.929596s",
+        "cpu_percent": "1.33%",
+        "avg_cpu": "1.33%",
+        "mem_usage": "401.5MB / 8.29GB",
+        "mem_percent": "4.84%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.34MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "37.110698s",
+        "cpu_percent": "16.79%",
+        "avg_cpu": "16.79%",
+        "mem_usage": "762.8MB / 8.29GB",
+        "mem_percent": "9.20%",
+        "net_io": "81.26MB / 17.78MB",
+        "block_io": "0B / 46.36MB",
+        "pids": "120"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "5.199963s",
+        "cpu_percent": "2.46%",
+        "avg_cpu": "2.46%",
+        "mem_usage": "186.4MB / 8.29GB",
+        "mem_percent": "2.25%",
+        "net_io": "3.073MB / 316.6kB",
+        "block_io": "29.02MB / 315.4kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "18.579687s",
+        "cpu_percent": "9.38%",
+        "avg_cpu": "9.38%",
+        "mem_usage": "232.5MB / 8.29GB",
+        "mem_percent": "2.80%",
+        "net_io": "4.539MB / 43.26MB",
+        "block_io": "0B / 323.6kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567104.591295,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567104.595,
+            "1636377284039"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567104.595,
+            "1636377284039"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567104.6,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567104.604,
+            "96964"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567104.608,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567104.611,
+            "0.9942186992512667"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "4.315822s",
+        "cpu_percent": "1.72%",
+        "avg_cpu": "1.72%",
+        "mem_usage": "51.42MB / 8.29GB",
+        "mem_percent": "0.62%",
+        "net_io": "55.17kB / 1.393MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "992.25ms",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "186.8MB / 8.29GB",
+        "mem_percent": "2.25%",
+        "net_io": "3.168MB / 168.2kB",
+        "block_io": "140MB / 1.548MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "16.009335s",
+        "cpu_percent": "6.37%",
+        "avg_cpu": "6.37%",
+        "mem_usage": "609MB / 8.29GB",
+        "mem_percent": "7.35%",
+        "net_io": "6.103MB / 25.24MB",
+        "block_io": "1.102MB / 70.94MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "1m35.883514s",
+        "cpu_percent": "38.15%",
+        "avg_cpu": "38.15%",
+        "mem_usage": "853.2MB / 8.29GB",
+        "mem_percent": "10.29%",
+        "net_io": "63.15MB / 73.58MB",
+        "block_io": "14.96MB / 51.77MB",
+        "pids": "120"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.09918s",
+        "cpu_percent": "1.23%",
+        "avg_cpu": "1.23%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.36MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "40.753586s",
+        "cpu_percent": "16.22%",
+        "avg_cpu": "16.22%",
+        "mem_usage": "758.5MB / 8.29GB",
+        "mem_percent": "9.15%",
+        "net_io": "89.77MB / 20.44MB",
+        "block_io": "0B / 46.37MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "5.83228s",
+        "cpu_percent": "2.42%",
+        "avg_cpu": "2.42%",
+        "mem_usage": "195.1MB / 8.29GB",
+        "mem_percent": "2.35%",
+        "net_io": "3.551MB / 363.4kB",
+        "block_io": "29.02MB / 327.7kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "21.093253s",
+        "cpu_percent": "9.24%",
+        "avg_cpu": "9.24%",
+        "mem_usage": "233.1MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "5.227MB / 49.82MB",
+        "block_io": "0B / 340kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567134.7615669,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567134.764,
+            "1636380284103"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567134.764,
+            "1636380284103"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567134.769,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567134.772,
+            "114563"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567134.776,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567134.779,
+            "0.9945203703513659"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "4.8805s",
+        "cpu_percent": "1.73%",
+        "avg_cpu": "1.73%",
+        "mem_usage": "52.67MB / 8.29GB",
+        "mem_percent": "0.64%",
+        "net_io": "60.57kB / 1.561MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "1.10163s",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "186.8MB / 8.29GB",
+        "mem_percent": "2.25%",
+        "net_io": "3.557MB / 188.6kB",
+        "block_io": "140MB / 1.769MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "16.782711s",
+        "cpu_percent": "5.96%",
+        "avg_cpu": "5.96%",
+        "mem_usage": "636.4MB / 8.29GB",
+        "mem_percent": "7.68%",
+        "net_io": "6.87MB / 25.26MB",
+        "block_io": "1.102MB / 70.96MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "1m47.264487s",
+        "cpu_percent": "38.10%",
+        "avg_cpu": "38.10%",
+        "mem_usage": "856.2MB / 8.29GB",
+        "mem_percent": "10.33%",
+        "net_io": "77.22MB / 89.43MB",
+        "block_io": "14.96MB / 62.21MB",
+        "pids": "120"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.199972s",
+        "cpu_percent": "1.14%",
+        "avg_cpu": "1.14%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.39MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "45.389719s",
+        "cpu_percent": "16.13%",
+        "avg_cpu": "16.13%",
+        "mem_usage": "764.1MB / 8.29GB",
+        "mem_percent": "9.22%",
+        "net_io": "104.3MB / 23.58MB",
+        "block_io": "0B / 46.39MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "6.341727s",
+        "cpu_percent": "2.34%",
+        "avg_cpu": "2.34%",
+        "mem_usage": "195.4MB / 8.29GB",
+        "mem_percent": "2.36%",
+        "net_io": "4.042MB / 410.4kB",
+        "block_io": "29.02MB / 340kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "25.089785s",
+        "cpu_percent": "9.71%",
+        "avg_cpu": "9.71%",
+        "mem_usage": "232.7MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "6.096MB / 61.65MB",
+        "block_io": "0B / 356.4kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567164.931045,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567164.935,
+            "1636383299431"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567164.935,
+            "1636383299431"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567164.941,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567164.946,
+            "130269"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567164.949,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567164.953,
+            "0.9947142201311076"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "5.440729s",
+        "cpu_percent": "1.75%",
+        "avg_cpu": "1.75%",
+        "mem_usage": "53.04MB / 8.29GB",
+        "mem_percent": "0.64%",
+        "net_io": "66.04kB / 1.729MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "1.224304s",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "184.1MB / 8.29GB",
+        "mem_percent": "2.22%",
+        "net_io": "3.947MB / 208.9kB",
+        "block_io": "140MB / 2.011MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "17.485153s",
+        "cpu_percent": "5.61%",
+        "avg_cpu": "5.61%",
+        "mem_usage": "678.2MB / 8.29GB",
+        "mem_percent": "8.18%",
+        "net_io": "7.636MB / 25.29MB",
+        "block_io": "1.102MB / 70.98MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "1m59.246523s",
+        "cpu_percent": "38.26%",
+        "avg_cpu": "38.26%",
+        "mem_usage": "853.1MB / 8.29GB",
+        "mem_percent": "10.29%",
+        "net_io": "88.61MB / 102.4MB",
+        "block_io": "15MB / 72.85MB",
+        "pids": "121"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.316064s",
+        "cpu_percent": "1.06%",
+        "avg_cpu": "1.06%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.42MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "49.459313s",
+        "cpu_percent": "15.88%",
+        "avg_cpu": "15.88%",
+        "mem_usage": "763.6MB / 8.29GB",
+        "mem_percent": "9.21%",
+        "net_io": "116MB / 26.5MB",
+        "block_io": "0B / 46.41MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "6.623218s",
+        "cpu_percent": "2.20%",
+        "avg_cpu": "2.20%",
+        "mem_usage": "195.4MB / 8.29GB",
+        "mem_percent": "2.36%",
+        "net_io": "4.524MB / 458.3kB",
+        "block_io": "29.02MB / 352.3kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "28.392365s",
+        "cpu_percent": "9.84%",
+        "avg_cpu": "9.84%",
+        "mem_usage": "232.8MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "6.878MB / 71.01MB",
+        "block_io": "0B / 372.7kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567195.0650501,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567195.068,
+            "1636385765029"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567195.068,
+            "1636385765029"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567195.073,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567195.078,
+            "146426"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567195.082,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567195.085,
+            "0.9940787943835341"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "6.057772s",
+        "cpu_percent": "1.77%",
+        "avg_cpu": "1.77%",
+        "mem_usage": "51.1MB / 8.29GB",
+        "mem_percent": "0.62%",
+        "net_io": "71.38kB / 1.897MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "14"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "1.331428s",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "184.1MB / 8.29GB",
+        "mem_percent": "2.22%",
+        "net_io": "4.338MB / 228.9kB",
+        "block_io": "140MB / 2.212MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "18.098097s",
+        "cpu_percent": "5.30%",
+        "avg_cpu": "5.30%",
+        "mem_usage": "707.7MB / 8.29GB",
+        "mem_percent": "8.54%",
+        "net_io": "8.405MB / 25.32MB",
+        "block_io": "1.102MB / 70.99MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "2m8.414438s",
+        "cpu_percent": "37.57%",
+        "avg_cpu": "37.57%",
+        "mem_usage": "853.6MB / 8.29GB",
+        "mem_percent": "10.30%",
+        "net_io": "95.94MB / 110.9MB",
+        "block_io": "15MB / 82.39MB",
+        "pids": "121"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.413001s",
+        "cpu_percent": "1.00%",
+        "avg_cpu": "1.00%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.45MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "52.698789s",
+        "cpu_percent": "15.42%",
+        "avg_cpu": "15.42%",
+        "mem_usage": "773.8MB / 8.29GB",
+        "mem_percent": "9.33%",
+        "net_io": "123.6MB / 28.83MB",
+        "block_io": "0B / 46.42MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "7.038995s",
+        "cpu_percent": "2.12%",
+        "avg_cpu": "2.12%",
+        "mem_usage": "201.3MB / 8.29GB",
+        "mem_percent": "2.43%",
+        "net_io": "4.927MB / 502.5kB",
+        "block_io": "29.02MB / 364.5kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "30.922056s",
+        "cpu_percent": "9.70%",
+        "avg_cpu": "9.70%",
+        "mem_usage": "233.2MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "7.432MB / 76.92MB",
+        "block_io": "0B / 389.1kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567225.232047,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567225.236,
+            "1636387501015"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567225.236,
+            "1636387501015"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567225.241,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567225.244,
+            "147120"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567225.248,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567225.251,
+            "0.9966952477534804"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "6.638891s",
+        "cpu_percent": "1.78%",
+        "avg_cpu": "1.78%",
+        "mem_usage": "52.82MB / 8.29GB",
+        "mem_percent": "0.64%",
+        "net_io": "76.71kB / 2.066MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "15"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "1.456293s",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "184.7MB / 8.29GB",
+        "mem_percent": "2.23%",
+        "net_io": "4.727MB / 248.3kB",
+        "block_io": "140MB / 2.454MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "18.687715s",
+        "cpu_percent": "5.02%",
+        "avg_cpu": "5.02%",
+        "mem_usage": "733.3MB / 8.29GB",
+        "mem_percent": "8.85%",
+        "net_io": "9.173MB / 25.35MB",
+        "block_io": "1.102MB / 71.01MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "2m14.318586s",
+        "cpu_percent": "36.11%",
+        "avg_cpu": "36.11%",
+        "mem_usage": "852.8MB / 8.29GB",
+        "mem_percent": "10.29%",
+        "net_io": "96.13MB / 111.2MB",
+        "block_io": "15MB / 83.4MB",
+        "pids": "121"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.577864s",
+        "cpu_percent": "0.96%",
+        "avg_cpu": "0.96%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.47MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "53.818318s",
+        "cpu_percent": "14.47%",
+        "avg_cpu": "14.47%",
+        "mem_usage": "772MB / 8.29GB",
+        "mem_percent": "9.31%",
+        "net_io": "123.7MB / 29.85MB",
+        "block_io": "0B / 46.44MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "7.266978s",
+        "cpu_percent": "2.01%",
+        "avg_cpu": "2.01%",
+        "mem_usage": "201.9MB / 8.29GB",
+        "mem_percent": "2.44%",
+        "net_io": "5.017MB / 532.6kB",
+        "block_io": "29.02MB / 376.8kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "31.095135s",
+        "cpu_percent": "8.91%",
+        "avg_cpu": "8.91%",
+        "mem_usage": "233MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "7.454MB / 77MB",
+        "block_io": "0B / 405.5kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567255.401027,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567255.402,
+            "1636394204295"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567255.402,
+            "1636394204295"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567255.405,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567255.408,
+            "147315"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567255.411,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567255.413,
+            "0.9975620337857808"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "7.213759s",
+        "cpu_percent": "1.79%",
+        "avg_cpu": "1.79%",
+        "mem_usage": "50.83MB / 8.29GB",
+        "mem_percent": "0.61%",
+        "net_io": "82.05kB / 2.234MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "15"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "1.556612s",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "184.1MB / 8.29GB",
+        "mem_percent": "2.22%",
+        "net_io": "5.115MB / 267.5kB",
+        "block_io": "140MB / 2.662MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "19.22755s",
+        "cpu_percent": "4.78%",
+        "avg_cpu": "4.78%",
+        "mem_usage": "761.3MB / 8.29GB",
+        "mem_percent": "9.18%",
+        "net_io": "9.94MB / 25.38MB",
+        "block_io": "1.102MB / 71.03MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "2m21.094499s",
+        "cpu_percent": "35.09%",
+        "avg_cpu": "35.09%",
+        "mem_usage": "853.4MB / 8.29GB",
+        "mem_percent": "10.29%",
+        "net_io": "96.27MB / 111.4MB",
+        "block_io": "15MB / 84.1MB",
+        "pids": "121"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.66864s",
+        "cpu_percent": "0.91%",
+        "avg_cpu": "0.91%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.5MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "54.856797s",
+        "cpu_percent": "13.65%",
+        "avg_cpu": "13.65%",
+        "mem_usage": "772.7MB / 8.29GB",
+        "mem_percent": "9.32%",
+        "net_io": "123.8MB / 30.85MB",
+        "block_io": "0B / 46.46MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "7.465861s",
+        "cpu_percent": "1.90%",
+        "avg_cpu": "1.90%",
+        "mem_usage": "201.5MB / 8.29GB",
+        "mem_percent": "2.43%",
+        "net_io": "5.077MB / 558.9kB",
+        "block_io": "29.02MB / 389.1kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "31.20321s",
+        "cpu_percent": "8.23%",
+        "avg_cpu": "8.23%",
+        "mem_usage": "233.5MB / 8.29GB",
+        "mem_percent": "2.82%",
+        "net_io": "7.47MB / 77.05MB",
+        "block_io": "0B / 421.9kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567285.545147,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567285.547,
+            "1636396829107"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567285.547,
+            "1636396829107"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567285.552,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567285.555,
+            "147664"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567285.559,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567285.562,
+            "0.9987665319981341"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "7.795692s",
+        "cpu_percent": "1.80%",
+        "avg_cpu": "1.80%",
+        "mem_usage": "51.96MB / 8.29GB",
+        "mem_percent": "0.63%",
+        "net_io": "87.45kB / 2.401MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "15"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "1.683299s",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "184.6MB / 8.29GB",
+        "mem_percent": "2.23%",
+        "net_io": "5.501MB / 286.3kB",
+        "block_io": "140MB / 2.904MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "19.821047s",
+        "cpu_percent": "4.59%",
+        "avg_cpu": "4.59%",
+        "mem_usage": "783.2MB / 8.29GB",
+        "mem_percent": "9.45%",
+        "net_io": "10.71MB / 25.41MB",
+        "block_io": "1.102MB / 71.04MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "2m26.881297s",
+        "cpu_percent": "33.98%",
+        "avg_cpu": "33.98%",
+        "mem_usage": "853.2MB / 8.29GB",
+        "mem_percent": "10.29%",
+        "net_io": "96.47MB / 111.7MB",
+        "block_io": "15MB / 84.72MB",
+        "pids": "121"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.7683s",
+        "cpu_percent": "0.87%",
+        "avg_cpu": "0.87%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.53MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "56.02645s",
+        "cpu_percent": "12.96%",
+        "avg_cpu": "12.96%",
+        "mem_usage": "758MB / 8.29GB",
+        "mem_percent": "9.14%",
+        "net_io": "124MB / 31.87MB",
+        "block_io": "0B / 46.48MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "7.913533s",
+        "cpu_percent": "1.87%",
+        "avg_cpu": "1.87%",
+        "mem_usage": "204.4MB / 8.29GB",
+        "mem_percent": "2.47%",
+        "net_io": "5.167MB / 592.8kB",
+        "block_io": "29.02MB / 401.4kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "31.372464s",
+        "cpu_percent": "7.67%",
+        "avg_cpu": "7.67%",
+        "mem_usage": "233.2MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "7.497MB / 77.14MB",
+        "block_io": "0B / 434.2kB",
+        "pids": "27"
+      }
+    ]
+  },
+  {
+    "at": 1793567315.7144582,
+    "queries": {
+      "wm": [
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "0",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_0_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567315.717,
+            "1636399934330"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+            "host": "10_89_1_6",
+            "instance": "10.89.1.6:9249",
+            "job": "flink",
+            "job_id": "32c0dc558ff08af89e8357bf07b5468d",
+            "job_name": "trading_trends",
+            "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+            "operator_name": "q1_ema",
+            "subtask_index": "1",
+            "task_attempt_id": "657b51df01ab5023098282480cb7700d_1877e02b13cc07282565b290dd39ae5b_1_0",
+            "task_attempt_num": "0",
+            "task_id": "1877e02b13cc07282565b290dd39ae5b",
+            "task_name": "q1_ema",
+            "tm_id": "10_89_1_6:33305_0caab5"
+          },
+          "value": [
+            1793567315.717,
+            "1636399934330"
+          ]
+        }
+      ],
+      "lag": [
+        {
+          "metric": {},
+          "value": [
+            1793567315.723,
+            "0"
+          ]
+        }
+      ],
+      "read": [
+        {
+          "metric": {},
+          "value": [
+            1793567315.727,
+            "148081"
+          ]
+        }
+      ],
+      "backpressure": [
+        {
+          "metric": {},
+          "value": [
+            1793567315.732,
+            "0"
+          ]
+        }
+      ],
+      "brokerIdle": [
+        {
+          "metric": {
+            "__name__": "kafka_server_request_handler_avg_idle_ratio",
+            "instance": "kafka:9404",
+            "job": "kafka"
+          },
+          "value": [
+            1793567315.736,
+            "0.9991377672557197"
+          ]
+        }
+      ]
+    },
+    "stats": [
+      {
+        "id": "20868a8d2be5",
+        "name": "issue37-latency-cadvisor-1",
+        "cpu_time": "8.394299s",
+        "cpu_percent": "1.81%",
+        "avg_cpu": "1.81%",
+        "mem_usage": "52.79MB / 8.29GB",
+        "mem_percent": "0.64%",
+        "net_io": "92.78kB / 2.569MB",
+        "block_io": "32.3MB / 0B",
+        "pids": "15"
+      },
+      {
+        "id": "b05d55ab5418",
+        "name": "issue37-latency-prometheus-1",
+        "cpu_time": "1.79006s",
+        "cpu_percent": "0.39%",
+        "avg_cpu": "0.39%",
+        "mem_usage": "185.6MB / 8.29GB",
+        "mem_percent": "2.24%",
+        "net_io": "5.887MB / 305.1kB",
+        "block_io": "140MB / 3.092MB",
+        "pids": "13"
+      },
+      {
+        "id": "f1163843f014",
+        "name": "issue37-latency-jobmanager-1",
+        "cpu_time": "20.453412s",
+        "cpu_percent": "4.42%",
+        "avg_cpu": "4.42%",
+        "mem_usage": "783.6MB / 8.29GB",
+        "mem_percent": "9.45%",
+        "net_io": "11.47MB / 25.44MB",
+        "block_io": "1.102MB / 71.06MB",
+        "pids": "109"
+      },
+      {
+        "id": "87717b9285c0",
+        "name": "issue37-latency-kafka-1",
+        "cpu_time": "2m32.79237s",
+        "cpu_percent": "33.04%",
+        "avg_cpu": "33.04%",
+        "mem_usage": "853.8MB / 8.29GB",
+        "mem_percent": "10.30%",
+        "net_io": "96.66MB / 111.9MB",
+        "block_io": "15MB / 85.41MB",
+        "pids": "121"
+      },
+      {
+        "id": "912120e7a13d",
+        "name": "issue37-latency-grafana-1",
+        "cpu_time": "3.861034s",
+        "cpu_percent": "0.84%",
+        "avg_cpu": "0.84%",
+        "mem_usage": "392.2MB / 8.29GB",
+        "mem_percent": "4.73%",
+        "net_io": "21.67MB / 164.6kB",
+        "block_io": "303.9MB / 86.56MB",
+        "pids": "21"
+      },
+      {
+        "id": "c56bbc6f7f2a",
+        "name": "issue37-latency-taskmanager-1",
+        "cpu_time": "57.214901s",
+        "cpu_percent": "12.37%",
+        "avg_cpu": "12.37%",
+        "mem_usage": "762.9MB / 8.29GB",
+        "mem_percent": "9.20%",
+        "net_io": "124.1MB / 32.88MB",
+        "block_io": "0B / 46.49MB",
+        "pids": "118"
+      },
+      {
+        "id": "760d441668ea",
+        "name": "issue37-latency-viz-1",
+        "cpu_time": "8.124049s",
+        "cpu_percent": "1.80%",
+        "avg_cpu": "1.80%",
+        "mem_usage": "204.4MB / 8.29GB",
+        "mem_percent": "2.47%",
+        "net_io": "5.254MB / 625.8kB",
+        "block_io": "29.02MB / 413.7kB",
+        "pids": "39"
+      },
+      {
+        "id": "cbce83bd36f2",
+        "name": "issue37-latency-subset12-live-100x-20261101T210052Z-r1-replay",
+        "cpu_time": "31.54927s",
+        "cpu_percent": "7.18%",
+        "avg_cpu": "7.18%",
+        "mem_usage": "233MB / 8.29GB",
+        "mem_percent": "2.81%",
+        "net_io": "7.525MB / 77.23MB",
+        "block_io": "0B / 450.6kB",
+        "pids": "27"
+      }
+    ]
+  }
+]

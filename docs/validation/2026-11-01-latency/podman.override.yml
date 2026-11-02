@@ -1,0 +1,15 @@
+services:
+  kafka:
+    environment:
+      KAFKA_HEAP_OPTS: -Xms512m -Xmx512m
+  producer:
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx512m
+  cadvisor:
+    command:
+      - --docker_only=false
+      - --housekeeping_interval=5s
+      - --enable_metrics=cpu,memory,network
+      - --store_container_labels=false
+    volumes: !override
+      - /sys:/sys:ro

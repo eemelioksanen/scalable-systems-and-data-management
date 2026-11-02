@@ -1,0 +1,13 @@
+Java: Maven 3.9 / Eclipse Temurin 17 container, mvn -B -ntp clean verify, BUILD SUCCESS
+Producer: 37 tests, zero failures/errors/skips
+Flink: 93 tests, zero failures/errors/skips
+Viz: 38 tests, zero failures/errors/skips
+Correctness host: 68 passed in 2.80s
+Correctness final pinned exporter image: 68 passed in 1.24s
+Exporter packages: kafka-python 3.0.11; lz4 4.4.5
+Reconciliation: all five checks true; source split and late count final
+Latency: complete true; 1269 measured; 176 operator samples / 88 distinct scrapes
+Evidence script: inspect_run.py completed; populated runs.csv stage columns match summary
+Syntax: Python evidence scripts compile; bash -n reproduce.sh passes
+Whitespace: git diff --check passes
+Cleanup: task containers absent; task network absent; unrelated stopped stack preserved

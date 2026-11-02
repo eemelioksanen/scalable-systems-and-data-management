@@ -46,6 +46,29 @@ def interval_mean(metrics: dict, name: str, container: str = "", combine=sum) ->
     return combine(means) if means else None
 
 
+LATENCY_STAGES = ("emitLatency", "outputLatency", "windowWait", "boundWait", "alignmentWait", "watermarkWait",
+                  "queueing", "sinkHandoff")
+WATERMARK_LAG = {"watermarkLagEvent": "eventMs", "watermarkLagWall": "wallMs", "modelAheadEvent": "modelAheadEventMs"}
+
+
+def latency_columns(latency: dict | None) -> dict:
+    """A live run's latency percentiles over its measured results, and the results it left out."""
+    if not latency or not latency.get("complete"):
+        return {}
+    excluded = latency["excluded"]
+    row = {"latencyResults": latency["measured"], "latencyExcludedWarmup": excluded["beforeInterval"],
+           "latencyExcludedAfter": excluded["afterInterval"], "latencyExcludedDrain": excluded["drain"],
+           "latencyUnmodelled": latency["unmodelled"], "latencyNegativeQueueing": latency["negativeQueueing"],
+           "watermarkSamples": latency["watermarkLag"]["samples"]}
+    for stage in LATENCY_STAGES:
+        for q in (50, 95, 99):
+            row[f"{stage}P{q}Ms"] = latency["stagesMs"][stage].get(f"p{q}")
+    for column, key in WATERMARK_LAG.items():
+        for q in (50, 95, 99):
+            row[f"{column}P{q}Ms"] = latency["watermarkLag"][key].get(f"p{q}")
+    return row
+
+
 def mean(values: list[float]) -> float:
     return sum(values) / len(values)
 
@@ -90,6 +113,7 @@ def run_row(run: Path) -> dict:
         "reconciliationOk": s["reconciliation"]["ok"],
         "correctness": correctness.get("verdict"),
         "emaDifferences": correctness.get("emaDifferences"),
+        **latency_columns(s.get("latency")),
     })
     return row
 
