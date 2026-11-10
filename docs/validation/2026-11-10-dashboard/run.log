@@ -1,0 +1,19 @@
+[16:40:24] phase 1 subscriptions
+[16:40:27] submitting the job (live defaults)
+Job has been submitted with JobID d9a2988d1eb9ee0c65539b8d541f41bb
+[16:40:29] live capture, connected through the whole run, charting INVDS.FR
+[16:40:29] replaying RDSA.NL,ASML.NL,AIR.FR,A1CX3T.ETR,INVDS.FR,ISAMD.FR,IPLU3.FR,EUS5D.NL,I3BP.NL,A1EXV9.ETR,A0S3AS.ETR at 120x
+[16:42:28] phase 2 subscriptions at feed time 2021-11-09T12:00
+[16:47:40] replay finished: COMPLETE 6494792 records
+[16:47:40] draining the job: evaluates the windows still open
+[16:47:47] exporting the topics
+settled: 11 symbols, 10 advisories, 1 series, 3 traders -> /out/live.json
+[16:47:49] waiting for the live capture to settle
+[16:47:49] fresh capture, charting every published symbol
+settled: 11 symbols, 10 advisories, 11 series, 3 traders -> /out/final.json
+[16:47:55] checking the live capture
+live PASS []
+[16:47:56] checking the final capture
+final PASS []
+[16:47:57] late ticks: 0
+exit 0

@@ -17,6 +17,8 @@ class DashboardOptionsTest {
         assertEquals(ZoneOffset.of("+02:00"), o.zoneOffset());
         assertEquals("ema-results", o.resultsTopic());
         assertEquals("ticks", o.ticksTopic());
+        assertEquals("advisories", o.advisoriesTopic());
+        assertEquals("subscriptions", o.subscriptionsTopic());
     }
 
     @Test

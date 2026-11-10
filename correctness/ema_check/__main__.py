@@ -1,4 +1,4 @@
-"""Command line: python -m ema_check export|compare|inject|latency ..."""
+"""Command line: python -m ema_check export|compare|dashboard|inject|latency ..."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 
-from . import compare, export, inject, latency
+from . import compare, dashboard, export, inject, latency
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -33,6 +33,14 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--tolerance", type=float, default=compare.TOLERANCE, help="absolute EMA tolerance (D-18)")
     c.add_argument("--drift-ulps", type=float, default=compare.DRIFT_ULPS, help="EMA differences up to this many ulps count as precision drift")
     c.add_argument("--out", type=Path, required=True)
+
+    d = sub.add_parser("dashboard", help="check a dashboard capture against the topics and the oracle (#13)")
+    d.add_argument("--capture", type=Path, required=True, help="JSON from viz/web/scripts/capture.mjs")
+    d.add_argument("--job", type=Path, required=True, help="export directory of the same run")
+    d.add_argument("--oracle", type=Path, required=True, help="oracle output directory")
+    d.add_argument("--expect-traders", type=Path, help="JSON of each trader's list as last written to subscriptions")
+    d.add_argument("--tolerance", type=float, default=compare.TOLERANCE, help="absolute EMA tolerance (D-18)")
+    d.add_argument("--out", type=Path, required=True)
 
     lt = sub.add_parser("latency", help="split a live run's latency into its waits (#37)")
     lt.add_argument("--export", type=Path, required=True, help="export directory with price_events.parquet")
@@ -62,6 +70,9 @@ def main(argv: list[str] | None = None) -> int:
             oracle=args.oracle, job=args.job, out=args.out, job_late_ticks=args.job_late_ticks,
             job_late_events=args.job_late_events, tolerance=args.tolerance, drift_ulps=args.drift_ulps,
         ))
+    elif args.command == "dashboard":
+        result = dashboard.check(args.capture, args.job, args.oracle, args.out, args.expect_traders, args.tolerance)
+        result = {k: v for k, v in result.items() if k != "publication"}
     elif args.command == "latency":
         result = latency.latency(args.export, args.replay_report, args.metrics, args.bound_ms, args.idleness_ms,
                                  (args.interval_start_ms, args.interval_end_ms), args.idle_from_ms,

@@ -28,6 +28,9 @@ function firstWindowPlugin(getFirst) {
         ctx.stroke();
         ctx.fillStyle = MUTED;
         ctx.font = `${11 * dpr}px -apple-system, sans-serif`;
+        // uPlot leaves the last axis label's alignment on the context.
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
         ctx.fillText('▲ first window: BUY from EMA₀ = 0', x + 4 * dpr, u.bbox.top + u.bbox.height - 6 * dpr);
         ctx.restore();
       },
@@ -35,13 +38,57 @@ function firstWindowPlugin(getFirst) {
   };
 }
 
-export default function SymbolChart({ series, row, slotMs, slots, zoneOffset }) {
+// Draws a published advisory as a triangle on EMA38 at its windowEnd: ▲ BUY, ▼ SELL. The marker
+// sits where the crossing was detected; its values come from the advisory record, not the line.
+function advisoryPlugin(getMarkers) {
+  return {
+    hooks: {
+      draw: (u) => {
+        const markers = getMarkers();
+        if (!markers.length) return;
+        const { ctx } = u;
+        const dpr = window.devicePixelRatio || 1;
+        const r = 7 * dpr;
+        ctx.save();
+        ctx.lineWidth = 1 * dpr;
+        ctx.strokeStyle = '#ffffff';
+        for (const m of markers) {
+          const x = u.valToPos(m.windowEnd / 1000, 'x', true);
+          const y = u.valToPos(m.ema38, 'y', true);
+          if (x < u.bbox.left || x > u.bbox.left + u.bbox.width) continue;
+          ctx.fillStyle = m.type === 'BUY' ? EMA38 : EMA100;
+          ctx.beginPath();
+          if (m.type === 'BUY') {
+            ctx.moveTo(x, y - r);
+            ctx.lineTo(x + r, y + r * 0.8);
+            ctx.lineTo(x - r, y + r * 0.8);
+          } else {
+            ctx.moveTo(x, y + r);
+            ctx.lineTo(x + r, y - r * 0.8);
+            ctx.lineTo(x - r, y - r * 0.8);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
+      },
+    },
+  };
+}
+
+export default function SymbolChart({ series, row, markers = [], slotMs, slots, zoneOffset }) {
   const holderRef = useRef(null);
   const plotRef = useRef(null);
   const firstRef = useRef(null);
+  const markersRef = useRef(markers);
+  markersRef.current = markers;
   const points = series?.points ?? [];
   const data = useMemo(() => toChartData(points, slotMs), [points, slotMs]);
-  firstRef.current = series?.firstWindowEnd ?? null;
+  // The first window the dashboard saw is the symbol's first only if its published BUY is there:
+  // a symbol subscribed mid-run is first published at some later window (D-41).
+  const first = series?.firstWindowEnd ?? null;
+  firstRef.current = markers.some((m) => m.windowEnd === first && m.type === 'BUY') ? first : null;
 
   useEffect(() => {
     const holder = holderRef.current;
@@ -63,7 +110,7 @@ export default function SymbolChart({ series, row, slotMs, slots, zoneOffset }) 
         { label: 'EMA38', stroke: EMA38, width: 1.5, points: { show: sparse } },
         { label: 'EMA100', stroke: EMA100, width: 1.5, points: { show: sparse } },
       ],
-      plugins: [firstWindowPlugin(() => firstRef.current)],
+      plugins: [firstWindowPlugin(() => firstRef.current), advisoryPlugin(() => markersRef.current)],
     };
     const plot = new uPlot(opts, data, holder);
     plotRef.current = plot;
@@ -78,9 +125,12 @@ export default function SymbolChart({ series, row, slotMs, slots, zoneOffset }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoneOffset]);
 
+  // New markers redraw through setData too: a bare redraw before the first layout has no axes yet.
   useEffect(() => {
     plotRef.current?.setData(data);
-  }, [data]);
+  }, [data, markers]);
+
+  const buys = markers.filter((m) => m.type === 'BUY').length;
 
   const symbol = series?.symbol ?? row?.symbol;
   let empty = null;
@@ -94,6 +144,7 @@ export default function SymbolChart({ series, row, slotMs, slots, zoneOffset }) 
         {row && (
           <span className="m">
             {row.secType === 'I' ? 'index' : 'equity'} · {row.exchange} · {points.length} of {slots} windows with trades
+            · {buys} BUY · {markers.length - buys} SELL
           </span>
         )}
         <span className="sp" />
@@ -101,6 +152,8 @@ export default function SymbolChart({ series, row, slotMs, slots, zoneOffset }) 
           <span><i className="sw" style={{ background: INK }} />Close</span>
           <span><i className="sw" style={{ background: EMA38 }} />EMA38</span>
           <span><i className="sw" style={{ background: EMA100 }} />EMA100</span>
+          <span><span style={{ color: EMA38 }}>▲</span> BUY</span>
+          <span><span style={{ color: EMA100 }}>▼</span> SELL</span>
         </span>
       </div>
       <div className="chart-holder" ref={holderRef}>
@@ -109,7 +162,8 @@ export default function SymbolChart({ series, row, slotMs, slots, zoneOffset }) 
       <div className="note">
         Price currency is not published: <code>ticks</code> carries 7 of the 39 source columns (D-24) and the outputs carry none (D-16).
         The time axis is <code>windowEnd</code>, the exclusive end of each 5-minute window, at UTC{zoneOffset}.
-        Windows without trades are skipped (D-6) and drawn as gaps. Latest point: {formatTime(points.at(-1)?.[0] ?? null, zoneOffset)}.
+        Windows without trades are skipped (D-6) and drawn as gaps. Markers are the published <code>advisories</code>, drawn at their EMA38.
+        Latest point: {formatTime(points.at(-1)?.[0] ?? null, zoneOffset)}.
       </div>
     </section>
   );

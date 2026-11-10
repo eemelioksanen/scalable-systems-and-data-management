@@ -1,34 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { DOWN, EQUAL, UP, cellAt, visibleRows } from './state.js';
+import { useEffect, useRef, useState } from 'react';
+import { DOWN, EQUAL, UP, cellAt } from './state.js';
 import { formatTime } from './format.js';
 
 const ROW_H = 13;
 const LABEL_W = 92;
-const FLIP_W = 48;
+const FLIP_W = 58;
 const COLORS = { [UP]: '#93b4f5', [DOWN]: '#f3c27f', [EQUAL]: '#9aa3ad' };
 const EMPTY = '#f1f2f4';
-const EXCHANGES = ['FR', 'NL', 'ETR'];
-const SEC_TYPES = ['E', 'I'];
+// The windows of published advisories, in the chart's line colors: BUY crosses above, SELL below.
+const TICKS = { BUY: '#1d4ed8', SELL: '#b45309' };
+const SORTS = ['cross', 'flip', 'symbol'];
+const SORT_LABELS = { cross: 'latest crossover', flip: 'latest sign flip', symbol: 'A–Z' };
 
-function Chips({ label, values, value, onChange }) {
-  return (
-    <span className="chips">
-      {label}
-      <button type="button" className={value == null ? 'chip on' : 'chip'} onClick={() => onChange(null)}>All</button>
-      {values.map((v) => (
-        <button key={v} type="button" className={value === v ? 'chip on' : 'chip'} onClick={() => onChange(v)}>{v}</button>
-      ))}
-    </span>
-  );
-}
-
-export default function Heatmap({ state, selected, onSelect, zoneOffset }) {
-  const [filters, setFilters] = useState({ exchange: null, secType: null });
+export default function Heatmap({ state, order, sort, onSort, adv, selected, onSelect, zoneOffset }) {
   const scrollRef = useRef(null);
   const canvasRef = useRef(null);
   const [viewport, setViewport] = useState({ top: 0, width: 0, height: 0 });
-
-  const order = useMemo(() => visibleRows(state.rows, filters), [state.rows, filters]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -78,12 +65,25 @@ export default function Heatmap({ state, selected, onSelect, zoneOffset }) {
         ctx.fillStyle = COLORS[v] ?? EMPTY;
         ctx.fillRect(LABEL_W + c * cellW, y + 1, Math.ceil(cellW), ROW_H - 2);
       }
-      ctx.fillStyle = '#5b6470';
+      for (const a of adv.bySymbol.get(row.symbol) ?? []) {
+        const column = state.slots - 1 - Math.round((state.spanEnd - a.windowEnd) / state.slotMs);
+        if (column < 0 || column >= state.slots) continue;
+        ctx.fillStyle = TICKS[a.type];
+        ctx.fillRect(LABEL_W + column * cellW, y + 1, Math.max(2, Math.ceil(cellW)), ROW_H - 2);
+      }
       ctx.textAlign = 'right';
-      ctx.fillText(row.lastFlip == null ? '–' : formatTime(row.lastFlip, zoneOffset), width - 2, y + ROW_H / 2);
+      if (sort === 'flip') {
+        ctx.fillStyle = '#5b6470';
+        ctx.fillText(row.lastFlip == null ? '–' : formatTime(row.lastFlip, zoneOffset), width - 2, y + ROW_H / 2);
+      } else {
+        const last = adv.lastCross.get(row.symbol);
+        ctx.fillStyle = last == null ? '#5b6470' : TICKS[last.type];
+        ctx.fillText(last == null ? '–' : `${last.type === 'BUY' ? '▲' : '▼'} ${formatTime(last.windowEnd, zoneOffset)}`,
+          width - 2, y + ROW_H / 2);
+      }
       ctx.textAlign = 'left';
     }
-  }, [state.version, state.rows, state.slots, order, viewport, selected, zoneOffset, state]);
+  }, [state.version, state.rows, state.slots, order, viewport, selected, zoneOffset, state, adv, sort]);
 
   function onClick(event) {
     const rect = scrollRef.current.getBoundingClientRect();
@@ -98,11 +98,15 @@ export default function Heatmap({ state, selected, onSelect, zoneOffset }) {
     <section className="panel heatmap">
       <div className="ptitle">
         <b>Trend heatmap</b>
-        <span className="m">{order.length.toLocaleString('en')} symbols · sorted by latest sign flip · click a row to chart it</span>
+        <span className="m">{order.length.toLocaleString('en')} symbols · sorted by {SORT_LABELS[sort]} · click a row to chart it</span>
       </div>
       <div className="filters">
-        <Chips label="Exchange" values={EXCHANGES} value={filters.exchange} onChange={(exchange) => setFilters({ ...filters, exchange })} />
-        <Chips label="Type" values={SEC_TYPES} value={filters.secType} onChange={(secType) => setFilters({ ...filters, secType })} />
+        <span className="chips">
+          Sort
+          {SORTS.map((v) => (
+            <button key={v} type="button" className={sort === v ? 'chip on' : 'chip'} onClick={() => onSort(v)}>{SORT_LABELS[v]}</button>
+          ))}
+        </span>
       </div>
       <div className="hm-scroll" ref={scrollRef} onClick={onClick}>
         <div style={{ height: order.length * ROW_H }} />
@@ -117,7 +121,10 @@ export default function Heatmap({ state, selected, onSelect, zoneOffset }) {
         <i className="swatch" style={{ background: COLORS[UP] }} /> EMA38 &gt; EMA100
         <i className="swatch" style={{ background: COLORS[DOWN] }} /> EMA38 &lt; EMA100
         <i className="swatch" style={{ background: COLORS[EQUAL] }} /> equal
-        <i className="swatch empty" /> no trades · last 24 h of 5-minute windows · right column: last flip
+        <i className="swatch empty" /> no trades
+        <i className="swatch" style={{ background: TICKS.BUY }} /> BUY
+        <i className="swatch" style={{ background: TICKS.SELL }} /> SELL
+        <span>· last 24 h of 5-minute windows · right column: {sort === 'flip' ? 'last flip' : 'last advisory'}</span>
       </div>
     </section>
   );

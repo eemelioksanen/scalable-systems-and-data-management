@@ -25,16 +25,19 @@ final class Broadcaster {
         Long sentFeedMs;
         Long sentIdleSince;
         Long sentResultsMs;
+        long sentTraders = -1;
     }
 
     private final Store store;
+    private final Subscriptions subscriptions;
     private final FeedClock feed;
     private final String zoneOffset;
     private final LongSupplier wallClock;
     private final Map<Client, Session> sessions = new ConcurrentHashMap<>();
 
-    Broadcaster(Store store, FeedClock feed, ZoneOffset zoneOffset, LongSupplier wallClock) {
+    Broadcaster(Store store, Subscriptions subscriptions, FeedClock feed, ZoneOffset zoneOffset, LongSupplier wallClock) {
         this.store = store;
+        this.subscriptions = subscriptions;
         this.feed = feed;
         this.zoneOffset = zoneOffset.getId().equals("Z") ? "+00:00" : zoneOffset.getId();
         this.wallClock = wallClock;
@@ -69,7 +72,11 @@ final class Broadcaster {
         }
         Store.Drained drained = store.drain(selected);
         Messages.Clock clock = clock();
+        Subscriptions.View subs = subscriptions.view();
+        long tradersVersion = subs.version();
+        Map<String, List<String>> traders = subs.traders();
         List<Store.Row> rows = null;
+        List<Advisory> advisories = null;
 
         for (Map.Entry<Client, Session> e : sessions.entrySet()) {
             Client client = e.getKey();
@@ -85,10 +92,12 @@ final class Broadcaster {
                 s.needsSeries = false;
                 if (rows == null) {
                     rows = store.rows();
+                    advisories = store.advisories();
                 }
                 client.send(Messages.snapshot(store.latestWindowEnd(), rows,
-                        symbol == null ? null : store.series(symbol), clock));
+                        symbol == null ? null : store.series(symbol), advisories, traders, clock));
                 remember(s, clock);
+                s.sentTraders = tradersVersion;
                 continue;
             }
             if (s.needsSeries && symbol != null) {
@@ -99,9 +108,13 @@ final class Broadcaster {
             boolean clockMoved = !Objects.equals(s.sentFeedMs, clock.feedMs())
                     || !Objects.equals(s.sentIdleSince, clock.feedIdleSince())
                     || !Objects.equals(s.sentResultsMs, clock.resultsMs());
-            if (!drained.cells().isEmpty() || points != null || clockMoved) {
-                client.send(Messages.delta(drained.spanEnd(), drained.cells(), symbol, points, clock));
+            boolean tradersMoved = s.sentTraders != tradersVersion;
+            if (!drained.cells().isEmpty() || !drained.advisories().isEmpty() || points != null || clockMoved
+                    || tradersMoved) {
+                client.send(Messages.delta(drained.spanEnd(), drained.cells(), symbol, points, drained.advisories(),
+                        tradersMoved ? traders : null, clock));
                 remember(s, clock);
+                s.sentTraders = tradersVersion;
             }
         }
     }

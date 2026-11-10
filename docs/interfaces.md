@@ -13,7 +13,7 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 | `ema-results` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `advisories` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `late-ticks` | Flink job | correctness check | symbol | JSON source position and window end | 8 |
-| `subscriptions` | subscription generator | Flink job (broadcast) | trader ID | JSON, or a tombstone | 1, compacted |
+| `subscriptions` | subscription generator | Flink job (broadcast); viz, for its per-trader filter | trader ID | JSON, or a tombstone | 1, compacted |
 | `stats` | not written yet: counts are Flink metrics (D-28, [Counts](#counts-d-28)) | – | – | – | 1 |
 
 All keys and string values are UTF-8. Partition counts are revisited for the cloud runs.
@@ -97,7 +97,7 @@ The fields mean the same as in `ema-results`.
 - A symbol is published while at least one trader lists it (or `*`).
 - Compaction keeps the latest list per trader. A (re)started job reads the topic from the beginning to rebuild the current subscription state.
 - Writers must not use Kafka transactions: the job treats the record at a partition's end offset − 1 as the last one to wait for (below), and a transaction marker there would hold results back forever.
-- The Flink job emits each result once per symbol, not once per trader. Delivering results to individual traders is the visualization backend's job.
+- The Flink job emits each result once per symbol, not once per trader. Delivering results to individual traders is the visualization backend's job: viz reads this topic with the same rules and filters its feed and heatmap by a trader's current list (D-41).
 
 **Startup (D-28).** At submission the job reads the topic's end offsets. Until it has read the topic up to them, it holds every result back; then it publishes the held results that the subscriptions allow. So everything is judged against at least the subscriptions that existed at submission, whichever input the job happens to read first. To get deterministic output, write the subscriptions **before** submitting the job. The `subscriptionsReady` gauge is 1 once this has happened.
 
