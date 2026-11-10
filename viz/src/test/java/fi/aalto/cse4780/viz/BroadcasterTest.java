@@ -81,6 +81,8 @@ class BroadcasterTest {
         assertEquals(StoreTest.T0, a.get(1).asLong());
         assertEquals("BUY", a.get(2).asText());
         assertEquals("FR", a.get(4).asText());
+        assertEquals(9, a.size());
+        assertTrue(a.get(7).isNull());
         assertEquals(2, snapshot.get("traders").get("t1").size());
     }
 

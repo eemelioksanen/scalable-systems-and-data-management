@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DOWN, EQUAL, NONE, UP, applyDelta, applySeries, applySnapshot, cellAt, feedItems, indexAdvisories, initialState,
+  isFirstWindowBuy,
   mergePoints, toChartData, traderScope, visibleRows,
 } from './state.js';
 
@@ -165,5 +166,38 @@ describe('advisories', () => {
     expect(names({ sort: 'cross', lastCross })).toEqual(['B.FR', 'C.FR', 'A.FR']);
     expect(names({ sort: 'flip' })).toEqual(['A.FR', 'B.FR', 'C.FR']);
     expect(names({ sort: 'cross', lastCross, traders: { t: ['C.FR', 'A.FR'] } }, { trader: 't' })).toEqual(['C.FR', 'A.FR']);
+  });
+});
+
+describe('first-window BUYs', () => {
+  const close = 19.28;
+  const first = ['RDSA.NL', w(0), 'BUY', 'E', 'NL', close * (2 / 39), close * (2 / 101), 1000, 1640];
+  const later = ['RDSA.NL', w(9), 'SELL', 'E', 'NL', 19.1, 19.2, 5000, 5300];
+  const s = applySnapshot(initialState, {
+    type: 'snapshot', spanEnd: w(287), slots: 288, slotMs: SLOT, symbols: [], series: null,
+    advisories: [first, later, ['B.NL', w(3), 'BUY', 'E', 'NL', 0.25 * (2 / 39), 0.25 * (2 / 101)]], traders: {}, clock,
+  });
+
+  it('are recognised from the EMA ratio alone, for any close', () => {
+    expect(isFirstWindowBuy('BUY', 7 * (2 / 39), 7 * (2 / 101))).toBe(true);
+    expect(isFirstWindowBuy('SELL', 7 * (2 / 39), 7 * (2 / 101))).toBe(false);
+    expect(isFirstWindowBuy('BUY', 19.2712, 19.2655)).toBe(false);
+  });
+
+  it('carry their latency from admission to publication', () => {
+    const a = s.advisories.get(`RDSA.NL|${w(0)}`);
+    expect(a.firstWindow).toBe(true);
+    expect(a.latencyMs).toBe(640);
+    expect(s.advisories.get(`B.NL|${w(3)}`).latencyMs).toBeNull();
+  });
+
+  it('are left out of the feed and the crossover sort unless shown', () => {
+    const hidden = indexAdvisories(s.advisories);
+    expect(feedItems(hidden.all, {}, {}).map((a) => a.type)).toEqual(['SELL']);
+    expect(hidden.lastCross.has('B.NL')).toBe(false);
+    expect(hidden.bySymbol.get('B.NL').length).toBe(1);
+    const shown = indexAdvisories(s.advisories, { firstWindows: true });
+    expect(feedItems(shown.all, { firstWindows: true }, {}).length).toBe(3);
+    expect(shown.lastCross.get('B.NL').windowEnd).toBe(w(3));
   });
 });

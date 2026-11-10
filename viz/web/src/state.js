@@ -29,9 +29,21 @@ export const initialState = {
 
 export const advisoryKey = (symbol, windowEnd) => `${symbol}|${windowEnd}`;
 
-// [symbol, windowEnd, type, secType, exchange, ema38, ema100], as the backend sends them.
-function toAdvisory([symbol, windowEnd, type, secType, exchange, ema38, ema100]) {
-  return { symbol, windowEnd, type, secType, exchange, ema38, ema100 };
+// A symbol's first window turns EMA38 = close·2/39 and EMA100 = close·2/101, from EMA0 = 0
+// (D-7), so its BUY comes from the zero start, not from a breakout. The ratio of the two EMAs
+// identifies it from the record alone: 101/39 for every close.
+export function isFirstWindowBuy(type, ema38, ema100) {
+  return type === 'BUY' && Math.abs(ema38 * 39 - ema100 * 101) <= 1e-9 * Math.abs(ema100 * 101);
+}
+
+// [symbol, windowEnd, type, secType, exchange, ema38, ema100, maxIngestTs, emitTs], as the backend
+// sends them. latencyMs is the advisory's wall-clock time from admission to publication (D-40).
+function toAdvisory([symbol, windowEnd, type, secType, exchange, ema38, ema100, maxIngestTs = null, emitTs = null]) {
+  return {
+    symbol, windowEnd, type, secType, exchange, ema38, ema100,
+    latencyMs: maxIngestTs == null || emitTs == null ? null : emitTs - maxIngestTs,
+    firstWindow: isFirstWindowBuy(type, ema38, ema100),
+  };
 }
 
 function mergeAdvisories(map, list) {
@@ -172,7 +184,8 @@ export function applyDelta(state, msg) {
 
 // The advisories in three shapes: all of them newest first (the feed), by symbol oldest first
 // (chart markers and heatmap ticks), and each symbol's latest (the heatmap's crossover sort).
-export function indexAdvisories(advisories) {
+// lastCross skips first-window BUYs unless they are shown: they are no breakout.
+export function indexAdvisories(advisories, { firstWindows = false } = {}) {
   const all = [...advisories.values()].sort((a, b) => b.windowEnd - a.windowEnd
     || (a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0));
   const bySymbol = new Map();
@@ -182,7 +195,7 @@ export function indexAdvisories(advisories) {
     let list = bySymbol.get(a.symbol);
     if (!list) bySymbol.set(a.symbol, (list = []));
     list.push(a);
-    lastCross.set(a.symbol, a);
+    if (firstWindows || !a.firstWindow) lastCross.set(a.symbol, a);
   }
   return { all, bySymbol, lastCross };
 }
@@ -203,10 +216,10 @@ export function passes(item, filters, scope) {
   return true;
 }
 
-// The advisory feed: newest first, after the filters.
+// The advisory feed: newest first, after the filters. First-window BUYs only with filters.firstWindows.
 export function feedItems(all, filters, traders) {
   const scope = traderScope(traders, filters.trader);
-  return all.filter((a) => passes(a, filters, scope));
+  return all.filter((a) => (filters.firstWindows || !a.firstWindow) && passes(a, filters, scope));
 }
 
 // Clears the slots of windows that left the span when it moved from oldEnd to newEnd.

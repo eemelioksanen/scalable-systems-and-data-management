@@ -79,7 +79,7 @@ function dump() {
   });
   const feeds = {};
   for (const trader of Object.keys(state.traders)) {
-    feeds[trader] = feedItems(adv.all, { trader }, state.traders).map((a) => [a.symbol, a.windowEnd]);
+    feeds[trader] = feedItems(adv.all, { trader, firstWindows: true }, state.traders).map((a) => [a.symbol, a.windowEnd]);
   }
   const charted = {};
   for (const [symbol, s] of Object.entries(series)) {
@@ -100,8 +100,10 @@ function dump() {
     traders: state.traders,
     rows,
     heatmapByCrossover: order.map((i) => state.rows[i].symbol),
-    // The feed's rows, newest first, with the time column as the browser shows it.
+    // Every advisory in the span, newest first, with the time column as the browser shows it and
+    // its firstWindow and latencyMs; feedDefault is the feed with the default filters.
     feed: adv.all.map((a) => ({ ...a, shown: formatDateTime(a.windowEnd, zone).slice(0, -3) })),
+    feedDefault: feedItems(adv.all, {}, state.traders).map((a) => [a.symbol, a.windowEnd]),
     feeds,
     series: charted,
   };

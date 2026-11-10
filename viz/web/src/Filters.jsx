@@ -38,6 +38,10 @@ export default function Filters({ filters, onChange, traders }) {
           {names.map((t) => <option key={t} value={t}>{t} · {describeList(traders[t])}</option>)}
         </select>
       </label>
+      <label className="check" title="Every symbol's first window gives a BUY from EMA0 = 0 (D-7): published, but no breakout">
+        <input type="checkbox" checked={!!filters.firstWindows} onChange={(e) => onChange({ ...filters, firstWindows: e.target.checked })} />
+        first-window BUYs
+      </label>
       <span className="m">{names.length} trader{names.length === 1 ? '' : 's'} in <code>subscriptions</code></span>
     </div>
   );

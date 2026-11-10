@@ -3,8 +3,16 @@ package fi.aalto.cse4780.viz;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/** One {@code advisories} record (docs/interfaces.md, D-16), without the latency fields. */
-record Advisory(String symbol, String secType, long windowEnd, String type, double ema38, double ema100) {
+/**
+ * One {@code advisories} record (docs/interfaces.md, D-16). {@code maxIngestTs} and {@code emitTs}
+ * give the advisory's latency from admission to publication (D-40); either may be null.
+ */
+record Advisory(String symbol, String secType, long windowEnd, String type, double ema38, double ema100,
+        Long maxIngestTs, Long emitTs) {
+
+    Advisory(String symbol, String secType, long windowEnd, String type, double ema38, double ema100) {
+        this(symbol, secType, windowEnd, type, ema38, ema100, null, null);
+    }
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -37,7 +45,12 @@ record Advisory(String symbol, String secType, long windowEnd, String type, doub
             return null;
         }
         return new Advisory(symbol.asText(), secType.asText(), windowEnd.asLong(), type.asText(),
-                ema38.asDouble(), ema100.asDouble());
+                ema38.asDouble(), ema100.asDouble(), optionalLong(node.get("maxIngestTs")),
+                optionalLong(node.get("emitTs")));
+    }
+
+    private static Long optionalLong(JsonNode n) {
+        return n != null && n.canConvertToLong() ? n.asLong() : null;
     }
 
     String exchange() {

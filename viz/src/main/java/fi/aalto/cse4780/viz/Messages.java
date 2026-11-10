@@ -86,14 +86,24 @@ final class Messages {
         return root.toString();
     }
 
-    /** {@code [symbol, windowEnd, type, secType, exchange, ema38, ema100]} per advisory. */
+    /** {@code [symbol, windowEnd, type, secType, exchange, ema38, ema100, maxIngestTs, emitTs]} per advisory. */
     private static ArrayNode advisoryArray(List<Advisory> advisories) {
         ArrayNode out = JSON.createArrayNode();
         for (Advisory a : advisories) {
-            out.addArray().add(a.symbol()).add(a.windowEnd()).add(a.type()).add(a.secType()).add(a.exchange())
-                    .add(a.ema38()).add(a.ema100());
+            ArrayNode row = out.addArray().add(a.symbol()).add(a.windowEnd()).add(a.type()).add(a.secType())
+                    .add(a.exchange()).add(a.ema38()).add(a.ema100());
+            addLong(row, a.maxIngestTs());
+            addLong(row, a.emitTs());
         }
         return out;
+    }
+
+    private static void addLong(ArrayNode a, Long value) {
+        if (value == null) {
+            a.addNull();
+        } else {
+            a.add(value.longValue());
+        }
     }
 
     private static ObjectNode tradersNode(Map<String, List<String>> traders) {

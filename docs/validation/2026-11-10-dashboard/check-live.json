@@ -10,30 +10,30 @@
     "endShown": "Tue 09-11-2021 22:30"
   },
   "shown": {
-    "symbols": 11,
-    "cells": 1208,
-    "advisories": 10,
+    "symbols": 13,
+    "cells": 1222,
+    "advisories": 12,
     "charted": 1,
     "traders": 3
   },
   "checks": [
     {
       "name": "heatmapCellsEqualTopic",
-      "checked": 1208,
+      "checked": 1222,
       "mismatches": 0,
       "examples": [],
       "pass": true
     },
     {
       "name": "heatmapCellsEqualOracle",
-      "checked": 1208,
+      "checked": 1222,
       "mismatches": 0,
       "examples": [],
       "pass": true
     },
     {
       "name": "heatmapSecTypeAndExchange",
-      "checked": 11,
+      "checked": 13,
       "mismatches": 0,
       "examples": [],
       "pass": true
@@ -54,28 +54,49 @@
     },
     {
       "name": "feedEqualsTopic",
-      "checked": 10,
+      "checked": 12,
       "mismatches": 0,
       "examples": [],
       "pass": true
     },
     {
       "name": "feedEqualsOracleForShownWindows",
-      "checked": 10,
+      "checked": 12,
       "mismatches": 0,
       "examples": [],
       "pass": true
     },
     {
       "name": "feedTimesAtZoneOffset",
-      "checked": 10,
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "firstWindowFlagEqualsOracle",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "feedLatencyEqualsTopic",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "defaultFeedHidesOnlyFirstWindowBuys",
+      "checked": 12,
       "mismatches": 0,
       "examples": [],
       "pass": true
     },
     {
       "name": "feedNewestFirst",
-      "checked": 10,
+      "checked": 12,
       "mismatches": 0,
       "examples": [],
       "pass": true
@@ -103,7 +124,7 @@
     },
     {
       "name": "heatmapSortedByCrossover",
-      "checked": 11,
+      "checked": 13,
       "mismatches": 0,
       "examples": [],
       "pass": true
@@ -117,6 +138,14 @@
     }
   ],
   "publication": [
+    {
+      "symbol": "A0MK44.ETR",
+      "firstShownWindowEnd": 1636444500000,
+      "firstShown": "Tue 09-11-2021 09:55",
+      "windowsShown": 6,
+      "advisoriesShown": 1,
+      "oracleAdvisoriesBeforePublication": 0
+    },
     {
       "symbol": "A0S3AS.ETR",
       "firstShownWindowEnd": 1636452600000,
@@ -183,9 +212,9 @@
     },
     {
       "symbol": "IPLU3.FR",
-      "firstShownWindowEnd": 1636452300000,
-      "firstShown": "Tue 09-11-2021 12:05",
-      "windowsShown": 74,
+      "firstShownWindowEnd": 1636451700000,
+      "firstShown": "Tue 09-11-2021 11:55",
+      "windowsShown": 76,
       "advisoriesShown": 2,
       "oracleAdvisoriesBeforePublication": 0
     },
@@ -195,6 +224,14 @@
       "firstShown": "Tue 09-11-2021 07:20",
       "windowsShown": 131,
       "advisoriesShown": 2,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "MLSUM.FR",
+      "firstShownWindowEnd": 1636450500000,
+      "firstShown": "Tue 09-11-2021 11:35",
+      "windowsShown": 6,
+      "advisoriesShown": 1,
       "oracleAdvisoriesBeforePublication": 0
     },
     {
