@@ -45,6 +45,25 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-41: Advisories, markers and per-trader filtering on the dashboard (2026-11-10, Leo Immonen, issue #13) — proposed
+Context: D-33 built the dashboard over `ema-results` and left `advisories`, the advisory feed and per-trader delivery to #13. D-17 makes fan-out to traders the visualization's job. The roadmap (§5) asks for BUY/SELL markers, a feed filterable by exchange, SecType and subscription, and a heatmap sorted by most recent crossover.
+Decision ([viz/README.md](../viz/README.md)):
+- **Published records only.** The backend reads `advisories` into the same store as `ema-results`, with the same 288-window span and replacement by (`symbol`, `windowEnd`). Markers, the feed and the crossover sort all come from these records; the UI derives no crossover from the EMAs, so what it shows is what the job decided, including a first advisory measured against unpublished history.
+- **All advisories in the span go to every browser**, in the snapshot and then as deltas, and the browser filters them. The week has 11,355, mostly each symbol's first-window BUY, so this is far smaller than the heatmap itself.
+- **Subscriptions.** The backend also reads `subscriptions`, with the job's parsing rules, and sends each trader's current list. The subscription filter shows the advisories and heatmap rows of the symbols in that list. It is the current list, not the list at each advisory's time: the topic is compacted, so a restarted reader can rebuild only the latest list per trader, as the job does.
+- **Heatmap.** Sorted by the newest published advisory by default, with the D-33 sign-flip sort and an A–Z sort as options. An advisory's window is drawn in the darker line color.
+- **Filters in the URL** (`?exchange=…&secType=…&trader=…&sort=…#symbol`), so a view can be linked and the report figures captured reproducibly.
+- **End-to-end check.** A Node script applies the WebSocket messages with the frontend's own reducer and dumps the views; `correctness/run.sh dashboard` compares them with the topic export and the oracle.
+
+Alternatives considered:
+- *Attributing each advisory to the traders subscribed at its `emitTs`:* exact for a live session, but not reproducible after compaction or a restart, and clock skew between the job and the subscription writer would decide edge cases.
+- *Filtering on the server per session:* needed only if advisories were numerous; it would add a request type and per-session state for no gain at this volume.
+- *Checking the rendered page in a browser:* the views are drawn on canvases. The reducer's state is what they draw, so the check reads that, and screenshots are inspected by eye.
+
+- *The first-window marker from the first window seen (D-33):* wrong for a symbol subscribed mid-run, whose first published window is not its first. The chart now marks it only where a published BUY sits on that window.
+
+Consequences / measurements ([validation](validation/2026-11-10-dashboard/README.md)): a first day alone shows almost only first-window BUYs, because crossovers need converged EMAs, so the check replays Monday unpaced and Tuesday live at 120× over 11 symbols, changing three traders' subscriptions at 12:00. Both captures, one built from deltas through the run and one from a fresh snapshot, passed all 14 checks: 1,208 cells and points and 10 advisories equal to the topics and the oracle, with zero late events. A symbol dropped by a tombstone lost its 16:55 SELL, and one added at 12:00 showed both later crossovers.
+
 ### D-40: Live latency from admission to output (2026-11-01, Emilia Repo, issue #37) — proposed
 Context: D-16 left open which latency to report, and D-36 left open how to split `maxIngestTs` to `emitTs` into the watermark wait and the rest. D-38 proposes a 1 s bound and 30 s idleness for live jobs, and the job uses them by default. A first live run at 100x with the earlier 60 s bound took 1.0 s at p50 and 21.3 s at p99 from last admission to emission, mostly the watermark waiting on quiet partitions.
 Decision ([bench/README.md](../bench/README.md#latency)):
@@ -217,7 +236,7 @@ Decision:
 
 Consequences:
 - After a preload the feed time shows the end of the input at once. It is only meaningful during a live replay.
-- #13 adds `advisories` as another consumer feeding the same store, and an extra field in the WebSocket messages.
+- #13 adds `advisories` as another consumer feeding the same store, and extra fields in the WebSocket messages (D-41).
 
 ### D-32: UTC+2 runtime default and status alignment (2026-10-08, Leo Immonen)
 Context: D-3 accepted fixed UTC+2 on 2026-09-28, but the Flink job and the oracle still defaulted to `Z`, D-19's provisional value, while the analysis already used `+02:00`. D-29 and D-30 left the change to separate implementation work. The README and the oracle README also still described the pre-D-30 correctness reference, and the docs put the day files in two different places.

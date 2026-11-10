@@ -1,0 +1,110 @@
+{
+  "runId" : "replay-20261110T144037Z",
+  "status" : "COMPLETE",
+  "mode" : "realtime",
+  "rate" : 120.0,
+  "paceFrom" : "2021-11-09T09:00",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ "RDSA.NL", "ASML.NL", "AIR.FR", "A1CX3T.ETR", "INVDS.FR", "ISAMD.FR", "IPLU3.FR", "EUS5D.NL", "I3BP.NL", "A1EXV9.ETR", "A0S3AS.ETR" ],
+    "limit" : null,
+    "limitReached" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/daily/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 53994567,
+    "complete" : true
+  }, {
+    "index" : 1,
+    "path" : "/data/daily/debs2022-gc-trading-day-09-11-21.csv",
+    "bytes" : 5057964097,
+    "lines" : 58811883,
+    "complete" : true
+  } ],
+  "counts" : {
+    "lines" : 112806450,
+    "comments" : 24,
+    "headers" : 2,
+    "rejected" : 0,
+    "dataRows" : 112806424,
+    "excluded" : 106311632,
+    "attempted" : 6494792,
+    "acknowledged" : 6494792,
+    "failed" : 0,
+    "keyBytes" : 43969093,
+    "valueBytes" : 263580370,
+    "headerBytes" : 83435517
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 6581,
+    "records" : 6581
+  }, {
+    "partition" : 1,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 2742445,
+    "records" : 2742445
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 1697,
+    "records" : 1697
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 3667100,
+    "records" : 3667100
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 15718,
+    "records" : 15718
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 61251,
+    "records" : 61251
+  }, {
+    "partition" : 7,
+    "startOffset" : null,
+    "endOffset" : null,
+    "records" : 0
+  } ],
+  "timing" : {
+    "startedAt" : "2026-11-10T14:40:37.324Z",
+    "finishedAt" : "2026-11-10T14:47:40.376Z",
+    "durationMs" : 423052,
+    "flushMs" : 1,
+    "recordsPerSecond" : 15352.21,
+    "payloadMegabytesPerSecond" : 0.92
+  },
+  "pacing" : {
+    "clockStart" : "2021-11-08T01:01:07",
+    "paceStart" : "2021-11-09T09:00",
+    "clockEnd" : "2021-11-09T22:26:45",
+    "pacedRecords" : 3335188,
+    "achievedRate" : 120.0,
+    "lagP50Ms" : 0,
+    "lagP99Ms" : 6,
+    "lagMaxMs" : 19
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "replay-20261110T144037Z",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4"
+  }
+}

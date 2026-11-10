@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
+import java.util.Map;
 
 /** The WebSocket messages of viz/README.md. */
 final class Messages {
@@ -14,7 +15,8 @@ final class Messages {
 
     private Messages() {}
 
-    static String snapshot(Long spanEnd, List<Store.Row> rows, Store.Series series, Clock clock) {
+    static String snapshot(Long spanEnd, List<Store.Row> rows, Store.Series series, List<Advisory> advisories,
+            Map<String, List<String>> traders, Clock clock) {
         ObjectNode root = JSON.createObjectNode();
         root.put("type", "snapshot");
         putLong(root, "spanEnd", spanEnd);
@@ -34,6 +36,8 @@ final class Messages {
         } else {
             root.set("series", seriesNode(series));
         }
+        root.set("advisories", advisoryArray(advisories));
+        root.set("traders", tradersNode(traders));
         root.set("clock", clockNode(clock));
         return root.toString();
     }
@@ -45,7 +49,9 @@ final class Messages {
         return root.toString();
     }
 
-    static String delta(Long spanEnd, List<Store.Cell> cells, String pointsSymbol, List<Store.Point> points, Clock clock) {
+    /** {@code traders} is null when the lists have not changed since the session's last message. */
+    static String delta(Long spanEnd, List<Store.Cell> cells, String pointsSymbol, List<Store.Point> points,
+            List<Advisory> advisories, Map<String, List<String>> traders, Clock clock) {
         ObjectNode root = JSON.createObjectNode();
         root.put("type", "delta");
         putLong(root, "spanEnd", spanEnd);
@@ -70,8 +76,33 @@ final class Messages {
             p.put("symbol", pointsSymbol);
             p.set("points", pointArray(points));
         }
+        root.set("advisories", advisoryArray(advisories));
+        if (traders == null) {
+            root.putNull("traders");
+        } else {
+            root.set("traders", tradersNode(traders));
+        }
         root.set("clock", clockNode(clock));
         return root.toString();
+    }
+
+    /** {@code [symbol, windowEnd, type, secType, exchange, ema38, ema100]} per advisory. */
+    private static ArrayNode advisoryArray(List<Advisory> advisories) {
+        ArrayNode out = JSON.createArrayNode();
+        for (Advisory a : advisories) {
+            out.addArray().add(a.symbol()).add(a.windowEnd()).add(a.type()).add(a.secType()).add(a.exchange())
+                    .add(a.ema38()).add(a.ema100());
+        }
+        return out;
+    }
+
+    private static ObjectNode tradersNode(Map<String, List<String>> traders) {
+        ObjectNode o = JSON.createObjectNode();
+        for (Map.Entry<String, List<String>> e : traders.entrySet()) {
+            ArrayNode symbols = o.putArray(e.getKey());
+            e.getValue().forEach(symbols::add);
+        }
+        return o;
     }
 
     private static ObjectNode seriesNode(Store.Series series) {

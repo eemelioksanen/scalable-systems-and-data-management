@@ -27,18 +27,25 @@ public final class Dashboard implements AutoCloseable {
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private final Store store;
+    private final Subscriptions subscriptions;
     private final Broadcaster broadcaster;
-    private final ResultsConsumer results;
+    private final TopicReader results;
+    private final TopicReader advisories;
+    private final TopicReader subscriptionsReader;
     private final TicksTail ticks;
     private final Javalin app;
     private final ScheduledExecutorService flusher = Executors.newSingleThreadScheduledExecutor(r -> daemon(r, "flush"));
     private final Map<String, WsClient> clients = new ConcurrentHashMap<>();
 
-    Dashboard(DashboardOptions options, Store store, FeedClock feed, ResultsConsumer results, TicksTail ticks) {
+    Dashboard(DashboardOptions options, Store store, Subscriptions subscriptions, FeedClock feed,
+            TopicReader results, TopicReader advisories, TopicReader subscriptionsReader, TicksTail ticks) {
         this.store = store;
+        this.subscriptions = subscriptions;
         this.results = results;
+        this.advisories = advisories;
+        this.subscriptionsReader = subscriptionsReader;
         this.ticks = ticks;
-        this.broadcaster = new Broadcaster(store, feed, options.zoneOffset(), System::currentTimeMillis);
+        this.broadcaster = new Broadcaster(store, subscriptions, feed, options.zoneOffset(), System::currentTimeMillis);
         this.app = Javalin.create(config -> {
             config.showJavalinBanner = false;
             if (Dashboard.class.getResource("/static/index.html") != null) {
@@ -64,11 +71,14 @@ public final class Dashboard implements AutoCloseable {
             ws.onError(ctx -> drop(ctx.sessionId()));
         });
         startThread(results, "results");
+        startThread(advisories, "advisories");
+        startThread(subscriptionsReader, "subscriptions");
         startThread(ticks, "ticks-tail");
         app.start(options.port());
         flusher.scheduleWithFixedDelay(this::flushSafely, options.flushMs(), options.flushMs(), TimeUnit.MILLISECONDS);
-        LOG.info("Dashboard on http://localhost:{} reading {} and {} from {}", app.port(),
-                options.resultsTopic(), options.ticksTopic(), options.bootstrapServers());
+        LOG.info("Dashboard on http://localhost:{} reading {}, {}, {} and {} from {}", app.port(),
+                options.resultsTopic(), options.advisoriesTopic(), options.subscriptionsTopic(),
+                options.ticksTopic(), options.bootstrapServers());
     }
 
     public static void main(String[] args) {
@@ -81,9 +91,13 @@ public final class Dashboard implements AutoCloseable {
             return;
         }
         Store store = new Store();
+        Subscriptions subscriptions = new Subscriptions();
         FeedClock feed = new FeedClock(options.zoneOffset());
-        Dashboard dashboard = new Dashboard(options, store, feed,
-                new ResultsConsumer(() -> consumer(options, "results"), options.resultsTopic(), store),
+        Dashboard dashboard = new Dashboard(options, store, subscriptions, feed,
+                TopicReader.results(() -> consumer(options, "results"), options.resultsTopic(), store),
+                TopicReader.advisories(() -> consumer(options, "advisories"), options.advisoriesTopic(), store),
+                TopicReader.subscriptions(() -> consumer(options, "subscriptions"), options.subscriptionsTopic(),
+                        subscriptions),
                 new TicksTail(() -> consumer(options, "ticks"), options.ticksTopic(), feed, System::currentTimeMillis));
         Runtime.getRuntime().addShutdownHook(new Thread(dashboard::close));
     }
@@ -95,9 +109,16 @@ public final class Dashboard implements AutoCloseable {
     ObjectNode health() {
         Messages.Clock clock = broadcaster.clock();
         ObjectNode o = JSON.createObjectNode();
-        o.put("resultsRead", results.resultsRead());
-        o.put("malformedResults", results.malformedResults());
+        o.put("resultsRead", results.read());
+        o.put("malformedResults", results.malformed());
         o.put("staleResults", store.staleResults());
+        o.put("advisoriesRead", advisories.read());
+        o.put("malformedAdvisories", advisories.malformed());
+        o.put("staleAdvisories", store.staleAdvisories());
+        o.put("advisories", store.advisoryCount());
+        o.put("subscriptionsRead", subscriptionsReader.read());
+        o.put("malformedSubscriptions", subscriptionsReader.malformed());
+        o.put("traders", subscriptions.size());
         o.put("symbols", store.symbolCount());
         o.put("sessions", broadcaster.sessionCount());
         putLong(o, "feedMs", clock.feedMs());
@@ -109,6 +130,8 @@ public final class Dashboard implements AutoCloseable {
     public void close() {
         flusher.shutdownNow();
         results.stop();
+        advisories.stop();
+        subscriptionsReader.stop();
         ticks.stop();
         app.stop();
     }

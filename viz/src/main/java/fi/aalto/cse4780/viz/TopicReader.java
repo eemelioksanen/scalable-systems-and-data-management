@@ -2,6 +2,7 @@ package fi.aalto.cse4780.viz;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -13,27 +14,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Reads {@code ema-results} from the earliest offset into the {@link Store}. There is no consumer
- * group: a restarted dashboard rebuilds its state from the topic.
+ * Reads one topic from the earliest offset and hands every record to a handler. There is no
+ * consumer group: a restarted dashboard rebuilds its state from the topics.
  */
-final class ResultsConsumer implements Runnable {
+final class TopicReader implements Runnable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ResultsConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TopicReader.class);
 
     private final Supplier<Consumer<String, String>> consumerFactory;
     private Consumer<String, String> consumer;
     private final String topic;
-    private final Store store;
-    private final AtomicLong resultsRead = new AtomicLong();
-    private final AtomicLong malformedResults = new AtomicLong();
+    private final Predicate<ConsumerRecord<String, String>> handler;
+    private final AtomicLong read = new AtomicLong();
+    private final AtomicLong malformed = new AtomicLong();
     private volatile boolean running = true;
     private boolean assigned;
     private boolean warnedMissing;
 
-    ResultsConsumer(Supplier<Consumer<String, String>> consumerFactory, String topic, Store store) {
+    /** The handler returns false for a malformed record, which is counted and skipped. */
+    TopicReader(Supplier<Consumer<String, String>> consumerFactory, String topic,
+            Predicate<ConsumerRecord<String, String>> handler) {
         this.consumerFactory = consumerFactory;
         this.topic = topic;
-        this.store = store;
+        this.handler = handler;
+    }
+
+    /** {@code ema-results} into the store. */
+    static TopicReader results(Supplier<Consumer<String, String>> factory, String topic, Store store) {
+        return new TopicReader(factory, topic, record -> {
+            Result r = Result.parse(record.value());
+            if (r != null) {
+                store.add(r);
+            }
+            return r != null;
+        });
+    }
+
+    /** {@code advisories} into the store. */
+    static TopicReader advisories(Supplier<Consumer<String, String>> factory, String topic, Store store) {
+        return new TopicReader(factory, topic, record -> {
+            Advisory a = Advisory.parse(record.value());
+            if (a != null) {
+                store.addAdvisory(a);
+            }
+            return a != null;
+        });
+    }
+
+    /** {@code subscriptions}, keyed by trader, into the current lists. */
+    static TopicReader subscriptions(Supplier<Consumer<String, String>> factory, String topic, Subscriptions subs) {
+        return new TopicReader(factory, topic, record -> subs.apply(record.key(), record.value()));
     }
 
     @Override
@@ -83,23 +113,25 @@ final class ResultsConsumer implements Runnable {
         }
         ConsumerRecords<String, String> records = consumer.poll(timeout);
         for (ConsumerRecord<String, String> record : records) {
-            Result result = Result.parse(record.value());
-            if (result == null) {
-                malformedResults.incrementAndGet();
-                continue;
+            if (handler.test(record)) {
+                read.incrementAndGet();
+            } else {
+                malformed.incrementAndGet();
             }
-            resultsRead.incrementAndGet();
-            store.add(result);
         }
         return true;
     }
 
-    long resultsRead() {
-        return resultsRead.get();
+    String topic() {
+        return topic;
     }
 
-    long malformedResults() {
-        return malformedResults.get();
+    long read() {
+        return read.get();
+    }
+
+    long malformed() {
+        return malformed.get();
     }
 
     void stop() {

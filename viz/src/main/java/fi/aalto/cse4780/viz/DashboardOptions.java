@@ -10,11 +10,13 @@ record DashboardOptions(
         int port,
         ZoneOffset zoneOffset,
         String resultsTopic,
+        String advisoriesTopic,
+        String subscriptionsTopic,
         String ticksTopic,
         long flushMs) {
 
     static final String USAGE = """
-            Serves the dashboard over ema-results (viz/README.md).
+            Serves the dashboard over ema-results and advisories (viz/README.md).
 
               java -jar viz.jar [options]
 
@@ -22,6 +24,8 @@ record DashboardOptions(
               --port N                       HTTP and WebSocket port (default 8088)
               --zone-offset +02:00           the Flink job's --zone-offset, used to label times (default +02:00)
               --results-topic NAME           default ema-results
+              --advisories-topic NAME        default advisories
+              --subscriptions-topic NAME     the traders' lists, for the subscription filter (default subscriptions)
               --ticks-topic NAME             read for the replay clock (default ticks)
               --flush-ms N                   how often browsers get updates (default 250)
             """;
@@ -31,6 +35,8 @@ record DashboardOptions(
         int port = 8088;
         ZoneOffset zone = ZoneOffset.of("+02:00");
         String results = "ema-results";
+        String advisories = "advisories";
+        String subscriptions = "subscriptions";
         String ticks = "ticks";
         long flushMs = 250;
         for (int i = 0; i < args.length; i++) {
@@ -48,6 +54,8 @@ record DashboardOptions(
                     case "--port" -> port = Integer.parseInt(value);
                     case "--zone-offset" -> zone = ZoneOffset.of(value);
                     case "--results-topic" -> results = value;
+                    case "--advisories-topic" -> advisories = value;
+                    case "--subscriptions-topic" -> subscriptions = value;
                     case "--ticks-topic" -> ticks = value;
                     case "--flush-ms" -> flushMs = Long.parseLong(value);
                     default -> throw new IllegalArgumentException("Unknown option " + flag + "\n\n" + USAGE);
@@ -59,6 +67,6 @@ record DashboardOptions(
         if (port < 0 || port > 65535 || flushMs <= 0) {
             throw new IllegalArgumentException("--port must be 0-65535 and --flush-ms positive");
         }
-        return new DashboardOptions(bootstrap, port, zone, results, ticks, flushMs);
+        return new DashboardOptions(bootstrap, port, zone, results, advisories, subscriptions, ticks, flushMs);
     }
 }

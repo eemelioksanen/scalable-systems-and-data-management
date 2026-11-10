@@ -26,6 +26,14 @@ class StoreTest {
         return new Result(symbol, "E", windowEnd, 10.0, 1.0, 2.0);
     }
 
+    static Advisory buy(String symbol, long windowEnd) {
+        return new Advisory(symbol, "E", windowEnd, "BUY", 2.0, 1.0);
+    }
+
+    static Advisory sell(String symbol, long windowEnd) {
+        return new Advisory(symbol, "E", windowEnd, "SELL", 1.0, 2.0);
+    }
+
     static long w(int slot) {
         return T0 + slot * SLOT_MS;
     }
@@ -148,5 +156,37 @@ class StoreTest {
         assertTrue(series.points().isEmpty());
         assertNull(series.firstWindowEnd());
         assertNull(store.latestWindowEnd());
+    }
+
+    @Test
+    void keepsAdvisoriesInTheSpanReplacingADuplicate() {
+        store.addAdvisory(buy("A.FR", w(1)));
+        store.addAdvisory(sell("B.NL", w(0)));
+        store.addAdvisory(new Advisory("A.FR", "E", w(1), "BUY", 3.0, 1.0));
+
+        List<Advisory> held = store.advisories();
+        assertEquals(2, store.advisoryCount());
+        assertEquals(List.of("B.NL", "A.FR"), held.stream().map(Advisory::symbol).toList());
+        assertEquals(3.0, held.get(1).ema38());
+    }
+
+    @Test
+    void evictsAdvisoriesWithTheSpanAndDropsOlderOnes() {
+        store.addAdvisory(buy("A.FR", w(0)));
+        store.addAdvisory(buy("A.FR", w(1)));
+        store.add(up("B.NL", w(SLOTS)));
+
+        assertEquals(List.of(w(1)), store.advisories().stream().map(Advisory::windowEnd).toList());
+        assertFalse(store.addAdvisory(sell("A.FR", w(0))));
+        assertEquals(1, store.staleAdvisories());
+    }
+
+    @Test
+    void drainReportsNewAdvisoriesOnce() {
+        store.addAdvisory(buy("A.FR", w(0)));
+        store.addAdvisory(buy("A.FR", w(0)));
+
+        assertEquals(1, store.drain(Set.of()).advisories().size());
+        assertTrue(store.drain(Set.of()).advisories().isEmpty());
     }
 }

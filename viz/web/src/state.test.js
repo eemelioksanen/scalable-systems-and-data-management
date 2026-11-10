@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DOWN, EQUAL, NONE, UP, applyDelta, applySeries, applySnapshot, cellAt, initialState,
-  mergePoints, toChartData, visibleRows,
+  DOWN, EQUAL, NONE, UP, applyDelta, applySeries, applySnapshot, cellAt, feedItems, indexAdvisories, initialState,
+  mergePoints, toChartData, traderScope, visibleRows,
 } from './state.js';
 
 const SLOT = 300000;
@@ -103,5 +103,67 @@ describe('helpers', () => {
     const [xs, close] = toChartData([[w(0), 1, 1, 1], [w(1), 2, 2, 2], [w(5), 3, 3, 3]], SLOT);
     expect(xs).toEqual([w(0) / 1000, w(1) / 1000, w(2) / 1000, w(5) / 1000]);
     expect(close).toEqual([1, 2, null, 3]);
+  });
+});
+
+describe('advisories', () => {
+  const adv = (symbol, i, type, exchange = 'FR', secType = 'E') => [symbol, w(i), type, secType, exchange, 2, 1];
+  const withAdvisories = (advisories, traders = {}) => applySnapshot(initialState, {
+    type: 'snapshot', spanEnd: w(287), slots: 288, slotMs: SLOT, symbols: [], series: null, advisories, traders, clock,
+  });
+
+  it('takes every advisory and the traders from a snapshot', () => {
+    const s = withAdvisories([adv('A.FR', 10, 'BUY'), adv('B.NL', 12, 'SELL', 'NL')], { t1: ['A.FR'] });
+    expect(s.advisories.size).toBe(2);
+    expect(s.traders).toEqual({ t1: ['A.FR'] });
+  });
+
+  it('merges new advisories by symbol and window, and trims them with the span', () => {
+    let s = withAdvisories([adv('A.FR', 0, 'BUY'), adv('A.FR', 10, 'SELL')]);
+    s = applyDelta(s, { spanEnd: w(287), cells: [], points: null, advisories: [adv('A.FR', 10, 'SELL'), adv('A.FR', 20, 'BUY')], traders: null, clock });
+    expect(s.advisories.size).toBe(3);
+    s = applyDelta(s, { spanEnd: w(288), cells: [], points: null, advisories: [], traders: { t2: ['*'] }, clock });
+    expect([...s.advisories.values()].map((a) => a.windowEnd)).toEqual([w(10), w(20)]);
+    expect(s.traders).toEqual({ t2: ['*'] });
+  });
+
+  it('keeps the traders when a delta carries none', () => {
+    const s = applyDelta(withAdvisories([], { t1: [] }), { spanEnd: w(287), cells: [], points: null, advisories: [], traders: null, clock });
+    expect(s.traders).toEqual({ t1: [] });
+  });
+
+  it('indexes newest first, by symbol oldest first, and each symbol latest', () => {
+    const s = withAdvisories([adv('B.NL', 5, 'BUY', 'NL'), adv('A.FR', 5, 'BUY'), adv('A.FR', 9, 'SELL')]);
+    const { all, bySymbol, lastCross } = indexAdvisories(s.advisories);
+    expect(all.map((a) => `${a.symbol}@${a.windowEnd}`)).toEqual([`A.FR@${w(9)}`, `A.FR@${w(5)}`, `B.NL@${w(5)}`]);
+    expect(bySymbol.get('A.FR').map((a) => a.type)).toEqual(['BUY', 'SELL']);
+    expect(lastCross.get('A.FR').type).toBe('SELL');
+  });
+
+  it('filters the feed by exchange, SecType and a trader\'s current list', () => {
+    const s = withAdvisories([adv('A.FR', 1, 'BUY'), adv('B.NL', 2, 'SELL', 'NL'), adv('C.NL', 3, 'BUY', 'NL', 'I')]);
+    const { all } = indexAdvisories(s.advisories);
+    const traders = { t1: ['B.NL', 'C.NL'], t2: ['*'], t3: [] };
+    const symbols = (filters) => feedItems(all, filters, traders).map((a) => a.symbol);
+    expect(symbols({})).toEqual(['C.NL', 'B.NL', 'A.FR']);
+    expect(symbols({ exchange: 'NL', secType: 'E' })).toEqual(['B.NL']);
+    expect(symbols({ trader: 't1' })).toEqual(['C.NL', 'B.NL']);
+    expect(symbols({ trader: 't2' })).toEqual(['C.NL', 'B.NL', 'A.FR']);
+    expect(symbols({ trader: 't3' })).toEqual([]);
+    expect(symbols({ trader: 'gone' })).toEqual([]);
+    expect(traderScope(traders, null)).toBeNull();
+  });
+
+  it('sorts heatmap rows by latest crossover, with none last, and by subscription', () => {
+    const rows = [
+      { symbol: 'A.FR', exchange: 'FR', secType: 'E', lastFlip: w(9) },
+      { symbol: 'B.FR', exchange: 'FR', secType: 'E', lastFlip: w(1) },
+      { symbol: 'C.FR', exchange: 'FR', secType: 'E', lastFlip: null },
+    ];
+    const lastCross = new Map([['B.FR', { windowEnd: w(5) }], ['C.FR', { windowEnd: w(2) }]]);
+    const names = (opts, filters = {}) => visibleRows(rows, filters, opts).map((i) => rows[i].symbol);
+    expect(names({ sort: 'cross', lastCross })).toEqual(['B.FR', 'C.FR', 'A.FR']);
+    expect(names({ sort: 'flip' })).toEqual(['A.FR', 'B.FR', 'C.FR']);
+    expect(names({ sort: 'cross', lastCross, traders: { t: ['C.FR', 'A.FR'] } }, { trader: 't' })).toEqual(['C.FR', 'A.FR']);
   });
 });
