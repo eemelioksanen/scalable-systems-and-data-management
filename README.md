@@ -107,7 +107,7 @@ Host ports can be changed with `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS
 
 ## Dashboard
 
-`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results`: a trend heatmap of every published symbol over the last 24 hours of five-minute windows, a chart of one symbol's close, EMA38 and EMA100, and a replay clock with the feed time next to wall-clock time. It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Grafana.
+`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results` and `advisories`: a trend heatmap of every published symbol over the last 24 hours of five-minute windows, sorted by latest crossover; a chart of one symbol's close, EMA38 and EMA100 with ▲ BUY and ▼ SELL markers; a live advisory feed; and a replay clock with the feed time next to wall-clock time. The heatmap and the feed filter by exchange, SecType and subscription (a trader's current list in `subscriptions`). It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Grafana.
 
 To watch it fill, replay a subset live, for example:
 
@@ -117,7 +117,7 @@ docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /da
 curl -s localhost:8088/health
 ```
 
-[viz/README.md](viz/README.md) covers its options, the WebSocket protocol and frontend development.
+[viz/README.md](viz/README.md) covers its options, the WebSocket protocol and frontend development, and the scripted end-to-end check that replays two days with subscriptions changed mid-run and compares what the dashboard shows with the topics and the oracle ([recorded run](docs/validation/2026-11-10-dashboard/README.md)).
 
 ## Correctness check
 

@@ -34,8 +34,13 @@ final class KafkaFixtures {
     }
 
     static ConsumerRecord<String, String> record(String topic, int partition, long offset, long timestamp, String value) {
+        return record(topic, partition, offset, timestamp, "k", value);
+    }
+
+    static ConsumerRecord<String, String> record(String topic, int partition, long offset, long timestamp,
+            String key, String value) {
         return new ConsumerRecord<>(topic, partition, offset, timestamp,
-                org.apache.kafka.common.record.TimestampType.CREATE_TIME, 0, 0, "k", value,
+                org.apache.kafka.common.record.TimestampType.CREATE_TIME, 0, 0, key, value,
                 new org.apache.kafka.common.header.internals.RecordHeaders(), java.util.Optional.empty());
     }
 }

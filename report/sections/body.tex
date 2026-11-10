@@ -126,6 +126,18 @@ compressing the introduction or implementation text.}
 interpret EMA and crossover outputs, skew or replay time. Verify each shown
 view against the submitted version. Separate planned views from implemented
 ones and operational Grafana metrics from query results.}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/dashboard-overview.png}
+\caption{The dashboard after the checked end-to-end run (Monday unpaced, Tuesday at 120$\times$,
+subscriptions changed at 12:00). Left: heatmap of the sign of EMA$_{38}-$EMA$_{100}$, sorted by
+latest published crossover, with advisory windows in the darker color. Right: INVDS.FR with its
+published SELL and BUY, and the advisory feed. Every value shown matched the topics and the oracle
+(docs/validation/2026-11-10-dashboard).}
+\Description{A web dashboard with a symbol-by-time heatmap on the left, a price and EMA chart with
+triangle markers on the top right, and a table of BUY and SELL advisories on the bottom right.}
+\label{fig:dashboard}
+\end{figure*}
 
 \section{Conclusion}
 \pending{Answer the motivating question using measured evidence. State remaining

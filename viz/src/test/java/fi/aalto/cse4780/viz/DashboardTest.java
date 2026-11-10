@@ -27,16 +27,21 @@ class DashboardTest {
     static final ObjectMapper JSON = new ObjectMapper();
 
     private Store store;
+    private Subscriptions subscriptions;
     private Dashboard dashboard;
     private final HttpClient http = HttpClient.newHttpClient();
 
     @BeforeEach
     void start() {
         store = new Store();
+        subscriptions = new Subscriptions();
         DashboardOptions options = DashboardOptions.parse(new String[] {"--port", "0", "--flush-ms", "20"}, Map.of());
         FeedClock feed = new FeedClock(ZoneOffset.of("+02:00"));
-        dashboard = new Dashboard(options, store, feed,
-                new ResultsConsumer(supply(KafkaFixtures.consumerWithTopic("ema-results", 1)), "ema-results", store),
+        dashboard = new Dashboard(options, store, subscriptions, feed,
+                TopicReader.results(supply(KafkaFixtures.consumerWithTopic("ema-results", 1)), "ema-results", store),
+                TopicReader.advisories(supply(KafkaFixtures.consumerWithTopic("advisories", 1)), "advisories", store),
+                TopicReader.subscriptions(supply(KafkaFixtures.consumerWithTopic("subscriptions", 1)), "subscriptions",
+                        subscriptions),
                 new TicksTail(supply(KafkaFixtures.consumerWithTopic("ticks", 1)), "ticks", feed, System::currentTimeMillis));
     }
 
@@ -99,9 +104,15 @@ class DashboardTest {
         assertEquals(StoreTest.T0, series.get("series").get("firstWindowEnd").asLong());
 
         store.add(StoreTest.down("A.FR", StoreTest.w(1)));
+        store.addAdvisory(StoreTest.sell("A.FR", StoreTest.w(1)));
         JsonNode delta = browser.next("delta");
         assertEquals("-", delta.get("cells").get(0).get(2).asText());
         assertEquals(StoreTest.w(1), delta.get("points").get("points").get(0).get(0).asLong());
+        assertEquals("SELL", delta.get("advisories").get(0).get(2).asText());
+
+        subscriptions.apply("t1", "{\"symbols\":[\"A.FR\"]}");
+        JsonNode traders = browser.next("delta");
+        assertEquals("A.FR", traders.get("traders").get("t1").get(0).asText());
         ws.abort();
     }
 
@@ -129,6 +140,8 @@ class DashboardTest {
         JsonNode health = JSON.readTree(response.body());
         assertEquals(200, response.statusCode());
         assertEquals(1, health.get("symbols").asInt());
+        assertEquals(0, health.get("advisories").asInt());
+        assertEquals(0, health.get("traders").asInt());
         assertEquals(StoreTest.T0, health.get("resultsMs").asLong());
         assertTrue(health.get("feedMs").isNull());
     }
