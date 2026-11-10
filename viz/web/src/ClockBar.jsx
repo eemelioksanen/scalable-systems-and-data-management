@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
-import { formatDateTime, formatLag, formatLocal, formatTime } from './format.js';
+import { clockStatus, formatDateTime, formatLocal, formatTime } from './format.js';
 
-const IDLE_LABEL_AFTER_MS = 10000;
+const TITLES = {
+  live: 'The newest window is published and the next one is still open: it is evaluated once the window after it starts (spec 3.1 (7)).',
+  wait: 'No newer window is published yet. The job waits for its watermark (the 1 s bound, or a quiet partition up to the 30 s idleness timeout), or no subscribed symbol traded since. Watermark lag is graphed in Grafana.',
+  idle: 'No new ticks. Windows still open are evaluated when input resumes or the job is drained.',
+  off: 'Not connected to results yet.',
+};
 
-export default function ClockBar({ clock, status }) {
+export default function ClockBar({ clock, status, slotMs }) {
   const [wall, setWall] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setWall(Date.now()), 1000);
@@ -11,38 +16,31 @@ export default function ClockBar({ clock, status }) {
   }, []);
 
   const zone = clock?.zoneOffset ?? '+02:00';
-  const feedMs = clock?.feedMs ?? null;
-  const resultsMs = clock?.resultsMs ?? null;
-  const lag = feedMs != null && resultsMs != null ? formatLag(feedMs - resultsMs) : null;
-  const idle = clock?.feedIdleSince != null && wall - clock.feedIdleSince > IDLE_LABEL_AFTER_MS;
-  const waitingForKafka = status === 'live' && feedMs == null && resultsMs == null;
-
-  let pill = { text: 'live', cls: 'pill live' };
-  if (status === 'reconnecting') pill = { text: 'reconnecting', cls: 'pill off' };
-  else if (status === 'connecting') pill = { text: 'connecting', cls: 'pill off' };
-  else if (waitingForKafka) pill = { text: 'waiting for Kafka', cls: 'pill off' };
+  const s = clockStatus(clock, wall, slotMs, status);
+  const connected = status === 'live';
 
   return (
     <header className="bar">
-      <span title="Latest replayed tick, from the Date and Time of the newest ticks records">
-        <span className="k">Feed time</span>
-        <span className="v">{formatDateTime(feedMs, zone)}</span>
-        {idle && <span className="gap"> feed idle</span>}
+      <span title="windowEnd of the newest published result: the exclusive end of its 5-minute window">
+        <span className="k">Results as of</span>
+        <span className="v">{formatDateTime(clock?.resultsMs ?? null, zone).slice(0, -3)}</span>
       </span>
-      <span title="windowEnd of the newest ema-results record: the exclusive end of its 5-minute window">
-        <span className="k">Latest window</span>
-        <span className="v">{formatTime(resultsMs, zone)}</span>
-        {lag && <span className="gap"> (results {lag} behind feed)</span>}
+      <span className={`pill state ${s.key}`} title={TITLES[s.key]}>
+        {s.text}{s.nextEnd != null && <> to {formatTime(s.nextEnd, zone)}</>}
       </span>
-      <span>
+      <span className="minor" title="Sampled from the tail of ticks once a second: the replay's source time, at the job's zone offset. It moves in steps at fast replay rates.">
+        <span className="k">Feed</span>
+        <span>{formatDateTime(clock?.feedMs ?? null, zone)}</span>
+      </span>
+      <span className="minor">
         <span className="k">Wall clock</span>
-        <span className="v">{formatLocal(wall)}</span>
+        <span>{formatLocal(wall)}</span>
       </span>
       <span className="sp" />
       <span className="pill" title="The Flink job's --zone-offset (D-3): feed and window times are shown at this offset">
         UTC{zone} (job --zone-offset)
       </span>
-      <span className={pill.cls}>● {pill.text}</span>
+      <span className={connected ? 'pill live' : 'pill off'}>● {connected ? 'connected' : status}</span>
     </header>
   );
 }

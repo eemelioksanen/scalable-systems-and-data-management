@@ -1,0 +1,247 @@
+{
+  "capture": "correctness/out/dashboard-e2e/final.json",
+  "job": "correctness/out/dashboard-e2e/export",
+  "oracle": "/repo/oracle/out/mon-tue",
+  "zoneOffset": "+02:00",
+  "span": {
+    "start": 1636403400000,
+    "end": 1636489800000,
+    "startShown": "Mon 08-11-2021 22:30",
+    "endShown": "Tue 09-11-2021 22:30"
+  },
+  "shown": {
+    "symbols": 13,
+    "cells": 1222,
+    "advisories": 12,
+    "charted": 13,
+    "traders": 3
+  },
+  "checks": [
+    {
+      "name": "heatmapCellsEqualTopic",
+      "checked": 1222,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "heatmapCellsEqualOracle",
+      "checked": 1222,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "heatmapSecTypeAndExchange",
+      "checked": 13,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "chartPointsEqualTopic",
+      "checked": 1222,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "chartPointsEqualOracle",
+      "checked": 1222,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "feedEqualsTopic",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "feedEqualsOracleForShownWindows",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "feedTimesAtZoneOffset",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "firstWindowFlagEqualsOracle",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "feedLatencyEqualsTopic",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "defaultFeedHidesOnlyFirstWindowBuys",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "feedNewestFirst",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "chartMarkersEqualFeed",
+      "checked": 12,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "feedPerTraderFollowsCurrentList",
+      "checked": 3,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "tradersEqualSubscriptionsWritten",
+      "checked": 3,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "heatmapSortedByCrossover",
+      "checked": 13,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "name": "clockLatestWindow",
+      "checked": 1,
+      "mismatches": 0,
+      "examples": [],
+      "pass": true
+    }
+  ],
+  "publication": [
+    {
+      "symbol": "A0MK44.ETR",
+      "firstShownWindowEnd": 1636444500000,
+      "firstShown": "Tue 09-11-2021 09:55",
+      "windowsShown": 6,
+      "advisoriesShown": 1,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "A0S3AS.ETR",
+      "firstShownWindowEnd": 1636452600000,
+      "firstShown": "Tue 09-11-2021 12:10",
+      "windowsShown": 123,
+      "advisoriesShown": 1,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "A1CX3T.ETR",
+      "firstShownWindowEnd": 1636441800000,
+      "firstShown": "Tue 09-11-2021 09:10",
+      "windowsShown": 36,
+      "advisoriesShown": 0,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "A1EXV9.ETR",
+      "firstShownWindowEnd": 1636437900000,
+      "firstShown": "Tue 09-11-2021 08:05",
+      "windowsShown": 169,
+      "advisoriesShown": 1,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "AIR.FR",
+      "firstShownWindowEnd": 1636441500000,
+      "firstShown": "Tue 09-11-2021 09:05",
+      "windowsShown": 103,
+      "advisoriesShown": 0,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "ASML.NL",
+      "firstShownWindowEnd": 1636441500000,
+      "firstShown": "Tue 09-11-2021 09:05",
+      "windowsShown": 103,
+      "advisoriesShown": 0,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "EUS5D.NL",
+      "firstShownWindowEnd": 1636441500000,
+      "firstShown": "Tue 09-11-2021 09:05",
+      "windowsShown": 162,
+      "advisoriesShown": 1,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "I3BP.NL",
+      "firstShownWindowEnd": 1636452600000,
+      "firstShown": "Tue 09-11-2021 12:10",
+      "windowsShown": 73,
+      "advisoriesShown": 1,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "INVDS.FR",
+      "firstShownWindowEnd": 1636435200000,
+      "firstShown": "Tue 09-11-2021 07:20",
+      "windowsShown": 131,
+      "advisoriesShown": 2,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "IPLU3.FR",
+      "firstShownWindowEnd": 1636451700000,
+      "firstShown": "Tue 09-11-2021 11:55",
+      "windowsShown": 76,
+      "advisoriesShown": 2,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "ISAMD.FR",
+      "firstShownWindowEnd": 1636435200000,
+      "firstShown": "Tue 09-11-2021 07:20",
+      "windowsShown": 131,
+      "advisoriesShown": 2,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "MLSUM.FR",
+      "firstShownWindowEnd": 1636450500000,
+      "firstShown": "Tue 09-11-2021 11:35",
+      "windowsShown": 6,
+      "advisoriesShown": 1,
+      "oracleAdvisoriesBeforePublication": 0
+    },
+    {
+      "symbol": "RDSA.NL",
+      "firstShownWindowEnd": 1636441500000,
+      "firstShown": "Tue 09-11-2021 09:05",
+      "windowsShown": 103,
+      "advisoriesShown": 0,
+      "oracleAdvisoriesBeforePublication": 0
+    }
+  ],
+  "pass": true
+}

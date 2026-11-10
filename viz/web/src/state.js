@@ -19,8 +19,52 @@ export const initialState = {
   signs: new Int8Array(0),
   version: 0,
   series: null,
+  // Advisories in the span, keyed by advisoryKey; advVersion moves whenever they change.
+  advisories: new Map(),
+  advVersion: 0,
+  // Each trader's current list from the subscriptions topic; ['*'] means every symbol.
+  traders: {},
   clock: null,
 };
+
+export const advisoryKey = (symbol, windowEnd) => `${symbol}|${windowEnd}`;
+
+// A symbol's first window turns EMA38 = close·2/39 and EMA100 = close·2/101, from EMA0 = 0
+// (D-7), so its BUY comes from the zero start, not from a breakout. The ratio of the two EMAs
+// identifies it from the record alone: 101/39 for every close.
+export function isFirstWindowBuy(type, ema38, ema100) {
+  return type === 'BUY' && Math.abs(ema38 * 39 - ema100 * 101) <= 1e-9 * Math.abs(ema100 * 101);
+}
+
+// [symbol, windowEnd, type, secType, exchange, ema38, ema100, maxIngestTs, emitTs], as the backend
+// sends them. latencyMs is the advisory's wall-clock time from admission to publication (D-40).
+function toAdvisory([symbol, windowEnd, type, secType, exchange, ema38, ema100, maxIngestTs = null, emitTs = null]) {
+  return {
+    symbol, windowEnd, type, secType, exchange, ema38, ema100,
+    latencyMs: maxIngestTs == null || emitTs == null ? null : emitTs - maxIngestTs,
+    firstWindow: isFirstWindowBuy(type, ema38, ema100),
+  };
+}
+
+function mergeAdvisories(map, list) {
+  for (const a of list) {
+    const adv = toAdvisory(a);
+    map.set(advisoryKey(adv.symbol, adv.windowEnd), adv);
+  }
+}
+
+function trimAdvisories(map, spanEnd, slots, slotMs) {
+  if (spanEnd == null) return false;
+  const start = spanEnd - slots * slotMs;
+  let removed = false;
+  for (const [k, a] of map) {
+    if (a.windowEnd <= start) {
+      map.delete(k);
+      removed = true;
+    }
+  }
+  return removed;
+}
 
 export function slotOf(windowEnd, slots, slotMs) {
   const s = Math.floor(windowEnd / slotMs) % slots;
@@ -58,8 +102,17 @@ export function applySnapshot(_state, msg) {
     signs,
     version: _state.version + 1,
     series: msg.series ? trimSeries(msg.series, spanEnd, slots, slotMs) : null,
+    advisories: snapshotAdvisories(msg.advisories ?? []),
+    advVersion: _state.advVersion + 1,
+    traders: msg.traders ?? {},
     clock: msg.clock,
   };
+}
+
+function snapshotAdvisories(list) {
+  const map = new Map();
+  mergeAdvisories(map, list);
+  return map;
 }
 
 export function applySeries(state, msg) {
@@ -102,6 +155,17 @@ export function applyDelta(state, msg) {
   if (series && spanEnd !== state.spanEnd) {
     series = trimSeries(series, spanEnd, slots, slotMs);
   }
+  let { advisories, advVersion } = state;
+  const incoming = msg.advisories ?? [];
+  if (incoming.length > 0 || spanEnd !== state.spanEnd) {
+    const next = new Map(advisories);
+    mergeAdvisories(next, incoming);
+    const trimmed = spanEnd !== state.spanEnd && trimAdvisories(next, spanEnd, slots, slotMs);
+    if (incoming.length > 0 || trimmed) {
+      advisories = next;
+      advVersion += 1;
+    }
+  }
   return {
     ...state,
     received: true,
@@ -111,8 +175,51 @@ export function applyDelta(state, msg) {
     signs,
     version: state.version + 1,
     series,
+    advisories,
+    advVersion,
+    traders: msg.traders ?? state.traders,
     clock: msg.clock ?? state.clock,
   };
+}
+
+// The advisories in three shapes: all of them newest first (the feed), by symbol oldest first
+// (chart markers and heatmap ticks), and each symbol's latest (the heatmap's crossover sort).
+// lastCross skips first-window BUYs unless they are shown: they are no breakout.
+export function indexAdvisories(advisories, { firstWindows = false } = {}) {
+  const all = [...advisories.values()].sort((a, b) => b.windowEnd - a.windowEnd
+    || (a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0));
+  const bySymbol = new Map();
+  const lastCross = new Map();
+  for (let i = all.length - 1; i >= 0; i--) {
+    const a = all[i];
+    let list = bySymbol.get(a.symbol);
+    if (!list) bySymbol.set(a.symbol, (list = []));
+    list.push(a);
+    if (firstWindows || !a.firstWindow) lastCross.set(a.symbol, a);
+  }
+  return { all, bySymbol, lastCross };
+}
+
+// The symbols a trader's current list covers: null for no trader filter, 'all' for '*'.
+export function traderScope(traders, trader) {
+  if (!trader) return null;
+  const list = traders[trader];
+  if (!list) return new Set();
+  return list.includes('*') ? 'all' : new Set(list);
+}
+
+// Whether a heatmap row or an advisory passes the exchange, SecType and subscription filters.
+export function passes(item, filters, scope) {
+  if (filters.exchange && item.exchange !== filters.exchange) return false;
+  if (filters.secType && item.secType !== filters.secType) return false;
+  if (scope && scope !== 'all' && !scope.has(item.symbol)) return false;
+  return true;
+}
+
+// The advisory feed: newest first, after the filters. First-window BUYs only with filters.firstWindows.
+export function feedItems(all, filters, traders) {
+  const scope = traderScope(traders, filters.trader);
+  return all.filter((a) => (filters.firstWindows || !a.firstWindow) && passes(a, filters, scope));
 }
 
 // Clears the slots of windows that left the span when it moved from oldEnd to newEnd.
@@ -143,17 +250,22 @@ export function cellAt(state, row, column) {
   return state.signs[row * state.slots + slotOf(windowEnd, state.slots, state.slotMs)];
 }
 
-// Row indices after the exchange and SecType filters, newest flip first, then by symbol.
-export function visibleRows(rows, filters) {
+// Row indices after the filters. sort is 'cross' (newest published advisory first), 'flip'
+// (newest sign flip of EMA38 - EMA100 first) or 'symbol'; ties and missing values go by symbol.
+export function visibleRows(rows, filters, { sort = 'flip', lastCross = new Map(), traders = {} } = {}) {
+  const scope = traderScope(traders, filters.trader);
   const out = [];
   rows.forEach((row, i) => {
-    if (filters.exchange && row.exchange !== filters.exchange) return;
-    if (filters.secType && row.secType !== filters.secType) return;
-    out.push(i);
+    if (passes(row, filters, scope)) out.push(i);
   });
+  const key = (r) => {
+    if (sort === 'cross') return lastCross.get(rows[r].symbol)?.windowEnd ?? null;
+    if (sort === 'flip') return rows[r].lastFlip;
+    return null;
+  };
   out.sort((a, b) => {
-    const fa = rows[a].lastFlip;
-    const fb = rows[b].lastFlip;
+    const fa = key(a);
+    const fb = key(b);
     if (fa !== fb) {
       if (fa == null) return 1;
       if (fb == null) return -1;

@@ -50,3 +50,30 @@ export function shiftedDate(seconds, zoneOffset) {
   return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
     d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds(), d.getUTCMilliseconds());
 }
+
+// An advisory's admission-to-publication latency, wall-clock (D-40).
+export function formatLatency(ms) {
+  if (ms == null) return '–';
+  if (ms < 1000) return `${Math.max(0, Math.round(ms))} ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)} s`;
+  const s = Math.round(ms / 1000);
+  return `${Math.floor(s / 60)} min ${s % 60} s`;
+}
+
+const IDLE_AFTER_MS = 10000;
+
+// What the clock bar says about the results. Gaps are never shown as simulated minutes: those scale
+// with the replay rate. A window is published once the next one has started (spec 3.1 (7)) and the
+// watermark has passed it, so the newest published window always trails the feed.
+export function clockStatus(clock, wall, slotMs, connection) {
+  if (connection === 'reconnecting') return { key: 'off', text: 'reconnecting' };
+  if (connection === 'connecting') return { key: 'off', text: 'connecting' };
+  const feedMs = clock?.feedMs ?? null;
+  const resultsMs = clock?.resultsMs ?? null;
+  if (feedMs == null && resultsMs == null) return { key: 'off', text: 'waiting for Kafka' };
+  const idle = clock?.feedIdleSince != null && wall - clock.feedIdleSince > IDLE_AFTER_MS;
+  if (resultsMs == null) return { key: 'wait', text: idle ? 'feed idle, no results' : 'no results yet' };
+  if (idle) return { key: 'idle', text: 'feed idle' };
+  if (feedMs == null || feedMs - resultsMs <= slotMs) return { key: 'live', text: 'window open', nextEnd: resultsMs + slotMs };
+  return { key: 'wait', text: 'waiting for the next window' };
+}

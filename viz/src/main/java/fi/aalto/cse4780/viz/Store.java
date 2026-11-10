@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * The last {@value #SLOTS} five-minute windows of every published symbol, ending at the newest
@@ -26,13 +27,21 @@ final class Store {
 
     record Series(String symbol, Long firstWindowEnd, List<Point> points) {}
 
-    /** Changes since the previous drain: heatmap cells for everyone, points for the symbols asked for. */
-    record Drained(Long spanEnd, List<Cell> cells, Map<String, List<Point>> points) {}
+    /**
+     * Changes since the previous drain: heatmap cells and advisories for everyone, points for the
+     * symbols asked for.
+     */
+    record Drained(Long spanEnd, List<Cell> cells, Map<String, List<Point>> points, List<Advisory> advisories) {}
 
     private final Map<String, History> symbols = new HashMap<>();
     private final Map<String, Set<Long>> pending = new LinkedHashMap<>();
+    /** Advisories by symbol and windowEnd, within the span. Not tied to History: the two topics are read apart. */
+    private final Map<String, TreeMap<Long, Advisory>> advisories = new HashMap<>();
+    private final Map<String, Set<Long>> pendingAdvisories = new LinkedHashMap<>();
+    private int advisoryCount;
     private long latestWindowEnd = Long.MIN_VALUE;
     private long staleResults;
+    private long staleAdvisories;
 
     /** Adds a result. Returns false if it is older than the retained span and was dropped. */
     synchronized boolean add(Result r) {
@@ -41,17 +50,49 @@ final class Store {
             return false;
         }
         if (r.windowEnd() > latestWindowEnd) {
-            long previous = latestWindowEnd;
             latestWindowEnd = r.windowEnd();
-            if (previous != Long.MIN_VALUE) {
-                evictBefore(spanStart(latestWindowEnd));
-            }
+            // Also on the first result: advisories read before it may already be out of the span.
+            evictBefore(spanStart(latestWindowEnd));
         }
         History h = symbols.computeIfAbsent(r.symbol(), s -> new History(r.secType(), Result.exchangeOf(s)));
         h.secType = r.secType();
         h.put(r);
         pending.computeIfAbsent(r.symbol(), s -> new LinkedHashSet<>()).add(r.windowEnd());
         return true;
+    }
+
+    /**
+     * Adds an advisory. Returns false if it is older than the retained span and was dropped. The
+     * span follows {@code ema-results} only, so an advisory read before its result is kept.
+     */
+    synchronized boolean addAdvisory(Advisory a) {
+        if (latestWindowEnd != Long.MIN_VALUE && a.windowEnd() <= spanStart(latestWindowEnd)) {
+            staleAdvisories++;
+            return false;
+        }
+        if (advisories.computeIfAbsent(a.symbol(), s -> new TreeMap<>()).put(a.windowEnd(), a) == null) {
+            advisoryCount++;
+        }
+        pendingAdvisories.computeIfAbsent(a.symbol(), s -> new LinkedHashSet<>()).add(a.windowEnd());
+        return true;
+    }
+
+    /** Every retained advisory, oldest first, then by symbol. */
+    synchronized List<Advisory> advisories() {
+        List<Advisory> out = new ArrayList<>(advisoryCount);
+        for (TreeMap<Long, Advisory> bySymbol : advisories.values()) {
+            out.addAll(bySymbol.values());
+        }
+        out.sort(ADVISORY_ORDER);
+        return out;
+    }
+
+    synchronized int advisoryCount() {
+        return advisoryCount;
+    }
+
+    synchronized long staleAdvisories() {
+        return staleAdvisories;
     }
 
     synchronized Long latestWindowEnd() {
@@ -105,8 +146,23 @@ final class Store {
             }
         }
         pending.clear();
-        return new Drained(latestWindowEnd(), cells, points);
+        List<Advisory> newAdvisories = new ArrayList<>();
+        for (Map.Entry<String, Set<Long>> e : pendingAdvisories.entrySet()) {
+            TreeMap<Long, Advisory> bySymbol = advisories.get(e.getKey());
+            for (long windowEnd : e.getValue()) {
+                Advisory a = bySymbol == null ? null : bySymbol.get(windowEnd);
+                if (a != null) {
+                    newAdvisories.add(a);
+                }
+            }
+        }
+        pendingAdvisories.clear();
+        newAdvisories.sort(ADVISORY_ORDER);
+        return new Drained(latestWindowEnd(), cells, points, newAdvisories);
     }
+
+    private static final java.util.Comparator<Advisory> ADVISORY_ORDER =
+            java.util.Comparator.comparingLong(Advisory::windowEnd).thenComparing(Advisory::symbol);
 
     static long spanStart(long spanEnd) {
         return spanEnd - SLOTS * SLOT_MS;
@@ -120,6 +176,12 @@ final class Store {
         for (History h : symbols.values()) {
             h.evictUpTo(spanStartExclusive);
         }
+        for (TreeMap<Long, Advisory> bySymbol : advisories.values()) {
+            var old = bySymbol.headMap(spanStartExclusive, true);
+            advisoryCount -= old.size();
+            old.clear();
+        }
+        advisories.values().removeIf(TreeMap::isEmpty);
     }
 
     /** One symbol's retained windows in parallel arrays, sorted by windowEnd. */

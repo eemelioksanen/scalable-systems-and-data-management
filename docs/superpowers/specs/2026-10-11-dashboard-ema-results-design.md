@@ -95,7 +95,7 @@ clock = {"wallMs":…, "feedMs":…|null, "feedIdleSince":…|null, "resultsMs":
 - On connect the server sends a `snapshot` with `series: null`. The client then sends `select`.
 - `cells` as a 288-character string keeps a full snapshot of ~5,500 symbols near 1.6 MB.
 - There is no replay of missed deltas. A reconnect always starts from a new snapshot.
-- #13 extends this by adding an `advisories` field to `series` and `delta`; existing fields do not change.
+- #13 extends this with `advisories` and `traders` fields in `snapshot` and `delta`; existing fields do not change (D-41, [viz/README.md](../../../viz/README.md#websocket-protocol)). Every advisory in the span goes to every browser, so `series` needs none.
 
 ## Frontend
 
