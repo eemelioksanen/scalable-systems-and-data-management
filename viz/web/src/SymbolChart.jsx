@@ -68,8 +68,17 @@ function advisoryPlugin(getMarkers) {
             ctx.lineTo(x - r, y - r * 0.8);
           }
           ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
+          if (m.firstWindow) {
+            // Hollow: published, but from EMA0 = 0 rather than a breakout (D-7).
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = EMA38;
+            ctx.stroke();
+            ctx.strokeStyle = '#ffffff';
+          } else {
+            ctx.fill();
+            ctx.stroke();
+          }
         }
         ctx.restore();
       },
@@ -85,10 +94,9 @@ export default function SymbolChart({ series, row, markers = [], slotMs, slots, 
   markersRef.current = markers;
   const points = series?.points ?? [];
   const data = useMemo(() => toChartData(points, slotMs), [points, slotMs]);
-  // The first window the dashboard saw is the symbol's first only if its published BUY is there:
-  // a symbol subscribed mid-run is first published at some later window (D-41).
-  const first = series?.firstWindowEnd ?? null;
-  firstRef.current = markers.some((m) => m.windowEnd === first && m.type === 'BUY') ? first : null;
+  // Marked only where a published BUY has the first window's EMAs: a symbol subscribed mid-run is
+  // first published at some later window, which is not its first (D-41).
+  firstRef.current = markers.find((m) => m.firstWindow)?.windowEnd ?? null;
 
   useEffect(() => {
     const holder = holderRef.current;
@@ -130,7 +138,8 @@ export default function SymbolChart({ series, row, markers = [], slotMs, slots, 
     plotRef.current?.setData(data);
   }, [data, markers]);
 
-  const buys = markers.filter((m) => m.type === 'BUY').length;
+  const buys = markers.filter((m) => m.type === 'BUY' && !m.firstWindow).length;
+  const sells = markers.filter((m) => m.type === 'SELL').length;
 
   const symbol = series?.symbol ?? row?.symbol;
   let empty = null;
@@ -144,7 +153,7 @@ export default function SymbolChart({ series, row, markers = [], slotMs, slots, 
         {row && (
           <span className="m">
             {row.secType === 'I' ? 'index' : 'equity'} · {row.exchange} · {points.length} of {slots} windows with trades
-            · {buys} BUY · {markers.length - buys} SELL
+            · {buys} BUY · {sells} SELL{markers.some((m) => m.firstWindow) ? ' · first-window BUY (hollow)' : ''}
           </span>
         )}
         <span className="sp" />

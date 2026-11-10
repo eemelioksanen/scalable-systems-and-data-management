@@ -73,3 +73,9 @@ code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-si
 .empty-state { max-width: 760px; margin: 48px auto; }
 .empty-state h2 { font-size: 16px; margin: 0 0 8px; }
 .empty-state pre { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 8px; overflow-x: auto; }
+.bar .minor { color: var(--muted); font-size: 12px; }
+.pill.state.live { color: #1d4ed8; border-color: #bfdbfe; }
+.pill.state.wait { color: #b45309; border-color: #fde68a; }
+.pill.state.idle, .pill.state.off { color: var(--muted); }
+.first-tag { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.filters label.check { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; }

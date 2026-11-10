@@ -12,7 +12,7 @@ const TICKS = { BUY: '#1d4ed8', SELL: '#b45309' };
 const SORTS = ['cross', 'flip', 'symbol'];
 const SORT_LABELS = { cross: 'latest crossover', flip: 'latest sign flip', symbol: 'A–Z' };
 
-export default function Heatmap({ state, order, sort, onSort, adv, selected, onSelect, zoneOffset }) {
+export default function Heatmap({ state, order, sort, onSort, adv, showFirst, selected, onSelect, zoneOffset }) {
   const scrollRef = useRef(null);
   const canvasRef = useRef(null);
   const [viewport, setViewport] = useState({ top: 0, width: 0, height: 0 });
@@ -66,6 +66,7 @@ export default function Heatmap({ state, order, sort, onSort, adv, selected, onS
         ctx.fillRect(LABEL_W + c * cellW, y + 1, Math.ceil(cellW), ROW_H - 2);
       }
       for (const a of adv.bySymbol.get(row.symbol) ?? []) {
+        if (a.firstWindow && !showFirst) continue;
         const column = state.slots - 1 - Math.round((state.spanEnd - a.windowEnd) / state.slotMs);
         if (column < 0 || column >= state.slots) continue;
         ctx.fillStyle = TICKS[a.type];
@@ -83,7 +84,7 @@ export default function Heatmap({ state, order, sort, onSort, adv, selected, onS
       }
       ctx.textAlign = 'left';
     }
-  }, [state.version, state.rows, state.slots, order, viewport, selected, zoneOffset, state, adv, sort]);
+  }, [state.version, state.rows, state.slots, order, viewport, selected, zoneOffset, state, adv, sort, showFirst]);
 
   function onClick(event) {
     const rect = scrollRef.current.getBoundingClientRect();

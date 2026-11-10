@@ -68,12 +68,15 @@ def check(capture_path: Path, job: Path, oracle: Path, out: Path, expect_traders
 
     topic_ema = in_span(pl.read_parquet(job / "ema_results.parquet")).unique(["symbol", "windowEnd"], keep="last")
     topic_adv = in_span(pl.read_parquet(job / "advisories.parquet")).unique(["symbol", "windowEnd"], keep="last")
-    oracle_ema = in_span(pl.read_parquet(oracle / "ema_results.parquet"))
+    oracle_all_ema = pl.read_parquet(oracle / "ema_results.parquet")
+    # Each symbol's first window over the whole input, which the dashboard may never have seen.
+    oracle_first = dict(oracle_all_ema.group_by("symbol").agg(pl.col("windowEnd").min()).iter_rows())
+    oracle_ema = in_span(oracle_all_ema)
     oracle_adv = in_span(pl.read_parquet(oracle / "advisories.parquet"))
 
     t_ema = {(r["symbol"], r["windowEnd"]): r for r in _rows(topic_ema, ["symbol", "windowEnd", "secType", "close", "ema38", "ema100"])}
     o_ema = {(r["symbol"], r["windowEnd"]): r for r in _rows(oracle_ema, ["symbol", "windowEnd", "secType", "close", "ema38", "ema100"])}
-    t_adv = {(r["symbol"], r["windowEnd"]): r for r in _rows(topic_adv, ["symbol", "windowEnd", "type", "ema38", "ema100"])}
+    t_adv = {(r["symbol"], r["windowEnd"]): r for r in _rows(topic_adv, ["symbol", "windowEnd", "type", "ema38", "ema100", "maxIngestTs", "emitTs"])}
     o_adv = {(r["symbol"], r["windowEnd"]): r for r in _rows(oracle_adv, ["symbol", "windowEnd", "type", "ema38", "ema100"])}
 
     checks = []
@@ -136,6 +139,19 @@ def check(capture_path: Path, job: Path, oracle: Path, out: Path, expect_traders
     diff = [{"key": [a["symbol"], a["windowEnd"]], "shown": a["shown"], "expected": shown_time(a["windowEnd"], zone)}
             for a in cap["feed"] if a["shown"] != shown_time(a["windowEnd"], zone)]
     checks.append(_check("feedTimesAtZoneOffset", diff, len(cap["feed"])))
+    diff = [{"key": [a["symbol"], a["windowEnd"]], "shown": a["firstWindow"], "oracle": oracle_first.get(a["symbol"]) == a["windowEnd"]}
+            for a in cap["feed"] if a["firstWindow"] != (oracle_first.get(a["symbol"]) == a["windowEnd"])]
+    checks.append(_check("firstWindowFlagEqualsOracle", diff, len(cap["feed"])))
+    diff = []
+    for a in cap["feed"]:
+        t = t_adv.get((a["symbol"], a["windowEnd"]))
+        want = None if t is None or t["maxIngestTs"] is None or t["emitTs"] is None else t["emitTs"] - t["maxIngestTs"]
+        if a["latencyMs"] != want:
+            diff.append({"key": [a["symbol"], a["windowEnd"]], "shown": a["latencyMs"], "topic": want})
+    checks.append(_check("feedLatencyEqualsTopic", diff, len(cap["feed"])))
+    want = [[a["symbol"], a["windowEnd"]] for a in cap["feed"] if not a["firstWindow"]]
+    checks.append(_check("defaultFeedHidesOnlyFirstWindowBuys", [] if cap["feedDefault"] == want else
+                         [{"shown": len(cap["feedDefault"]), "expected": len(want)}], len(cap["feed"])))
     order = [a["windowEnd"] for a in cap["feed"]]
     checks.append(_check("feedNewestFirst", [] if order == sorted(order, reverse=True) else ["out of order"], len(order)))
 
@@ -164,9 +180,12 @@ def check(capture_path: Path, job: Path, oracle: Path, out: Path, expect_traders
         got = {t: sorted(v) for t, v in cap["traders"].items()}
         checks.append(_check("tradersEqualSubscriptionsWritten", [] if got == want else [{"shown": got, "expected": want}], len(want)))
 
-    # Heatmap order: newest published crossover first, symbols without one last, ties by symbol.
+    # Heatmap order: newest published crossover first, first-window BUYs not counting, symbols
+    # without one last, ties by symbol.
     last = {}
     for a in cap["feed"]:
+        if a["firstWindow"]:
+            continue
         last[a["symbol"]] = max(last.get(a["symbol"], a["windowEnd"]), a["windowEnd"])
     want = sorted((row["symbol"] for row in cap["rows"]),
                   key=lambda s: (s not in last, -last.get(s, 0), s))

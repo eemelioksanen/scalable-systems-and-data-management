@@ -1,6 +1,6 @@
 {
   "tool": "ema_check.export",
-  "createdUtc": "2026-11-10T14:47:48+00:00",
+  "createdUtc": "2026-11-10T15:10:25+00:00",
   "bootstrap": "kafka:9092",
   "zoneOffset": "+02:00",
   "topics": {
@@ -34,22 +34,22 @@
         },
         "5": {
           "startOffset": 0,
-          "endOffset": 409,
-          "records": 409
+          "endOffset": 411,
+          "records": 411
         },
         "6": {
           "startOffset": 0,
-          "endOffset": 139,
-          "records": 139
+          "endOffset": 145,
+          "records": 145
         },
         "7": {
           "startOffset": 0,
-          "endOffset": 0,
-          "records": 0
+          "endOffset": 6,
+          "records": 6
         }
       },
-      "records": 2213,
-      "rows": 2213,
+      "records": 2227,
+      "rows": 2227,
       "complete": true
     },
     "advisories": {
@@ -87,17 +87,17 @@
         },
         "6": {
           "startOffset": 0,
-          "endOffset": 1,
-          "records": 1
+          "endOffset": 2,
+          "records": 2
         },
         "7": {
           "startOffset": 0,
-          "endOffset": 0,
-          "records": 0
+          "endOffset": 1,
+          "records": 1
         }
       },
-      "records": 18,
-      "rows": 18,
+      "records": 20,
+      "rows": 20,
       "complete": true
     },
     "late-ticks": {
