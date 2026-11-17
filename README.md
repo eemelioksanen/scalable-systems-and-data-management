@@ -6,7 +6,11 @@
 
 [![Apache Flink 2.2.1](https://img.shields.io/badge/Apache_Flink-2.2.1-E6526F?logo=apacheflink&logoColor=white)](https://flink.apache.org/) [![Apache Kafka 4.3.1](https://img.shields.io/badge/Apache_Kafka-4.3.1-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/) [![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/) [![React 19](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/) [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![Data: DEBS 2022](https://img.shields.io/badge/data-DEBS_2022_GC-5ab9fc)](https://doi.org/10.5281/zenodo.6382482)
 
-[Run it](#run-it-end-to-end) · [The stack](#the-stack) · [Dashboard](#dashboard) · [Tests](#tests) · [Correctness](#correctness-check) · [Benchmarks](#benchmarks) · [Decisions](docs/decisions.md)
+[![GitHub stars](https://img.shields.io/github/stars/eemelioksanen/scalable-systems-and-data-management?style=social)](https://github.com/eemelioksanen/scalable-systems-and-data-management/stargazers) [![Last commit](https://img.shields.io/github/last-commit/eemelioksanen/scalable-systems-and-data-management)](https://github.com/eemelioksanen/scalable-systems-and-data-management/commits/main) [![Commit activity](https://img.shields.io/github/commit-activity/m/eemelioksanen/scalable-systems-and-data-management)](https://github.com/eemelioksanen/scalable-systems-and-data-management/pulse) [![Repo size](https://img.shields.io/github/repo-size/eemelioksanen/scalable-systems-and-data-management)](https://github.com/eemelioksanen/scalable-systems-and-data-management)
+
+![works on my machine](https://img.shields.io/badge/works_on-my_machine-brightgreen) ![EMA₀ = 0](https://img.shields.io/badge/EMA%E2%82%80-0%2C_as_specified-blueviolet) ![watermark mentions](https://img.shields.io/badge/%22watermark%22_mentions-849-informational) ![empty rows](https://img.shields.io/badge/empty_rows-49.5%25-lightgrey) ![first-window BUYs](https://img.shields.io/badge/first--window_BUYs-4%2C970-2ec4a0) ![coffee](https://img.shields.io/badge/coffee-not_measured-6f4e37)
+
+[Run it](#run-it-end-to-end) · [The stack](#the-stack) · [Dashboard](#dashboard) · [Tests](#tests) · [Correctness](#correctness-check) · [Benchmarks](#benchmarks) · [Decisions](docs/decisions.md) · [By the numbers](#by-the-numbers)
 
 <img src="docs/images/dashboard.png" alt="The dashboard during a full-week replay" width="100%">
 
@@ -47,6 +51,9 @@ The Flink job computes both queries for every symbol but publishes only the symb
 The dashboard reads what the job publishes and recomputes nothing.
 An independent batch oracle computes the same queries, and the correctness tools compare the job's output with it.
 
+<details>
+<summary>What each directory holds</summary>
+
 | Directory | What it holds |
 |---|---|
 | `producer/` | The replayer ([docs/replayer.md](docs/replayer.md)) |
@@ -58,6 +65,8 @@ An independent batch oracle computes the same queries, and the correctness tools
 | `analysis/` | The dataset profile and the data contract it justifies ([analysis/README.md](analysis/README.md)) |
 | `infra/` | Kafka and Prometheus configuration |
 | `docs/` | Decisions, interfaces, the roadmap, the analysis reports and the recorded validation runs |
+
+</details>
 
 ## Requirements
 
@@ -144,6 +153,9 @@ On a laptop the unpaced part runs at about 1.3 million rows a second, and the wh
 
 ## The stack
 
+<details>
+<summary>Stop, reset, scale, ports and project names</summary>
+
 Stop and resume the same containers, keeping Kafka's data:
 
 ```bash
@@ -170,7 +182,12 @@ docker compose up -d --scale taskmanager=2
 
 `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT` and `VIZ_HOST_PORT` change the host ports. Kafka advertises the chosen host port, and clients inside Compose use `kafka:9092`. Every worktree uses the Compose project name `trading-trends`, so run a second stack with `docker compose -p <project>`, which also gives it its own image tags.
 
+</details>
+
 ### Job options
+
+<details>
+<summary>Bounded and live modes, zone offset, watermark and idleness</summary>
 
 | Option | Default | Meaning |
 |---|---|---|
@@ -183,15 +200,27 @@ A live job rejects Wednesday's 5,506 burst rows at 01:00 as late. The bounded de
 
 The design comparisons of the roadmap are switches of the job and the replayer: the Window API instead of the process function, early filtering, RocksDB, binary `ticks` and carry-forward of empty windows (D-42). Each default is the baseline.
 
+</details>
+
 ### Replayer options
+
+<details>
+<summary>Modes, pacing, subsets and the replay report</summary>
 
 The producer is in the Compose `tools` profile, so the default start command does not build it. Its image holds the replayer at `/app/producer.jar`, and Compose mounts `data/` read-only at `/data`. A directory given to `--input` replays its day files in the calendar order of their names.
 
 `--mode preload` (the default) loads the input as fast as Kafka takes it, `--mode realtime --rate K` paces it at K times real time, and `--pace-from T` sends everything before source time T unpaced. `--exchanges`, `--symbols` and `--limit` select a subset. The JSON report on stdout says whether the replay completed and which offsets it wrote, and progress goes to stderr. [docs/replayer.md](docs/replayer.md) covers the modes, the report, how to verify a replay against Kafka and the source files, and how to reset `ticks`.
 
+</details>
+
 ### Metrics
 
+<details>
+<summary>What Prometheus scrapes, and where the queries are</summary>
+
 Prometheus scrapes the job's counts, the Kafka broker through a JMX exporter agent, and cAdvisor for CPU, memory and network per container and for the Docker host. [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query for each measurement, and [the counts section](docs/interfaces.md#counts-d-28) lists what the job counts. The parser's counts are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
+
+</details>
 
 ## Dashboard
 
@@ -303,6 +332,38 @@ Containers read host files only where a bind mount grants it, and every mount in
 
 </details>
 
+## By the numbers
+
+| Number | What it counts |
+|---:|---|
+| **289,116,808** | rows in the week's seven day files |
+| **49.5%** | of those rows have an empty payload |
+| **20.5%** | carry a price the queries use |
+| **5,502** | symbols, of which 532 never trade all week |
+| **11,355** | advisories in the week |
+| **4,970** | of them are first-window BUYs, because EMA₀ = 0 (D-7) |
+| **5,506** | Wednesday rows that arrive at 01:00 and a live job rejects as late |
+| **64,265,001 ms** | the bounded watermark that admits them, about 17.9 hours |
+| **1.3 M rows/s** | replay speed into Kafka on a laptop |
+| **27.7 min** | to replay the whole week, Friday paced at 120× |
+| **849** | mentions of "watermark" in this repository |
+| **44** | numbered design decisions |
+| **101** | commits and **27** merged pull requests, since 28 September 2026 |
+| **9,415 / 8,148 / 1,601** | lines of Java, Python and JavaScript |
+| **4,395** | lines of Markdown |
+
+## Star history
+
+<a href="https://star-history.com/#eemelioksanen/scalable-systems-and-data-management&Date">
+  <img src="https://api.star-history.com/svg?repos=eemelioksanen/scalable-systems-and-data-management&type=Date" alt="Star history" width="600">
+</a>
+
+## Contributors
+
+<a href="https://github.com/eemelioksanen/scalable-systems-and-data-management/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=eemelioksanen/scalable-systems-and-data-management" alt="Contributors">
+</a>
+
 ## Further reading
 
 | Document | What it covers |
@@ -313,4 +374,4 @@ Containers read host files only where a bind mount grants it, and every mount in
 | [docs/replayer.md](docs/replayer.md) | Replay modes, the report, disk use and throughput |
 | [docs/validation/](docs/validation/) | The recorded validation runs |
 
-<div align="center"><sub>The DEBS 2022 Grand Challenge data is CC BY-NC-SA 4.0 and is never committed to this repository.</sub></div>
+<div align="center"><sub>The DEBS 2022 Grand Challenge data is CC BY-NC-SA 4.0 and is never committed to this repository.</sub><br><br><a href="#readme">Back to top</a></div>
