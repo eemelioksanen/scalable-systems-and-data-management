@@ -38,7 +38,7 @@ export function isFirstWindowBuy(type, ema38, ema100) {
 }
 
 // [symbol, windowEnd, type, secType, exchange, ema38, ema100, maxIngestTs, emitTs], as the backend
-// sends them. latencyMs is the advisory's wall-clock time from admission to publication (D-40).
+// sends them. latencyMs is the advisory's wall-clock time from admission to emission (D-40).
 function toAdvisory([symbol, windowEnd, type, secType, exchange, ema38, ema100, maxIngestTs = null, emitTs = null]) {
   return {
     symbol, windowEnd, type, secType, exchange, ema38, ema100,

@@ -52,7 +52,7 @@ def wait_for(description, read, ready, timeout=120):
 
 
 def free_ports():
-    sockets = [socket.socket() for _ in range(5)]
+    sockets = [socket.socket() for _ in range(4)]
     try:
         for connection in sockets:
             connection.bind(("127.0.0.1", 0))
@@ -67,16 +67,15 @@ class Verification:
         self.output = output
         self.project = "trading-trends-check-" + uuid.uuid4().hex[:12]
         self.test_image = f"{self.project}/test:dev"
-        kafka, flink, prometheus, grafana, viz = free_ports()
+        kafka, flink, prometheus, viz = free_ports()
         self.env = dict(os.environ, KAFKA_HOST_PORT=str(kafka), FLINK_HOST_PORT=str(flink),
-                        PROMETHEUS_HOST_PORT=str(prometheus), GRAFANA_HOST_PORT=str(grafana), VIZ_HOST_PORT=str(viz),
+                        PROMETHEUS_HOST_PORT=str(prometheus), VIZ_HOST_PORT=str(viz),
                         TICKS_PARTITIONS="8", TM_SLOTS="2", PARALLELISM="2", COMPOSE_PROFILES="")
         self.bootstrap = f"localhost:{kafka}"
         self.flink = f"http://127.0.0.1:{flink}"
         self.prometheus = f"http://127.0.0.1:{prometheus}"
-        self.grafana = f"http://127.0.0.1:{grafana}"
         self.results = {"project": self.project, "started": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                        "ports": {"kafka": kafka, "flink": flink, "prometheus": prometheus, "grafana": grafana, "viz": viz},
+                        "ports": {"kafka": kafka, "flink": flink, "prometheus": prometheus, "viz": viz},
                         "checks": {}, "devcontainer": "not requested", "status": "running"}
 
     def record(self, name, value):
@@ -170,9 +169,6 @@ class Verification:
                            lambda value: sorted(target["labels"]["job"] for target in value["data"]["activeTargets"])
                            == sorted(job for job, count in jobs.items() for _ in range(count))
                            and all(target["health"] == "up" for target in value["data"]["activeTargets"]))
-        datasources = wait_for("Grafana datasource", lambda: get_json(self.grafana + "/api/datasources"),
-                               lambda value: any(item["name"] == "Prometheus" for item in value))
-        uid = next(item["uid"] for item in datasources if item["name"] == "Prometheus")
         taskmanagers = (f'container_label_com_docker_compose_project="{self.project}",'
                         'container_label_com_docker_compose_service="taskmanager"')
         # Each query's expected series count, and the value every series must have (None: any positive value).
@@ -183,18 +179,16 @@ class Verification:
         samples = {}
         for query, count, expected in queries:
             encoded = urllib.parse.urlencode({"query": query})
-            for name, base in [("prometheus", self.prometheus),
-                               ("grafana", self.grafana + f"/api/datasources/proxy/uid/{uid}")]:
-                result = wait_for(f"{query} via {name}", lambda: get_json(base + "/api/v1/query?" + encoded),
-                                  lambda value: value["status"] == "success" and len(value["data"]["result"]) == count
-                                  and all(float(item["value"][1]) == expected for item in value["data"]["result"]
-                                          if expected is not None))
-                series = result["data"]["result"]
-                require(all(float(item["value"][1]) > 0 for item in series), f"Invalid metric sample: {series}")
-                samples[f"{name}:{query}"] = series
+            result = wait_for(query, lambda: get_json(self.prometheus + "/api/v1/query?" + encoded),
+                              lambda value: value["status"] == "success" and len(value["data"]["result"]) == count
+                              and all(float(item["value"][1]) == expected for item in value["data"]["result"]
+                                      if expected is not None))
+            series = result["data"]["result"]
+            require(all(float(item["value"][1]) > 0 for item in series), f"Invalid metric sample: {series}")
+            samples[query] = series
         (self.output / f"metrics-{managers}.json").write_text(json.dumps({"targets": targets, "samples": samples}, indent=2) + "\n")
         self.record(f"metrics-{managers}", f"{managers + 3} healthy targets; Flink, Kafka and cAdvisor samples "
-                                           "via Prometheus and Grafana")
+                                           "via Prometheus")
 
     def devcontainer(self, executable):
         label = f"stack-verification={self.project}"

@@ -2,7 +2,7 @@
 
 ## Context
 
-Source documents: `CS_E4780_Course_Project_2026.pdf` (task) and `Evaluation_Criteria_26.pdf` (rubric). The task is to build a streaming system over the DEBS 2022 Grand Challenge "Trading Data" set (Zenodo 10.5281/zenodo.6382482): 289M events, 5504 equities/indices, 3 exchanges (FR 55%, NL 28%, ETR 17%), one CSV per day, 8–14 Nov 2021.
+Source documents: `CS_E4780_Course_Project_2026.pdf` (task) and the course's evaluation criteria (rubric, not in the repo). The task is to build a streaming system over the DEBS 2022 Grand Challenge "Trading Data" set (Zenodo 10.5281/zenodo.6382482): 289M events, 5504 equities/indices, 3 exchanges (FR 55%, NL 28%, ETR 17%), one CSV per day, 8–14 Nov 2021.
 
 - **Query 1:** EMA₃₈ and EMA₁₀₀ per symbol over 5-min tumbling event-time windows. Windows are aligned to midnight, and a window is evaluated when the next one starts.
 - **Query 2:** a BUY advisory when EMA₃₈ crosses above EMA₁₀₀, a SELL advisory when it crosses below.
@@ -59,8 +59,8 @@ These decisions drive both correctness and the report. The Flink job and the ora
                      Kafka `ema-results`, `advisories`
                                         │
                   ┌─────────────────────┴───────────────────┐
-             Viz backend (WebSocket)                   Prometheus ◄─ Flink/Kafka/node metrics
-             → web dashboard                           → Grafana (throughput, latency, backpressure, CPU)
+             Viz backend (WebSocket)                   Prometheus ◄─ Flink/Kafka/cAdvisor metrics
+             → web dashboard                           → bench/ summaries and plots
 ```
 
 - **Main operator:** one `KeyedProcessFunction` keyed by symbol (`EmaCalculator`). Out-of-order arrival can leave several windows open at once, so a `MapState` keeps one close candidate per open window end. A `ValueState` holds `ema38` and `ema100`. Each open window has an event-time timer on its last millisecond. When it fires, the operator computes Q1 and the Q2 crossover check, emits, and drops that window's candidate. A keyed broadcast operator after it publishes only subscribed symbols (D-28).
@@ -71,7 +71,7 @@ These decisions drive both correctness and the report. The Flink job and the ora
 **Repo layout:**
 
 ```
-docker-compose.yml            # Kafka (KRaft), Flink JM + TM (scalable), Prometheus, Grafana, viz
+docker-compose.yml            # Kafka (KRaft), Flink JM + TM (scalable), Prometheus, cAdvisor, viz
 Dockerfile                    # multi-stage: Maven build → Flink image with job jar, JRE image for producer
 .devcontainer/                # containerized JDK 17 + Maven for the IDE (no host JDK needed)
 pom.xml                       # Maven multi-module, Java 17, Flink 2.2.1, Kafka connector 5.0.0-2.2
@@ -80,9 +80,9 @@ flink-job/                    # Q1+Q2 job, operator tests
 oracle/                       # Python + DuckDB/Polars reference implementation
 analysis/                     # EDA notebooks, figures for the report
 viz/                          # dashboard backend + frontend
-bench/                        # experiment scripts, configs, results/*.csv, plotting
-infra/                        # prometheus.yml, grafana provisioning, cloud setup scripts
-report/                       # ACM LaTeX (acmart), synced with Overleaf
+bench/                        # run.py, summarize.py, configs; results/ is gitignored
+infra/                        # prometheus.yml, Kafka JMX exporter rules
+report/                       # ACM LaTeX (acmart), synced with Overleaf; not on main yet
 docs/decisions.md             # decision log (feeds the individual-contribution answers)
 data/                         # raw CSVs (gitignored)
 ```
@@ -107,7 +107,7 @@ Use DuckDB directly on the CSVs (skip the `#` comment header lines), plus Polars
 
 ## 4. Evaluation plan → `bench/`
 
-Every run is scripted: config → run → collect → `results/*.csv`. Repeat each run 3 times and report mean ± std.
+Every run is scripted: config → `bench/run.py` → `bench/results/raw/` → `bench/summarize.py` CSVs and plots. Repeat each run 3 times and report mean ± std.
 
 | Rubric target | Experiment |
 |---|---|
@@ -134,7 +134,7 @@ Every run is scripted: config → run → collect → `results/*.csv`. Repeat ea
   2. **Advisory feed:** live, and filterable by exchange, SecType and subscription.
   3. **Trend heatmap:** symbols × time, colored by the sign of EMA₃₈ − EMA₁₀₀ and sorted by most recent crossover. This is the "cut through the noise" view.
   4. **Replay clock** showing simulated time next to wall-clock time.
-- **Operational metrics:** kept separate in Grafana.
+- **Operational metrics:** kept separate in Prometheus.
 
 ---
 
@@ -155,7 +155,7 @@ Everyone keeps notes in `docs/decisions.md` and on PRs. From those, each member 
 
 | Week | Dates | Goals | Milestone |
 |---|---|---|---|
-| 1 | 28.9–4.10 | Download the dataset (check disk space first). Repo skeleton and Maven modules. Compose stack runs (Kafka + Flink + Prometheus/Grafana). EDA items 1–2. Draft `decisions.md`. | Stack runs locally |
+| 1 | 28.9–4.10 | Download the dataset (check disk space first). Repo skeleton and Maven modules. Compose stack runs (Kafka + Flink + Prometheus). EDA items 1–2. Draft `decisions.md`. | Stack runs locally |
 | 2 | 5–11.10 | EDA items 3–6. Oracle for the full week. Replayer v1 (preload + rate-controlled). Flink skeleton: source → parse → watermark → keyBy. | Oracle output exists |
 | 3 | 12–18.10 | Q1 EMA operator plus test-harness unit tests (first window, empty windows, out-of-order, ties). Output to Kafka. Diff one day against the oracle. | Q1 correct on 1 day |
 | 4 | 19–25.10 | Q2 crossovers. Subscriptions via broadcast state. Full-week oracle diff. Viz v0 (one symbol chart). | **M1: functionally complete** |
@@ -186,7 +186,7 @@ Everyone keeps notes in `docs/decisions.md` and on PRs. From those, each member 
 - **Local smoke test:** `docker compose up`, then the replayer loads a 1-hour sample, then advisories appear in Kafka and on the dashboard.
 - **Unit tests:** `mvn test` runs the Flink operator test-harness cases with hand-computed EMAs and crossovers.
 - **Correctness gate:** the comparer (#20) against the Flink output topics for the full week shows zero EMA mismatches beyond tolerance and matching advisory sets. This gate must pass before any performance numbers are reported.
-- **Reproducibility:** `bench/run.sh <experiment>` regenerates each results CSV, and `bench/plot.py` regenerates each report figure.
+- **Reproducibility:** `bench/run.py <config>` reruns each experiment, and `bench/summarize.py` regenerates its CSV tables and plots.
 
 ---
 

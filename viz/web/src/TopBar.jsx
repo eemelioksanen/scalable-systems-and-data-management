@@ -4,7 +4,7 @@ import { rowSpread, trendOf } from './state.js';
 
 const TITLES = {
   live: 'The newest window is published and the next one is still open: it is evaluated once the window after it starts (spec 3.1 (7)).',
-  wait: 'No newer window is published yet. The job waits for its watermark (the 1 s bound, or a quiet partition up to the 30 s idleness timeout), or no subscribed symbol traded since. Watermark lag is graphed in Grafana.',
+  wait: 'No newer window is published yet. The job waits for its watermark (the 1 s bound, or a quiet partition up to the 30 s idleness timeout), or no subscribed symbol traded since. Watermark lag is in Prometheus.',
   idle: 'No new ticks. Windows still open are evaluated when input resumes or the job is drained.',
   off: 'Not connected to results yet.',
 };

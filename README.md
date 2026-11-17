@@ -17,7 +17,7 @@ Docker only. No JDK or Maven is needed on the host: builds run inside containers
 
 ## Quickstart
 
-Start Kafka, create the topics, and start Flink, Prometheus and Grafana:
+Start Kafka, create the topics, and start Flink and Prometheus:
 
 ```bash
 docker compose up -d --build
@@ -59,7 +59,6 @@ docker compose up -d --build
 |---|---|
 | Flink | http://localhost:8081 |
 | Prometheus | http://localhost:9090 |
-| Grafana | http://localhost:3000 |
 | Dashboard | http://localhost:8088 |
 | Kafka from the host | `localhost:29092` |
 
@@ -102,11 +101,11 @@ The verification fixture below exercises the packaged Kafka connector independen
 
 `TICKS_PARTITIONS` defaults to 8, `TM_SLOTS` to 2, and `PARALLELISM` to 2. Changing the partition setting does not resize existing topics; reset a disposable stack to apply it. More TaskManagers need more Docker memory; the two-TaskManager check was designed for an 8 GiB Docker VM.
 
-Host ports can be changed with `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT`, `GRAFANA_HOST_PORT`, and `VIZ_HOST_PORT`. Kafka advertises the selected host port; clients inside Compose use `kafka:9092`. `docker compose -p <project>` also isolates the built image tags.
+Host ports can be changed with `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT`, and `VIZ_HOST_PORT`. Kafka advertises the selected host port; clients inside Compose use `kafka:9092`. `docker compose -p <project>` also isolates the built image tags.
 
 ## Dashboard
 
-`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results` and `advisories` as a trading terminal: a watchlist of every published symbol with its trend over the last 24 hours of five-minute windows, sorted by latest crossover; one symbol's close, EMA38 and EMA100 with ▲ BUY and ▼ SELL markers, the EMA spread whose sign changes are the crossovers, and the market's breadth; the live advisories with their latency; and a replay clock with the feed time next to wall-clock time. The watchlist and the advisories filter by exchange, SecType and subscription (a trader's current list in `subscriptions`). It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Grafana.
+`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results` and `advisories` as a trading terminal: a watchlist of every published symbol with its trend over the last 24 hours of five-minute windows, sorted by latest crossover; one symbol's close, EMA38 and EMA100 with ▲ BUY and ▼ SELL markers, the EMA spread whose sign changes are the crossovers, and the market's breadth; the live advisories with their latency; and a replay clock with the feed time next to wall-clock time. The watchlist and the advisories filter by exchange, SecType and subscription (a trader's current list in `subscriptions`). It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Prometheus, whose UI at http://localhost:9090 graphs the queries in [docs/interfaces.md](docs/interfaces.md#metrics-d-35).
 
 To watch it fill, replay a subset live, for example:
 
@@ -142,7 +141,7 @@ The design comparisons of the roadmap (process function against the Window API, 
 
 ## Verify the local stack
 
-The verification script builds the images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through both Prometheus and Grafana. It also proves that stop/start retains Kafka records and reset removes them.
+The verification script builds the images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through Prometheus. It also proves that stop/start retains Kafka records and reset removes them.
 
 The checker needs Python 3.9+ and one Python client to reach the host Kafka listener. It uses its own Compose project, unused host ports, and synthetic topics, then removes its containers and images. Base images and build caches remain available for subsequent runs.
 
@@ -191,8 +190,10 @@ iteration because bind mounts on macOS are slow for multi-GB scans. Both paths p
 the same output.
 
 The analysis container runs read-only, with `--network none`, `--cap-drop ALL` and
-`no-new-privileges`. `data/` is mounted read-only and `analysis/out/` is the only
-writable path. Only `fetch_slice.sh` touches the network, and it runs on the host.
+`no-new-privileges`. The input data is mounted read-only. `run.sh` can write only
+`analysis/out/` and `fixtures/`; `daily.sh` and `week.sh` write their output under
+`analysis/out/` and their cache in `data/analysis/`. Only `fetch_slice.sh` and
+`fetch_day.py` touch the network, and both run on the host.
 
 ### Container file access
 

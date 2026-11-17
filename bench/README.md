@@ -76,7 +76,7 @@ With `carry-forward`, `oracle` must be an oracle run with `--empty-windows carry
 4. **Completion.** A bounded job is done when Flink reports it `FINISHED`. A drained job is done once the sum of the job's Kafka offsets reaches the replay's end offsets and q1-ema has received every price event, by Prometheus; the harness waits one more scrape, then stops it with `--drain`. A job that fails or is cancelled meanwhile stops the run at once.
 5. **Collection**, before the next reset deletes it: Flink's record of the job, Prometheus range queries, the job's counters, the effective configuration, and an export of `ema-results` and `advisories` with `correctness/run.sh export`. With an `oracle`, `correctness/run.sh compare` runs too.
 
-The **measurement interval** is the job's run in a preload and the replay in a live run, both minus `warmupS` at the start. Repeated runs use 15 s for preloads and 25 s for live runs (D-37). It bounds the metric summaries in `summary.json`. Preload time is never inside it: it is the replayer's own `durationMs` and `recordsPerSecond`, kept separately (D-35: a short preload gives Prometheus two or three scrapes).
+The **measurement interval** is the job's run in a preload and the replay in a live run, both minus `warmupS` at the start, 0 when the config leaves it out. D-37 sets 15 s for preloads and 25 s for live runs; the `watermark/` and `weekday/` live configs and the `weekday/` preloads use them, while `baseline/` and the `subset12-*` configs predate them. It bounds the metric summaries in `summary.json`. Preload time is never inside it: it is the replayer's own `durationMs` and `recordsPerSecond`, kept separately (D-35: a short preload gives Prometheus two or three scrapes).
 
 **Job throughput** is the records the `ticks` source read divided by the time from its first subtask's start to its last subtask's end, from Flink's record of the job. That leaves out scheduling and deployment, about 9% of a 3.5 s job. Only bounded runs report it: a drained job's tasks run on until the harness stops them.
 
@@ -134,7 +134,7 @@ A bounded job's custom counters vanish when it finishes, and on a short run Prom
 - price events the source emitted = records q1-ema received
 - in a live run, price events the source emitted = price events exported from `ticks`
 - records the sink chain wrote = records exported from both topics
-- with a `*` subscription, windows q1-ema evaluated = exported `ema-results`
+- with a `*` subscription, q1-ema's output records = exported `ema-results` + exported `late-ticks`
 - with an oracle, replayed data rows and price events equal the oracle's, and, when the source's counters are final, so do the non-price, non-positive and `Date`-dated events
 
 The source counters come from Prometheus's last sample. `countersFinal.split` is true when they reconcile with the records the source read. `lateTicks` comes from the completed `late-ticks` export, with source filenames resolved through this run's `replay.json`; `countersFinal.lateTicks` records export completeness. This works for bounded and drained jobs. `compare` receives both the count and exported source identities. The q1 output reconciliation includes both evaluated windows and late events. Window, crossover and publication counters remain sampled; the job graph's counts replace them in reconciliation.

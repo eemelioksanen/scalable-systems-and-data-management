@@ -21,7 +21,7 @@ export default function Signals({ items, arrivals, latencies, total, hiddenFirst
       </label>
       <div className="sg-head">
         <span>TIME</span><span>SIDE</span><span>SYMBOL</span><span className="num" title="EMA38, and EMA100 under it, as published">EMA38 / 100</span>
-        <span className="num" title="Wall-clock time from admitting the window's last trade to publishing the advisory (D-40)">LAT</span>
+        <span className="num" title="Wall-clock time from admitting the window's last trade to the job emitting the advisory (D-40)">LAT</span>
       </div>
       <div className="sg-scroll">
         {shown.map((a) => {

@@ -98,7 +98,7 @@ The Flink job emits one JSON record per detected crossover of a subscribed symbo
 - `BUY` when equations (1) and (2) of the spec hold (EMA₃₈ crosses above EMA₁₀₀): previous EMA₃₈ ≤ EMA₁₀₀ and current EMA₃₈ > EMA₁₀₀.
 - `SELL` when equations (3) and (4) hold (EMA₃₈ crosses below): previous EMA₃₈ ≥ EMA₁₀₀ and current EMA₃₈ < EMA₁₀₀.
 
-"Previous" is the symbol's last window with a price event, since empty windows are skipped (D-6). Before the first window both EMAs are 0 (D-7), so every symbol's first window is a `BUY`. Equal current EMAs produce no advisory.
+"Previous" is the symbol's last window with a price event, since empty windows are skipped (D-6). With `--empty-windows carry-forward` it is the window just before, carried or not, and every carried window is checked too. Before the first window both EMAs are 0 (D-7), so every symbol's first window is a `BUY`. Equal current EMAs produce no advisory.
 
 Crossovers are computed for every symbol, subscribed or not, so a symbol's first advisory after a subscription is still measured against its unpublished history. Every advisory has an `ema-results` record for the same (`symbol`, `windowEnd`) with the same EMAs: the two are filtered together.
 
@@ -132,7 +132,7 @@ The fields mean the same as in `ema-results`.
 
 - **Watermark.** Each `ticks` partition's watermark is the largest event time read from it, minus the bound, minus 1 ms. The job's watermark is the minimum over the partitions that are not idle. A partition is idle once it has had no price event for the idleness timeout, in wall-clock time. Non-price rows do not count.
 - **Publication.** A window is evaluated when the watermark reaches its last millisecond: once every partition that is not idle has read an event at or after `windowEnd` plus the bound.
-- **Late events.** A price event whose window has already been evaluated is counted in `lateTicks` and left out of the calculation. If it would have been its window's last event, the window closes on an earlier price. If it would have been the only one, the window is never published. Either way the symbol's later EMAs and advisories differ from a run that admitted it. The job does not export its late events yet (#38).
+- **Late events.** A price event whose window has already been evaluated is counted in `lateTicks` and left out of the calculation. If it would have been its window's last event, the window closes on an earlier price. If it would have been the only one, the window is never published. Either way the symbol's later EMAs and advisories differ from a run that admitted it. The job writes each late event to [`late-ticks`](#late-ticks).
 - **Defaults.** They depend on the mode, and each flag replaces its own default:
 
   | Mode | `--watermark-bound-ms` | `--idleness-ms` | Late in the week | Output equals |

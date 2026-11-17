@@ -45,6 +45,16 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-44: Prometheus without Grafana (2026-11-17, Emilia Repo) — proposed
+Context: Compose ran Grafana with a Prometheus datasource and no dashboards. Nothing read from it except `scripts/verify-local-stack.py`, which checked that its datasource proxy answered. The benchmark harness queries Prometheus directly (D-35, D-36), `bench/summarize.py` draws the report's throughput and lag plots, and the #24 bottleneck runs (D-37) used neither Grafana nor a dashboard.
+Decision:
+- **Grafana is removed** from Compose, `infra/` and the stack check. Prometheus, its three scrape jobs and the D-35 queries stay. Its own UI at port 9090 graphs any of them ad hoc. Where D-41 and the dashboard said watermark lag is graphed in Grafana, it is now a Prometheus query.
+- **The dashboard's latency is admission to emission.** D-41 called `emitTs − maxIngestTs` latency to publication, but `emitTs` is when `q1-ema` evaluates the window, before the sink (D-40's `sinkHandoff`). The dashboard and its README now say emission.
+- **Late events are exported.** D-40's note that the job does not export its late events (#38) no longer holds: every late price event goes to `late-ticks`, which the correctness check and the harness read.
+
+Alternatives considered:
+- *A provisioned Grafana dashboard of the D-35 queries:* useful only for watching a run live, which no experiment or report figure needs. It would be about ten panels of JSON to keep in step with the metric names.
+
 ### D-43: Trading-terminal layout for the dashboard (2026-11-17, Emilia Repo) — proposed
 Context: D-33 and D-41 give the dashboard the right content, and the spec's §3.4 rewards a visualization that cuts through the noise. Three layouts were prototyped on a replay of the D-41 capture (branch `emiliar/fancy-trading-dashboard-prototypes`): a three-column terminal, a tile overview and a single-symbol focus page. The terminal was chosen.
 Decision ([viz/README.md](../viz/README.md)):

@@ -8,7 +8,7 @@ A local web dashboard that shows, live, what the Query 1 job publishes to `ema-r
 
 Targets: one-symbol chart by 25.10.2026; heatmap and replay clock by 1.11.2026.
 
-Out of scope: `advisories`, the advisory feed and per-trader delivery (#13); operational metrics (Grafana); cloud deployment.
+Out of scope: `advisories`, the advisory feed and per-trader delivery (#13); operational metrics (Prometheus); cloud deployment.
 
 ## Decisions taken in brainstorming
 
@@ -95,7 +95,7 @@ clock = {"wallMs":…, "feedMs":…|null, "feedIdleSince":…|null, "resultsMs":
 - On connect the server sends a `snapshot` with `series: null`. The client then sends `select`.
 - `cells` as a 288-character string keeps a full snapshot of ~5,500 symbols near 1.6 MB.
 - There is no replay of missed deltas. A reconnect always starts from a new snapshot.
-- #13 extends this with `advisories` and `traders` fields in `snapshot` and `delta`; existing fields do not change (D-41, [viz/README.md](../../../viz/README.md#websocket-protocol)). Every advisory in the span goes to every browser, so `series` needs none.
+- #13 adds `advisories` and `traders` to `snapshot` and `delta` (D-41), and later changes reshape existing fields: a delta's `points` became `{symbol, points}` or null, and D-43 adds prices to rows and cells. [viz/README.md](../../../viz/README.md#websocket-protocol) has the current protocol. Every advisory in the span goes to every browser, so `series` needs none.
 
 ## Frontend
 
