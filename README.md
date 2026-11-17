@@ -1,149 +1,252 @@
-# Detecting Trading Trends in Financial Tick Data
+<div align="center">
 
-CS-E4780 Scalable Systems and Data Management course project (Aalto, 2026). This is a Kafka + Apache Flink system that runs two queries over the [DEBS 2022 Grand Challenge trading data](https://doi.org/10.5281/zenodo.6382482):
+# Detecting trading trends in financial tick data
 
-- **Query 1:** EMA₃₈ and EMA₁₀₀ per symbol over 5-minute tumbling windows.
-- **Query 2:** buy/sell advisories on EMA crossovers.
+**EMA crossovers over a week of real European market data, streamed through Kafka and Apache Flink.**
 
-- Task: `CS_E4780_Course_Project_2026.pdf`
-- Grading: `Evaluation_Criteria_26.pdf`
-- Plan: [docs/ROADMAP.md](docs/ROADMAP.md)
-- Decisions: [docs/decisions.md](docs/decisions.md)
-- Interfaces (topic formats, oracle comparison): [docs/interfaces.md](docs/interfaces.md)
+[![Apache Flink 2.2.1](https://img.shields.io/badge/Apache_Flink-2.2.1-E6526F?logo=apacheflink&logoColor=white)](https://flink.apache.org/) [![Apache Kafka 4.3.1](https://img.shields.io/badge/Apache_Kafka-4.3.1-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/) [![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/) [![React 19](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/) [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![Data: DEBS 2022](https://img.shields.io/badge/data-DEBS_2022_GC-5ab9fc)](https://doi.org/10.5281/zenodo.6382482)
+
+[Run it](#run-it-end-to-end) · [The stack](#the-stack) · [Dashboard](#dashboard) · [Tests](#tests) · [Correctness](#correctness-check) · [Benchmarks](#benchmarks) · [Decisions](docs/decisions.md)
+
+<img src="docs/images/dashboard.png" alt="The dashboard during a full-week replay" width="100%">
+
+</div>
+
+<br>
+
+Built for the CS-E4780 Scalable Systems and Data Management course project (Aalto, 2026). It runs two queries over the [DEBS 2022 Grand Challenge trading data](https://doi.org/10.5281/zenodo.6382482), 289 million rows from 8 to 14 November 2021:
+
+| | Query | Output topic |
+|---|---|---|
+| **1** | EMA₃₈ and EMA₁₀₀ per symbol over 5-minute tumbling windows | `ema-results` |
+| **2** | A BUY or SELL advisory when the two EMAs cross | `advisories` |
+
+A dashboard shows both live, as a trading terminal. The task is in [CS_E4780_Course_Project_2026.pdf](CS_E4780_Course_Project_2026.pdf), and every design choice is logged with its reasons in [docs/decisions.md](docs/decisions.md), where the text refers to it as D-n.
+
+## How it fits together
+
+```mermaid
+flowchart LR
+    files[("day files<br>25 GB CSV")] --> replayer["Replayer"]
+    replayer --> ticks[["ticks"]]
+    subs[["subscriptions"]] --> job
+    ticks --> job["Flink job<br>Query 1 + Query 2"]
+    job --> results[["ema-results"]]
+    job --> adv[["advisories"]]
+    results --> viz["Dashboard"]
+    adv --> viz
+    subs --> viz
+    files --> oracle["Oracle<br>batch reference"]
+    results -.-> check{{"correctness<br>compare"}}
+    adv -.-> check
+    oracle -.-> check
+```
+
+The replayer sends the CSV rows to the Kafka topic `ticks`, at full speed or paced against the source clock.
+The Flink job computes both queries for every symbol but publishes only the symbols some trader subscribes to in `subscriptions`.
+The dashboard reads what the job publishes and recomputes nothing.
+An independent batch oracle computes the same queries, and the correctness tools compare the job's output with it.
+
+| Directory | What it holds |
+|---|---|
+| `producer/` | The replayer ([docs/replayer.md](docs/replayer.md)) |
+| `flink-job/` | Query 1 and Query 2 |
+| `viz/` | The dashboard: a Java backend and a React frontend ([viz/README.md](viz/README.md)) |
+| `oracle/` | The batch reference implementation ([oracle/README.md](oracle/README.md)) |
+| `correctness/` | Export, compare and late-event injection tools ([correctness/README.md](correctness/README.md)) |
+| `bench/` | The benchmark harness ([bench/README.md](bench/README.md)) |
+| `analysis/` | The dataset profile and the data contract it justifies ([analysis/README.md](analysis/README.md)) |
+| `infra/` | Kafka and Prometheus configuration |
+| `docs/` | Decisions, interfaces, the roadmap, the analysis reports and the recorded validation runs |
 
 ## Requirements
 
-Docker only. No JDK or Maven is needed on the host: builds run inside containers, and `.devcontainer/` gives the IDE a JDK 17 + Maven environment.
+Docker, or Podman with its Compose provider. No JDK, Maven or Node is needed on the host: every build runs in a container.
 
-## Quickstart
+| Resource | Needed for |
+|---|---|
+| ~25 GB disk | The seven day files |
+| ~5 GB in Docker's storage | A full week in Kafka, compressed with lz4 |
+| 8 GiB Docker VM | One TaskManager, the default |
 
-Start Kafka, create the topics, and start Flink and Prometheus:
+> [!TIP]
+> Under rootless Podman, cAdvisor cannot mount `/var/lib/docker`. Start the other services by name, as step 2 shows, and Prometheus goes without the per-container metrics.
+
+## Run it end to end
+
+### 1 · Get the data
+
+Download the seven day files from Zenodo into `data/daily/`, which is gitignored. `fetch_day.py` resumes interrupted transfers and checks the published MD5.
+
+```bash
+for day in 08 09 10 11 12 13 14; do python3 analysis/src/fetch_day.py 2021-11-$day; done
+```
+
+### 2 · Start the stack
+
+This builds the images, starts Kafka, Flink, Prometheus and the dashboard, and creates the topics. The replayer is built separately.
 
 ```bash
 docker compose up -d --build
+docker compose build producer
+
+# Rootless Podman: name the services, leaving out cAdvisor
+docker compose up -d --build kafka kafka-init jobmanager taskmanager prometheus viz
 ```
 
-Scale out Flink from one TaskManager to two, giving four slots with the defaults:
+### 3 · Subscribe
+
+> [!IMPORTANT]
+> Write the subscriptions before submitting the job. It holds its results back until it has read the subscriptions that existed at submission.
+
+This subscribes one trader to every symbol:
 
 ```bash
-docker compose up -d --scale taskmanager=2
+echo 'all|{"trader":"all","symbols":["*"]}' | docker compose exec -T kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic subscriptions --reader-property parse.key=true --reader-property key.separator='|'
 ```
 
-Run the Maven tests. `scripts/mvn.sh` runs Maven in a container with a cached dependency volume, which is faster for day-to-day work than a full image build:
+### 4 · Submit the job
+
+The jar is baked into the image, so rebuild with `docker compose up -d --build` after a code change.
 
 ```bash
-scripts/mvn.sh test
+docker compose exec jobmanager flink run -d -c fi.aalto.cse4780.trading.TradingTrendsJob /opt/job/flink-job.jar
 ```
+
+### 5 · Replay the week
+
+> [!WARNING]
+> Start within 30 s of submitting a live job, or its idleness timeout rejects the first rows as late.
+
+This sends Monday to Thursday at full speed, then plays Friday at 120 times real time so the dashboard has something to show:
 
 ```bash
-docker build --target test --no-cache-filter test .
+mkdir -p bench/results/raw
+docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily \
+  --mode realtime --rate 120 --pace-from 2021-11-12T09:00 > bench/results/raw/replay.json
 ```
 
-The test target runs Maven `clean verify`, including the Query 1 unit and Flink mini-cluster tests. The runtime checks below exercise the infrastructure and packaged dependencies.
+### 6 · Watch
 
-Stop and resume the same containers, retaining Kafka data:
+Open the dashboard at http://localhost:8088.
+
+On a laptop the unpaced part runs at about 1.3 million rows a second, and the whole replay, weekend included, takes about half an hour.
+
+> [!NOTE]
+> Each symbol's first window gives a BUY because both EMAs start at 0 (D-7), so Monday shows almost no real crossovers. They start on Tuesday. The dashboard hides those first-window BUYs unless you ask for them.
+
+| UI | URL |
+|---|---|
+| Dashboard | http://localhost:8088 |
+| Flink | http://localhost:8081 |
+| Prometheus | http://localhost:9090 |
+| Kafka from the host | `localhost:29092` |
+
+## The stack
+
+Stop and resume the same containers, keeping Kafka's data:
 
 ```bash
 docker compose stop
 docker compose start
 ```
 
-Reset the stack, removing the containers and their temporary data:
+Reset it, removing the containers and their data:
 
 ```bash
 docker compose down --volumes
 docker compose up -d --build
 ```
 
-| UI | URL |
-|---|---|
-| Flink | http://localhost:8081 |
-| Prometheus | http://localhost:9090 |
-| Dashboard | http://localhost:8088 |
-| Kafka from the host | `localhost:29092` |
+Kafka has no persistent volume. `stop` keeps its data in the container. `down`, with or without `--volumes`, removes the container and with it the topics, records, subscriptions and consumer offsets. On the next start, `kafka-init` creates the six application topics again, empty. `--volumes` also removes the anonymous volumes of the monitoring images.
 
-Kafka has no persistent data volume. `stop` retains data in its container; `down`, including without `--volumes`, removes that container and loses its topics, records, subscriptions, and consumer offsets. On the next start, `kafka-init` recreates the six empty application topics. `--volumes` also removes anonymous volumes used by the monitoring images.
-
-The Flink job computes both queries for every symbol (`ticks` → `ema-results` and `advisories`), but publishes only symbols that some trader subscribes to. Write the subscriptions first: at startup the job holds its results back until it has read the `subscriptions` topic as it was at submission. This subscribes to every symbol:
+Scale Flink out to two TaskManagers, four slots with the defaults:
 
 ```bash
-echo 'all|{"trader":"all","symbols":["*"]}' | docker compose exec -T kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic subscriptions --reader-property parse.key=true --reader-property key.separator='|'
+docker compose up -d --scale taskmanager=2
 ```
 
-Then submit the job. The jar is baked into the image at `/opt/job/flink-job.jar`. Rebuild with `docker compose up -d --build` after code changes.
+`TICKS_PARTITIONS` defaults to 8, `TM_SLOTS` to 2 and `PARALLELISM` to 2. Changing the partition count does not resize existing topics, so reset the stack to apply it. More TaskManagers need more memory than the 8 GiB VM the two-TaskManager check was designed for.
 
-```bash
-docker compose exec jobmanager flink run -d -c fi.aalto.cse4780.trading.TradingTrendsJob /opt/job/flink-job.jar
-```
+`KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT` and `VIZ_HOST_PORT` change the host ports. Kafka advertises the chosen host port, and clients inside Compose use `kafka:9092`. Every worktree uses the Compose project name `trading-trends`, so run a second stack with `docker compose -p <project>`, which also gives it its own image tags.
 
-For a finite replay, add `--bounded`. The job then reads the offsets of `ticks` and `subscriptions` that exist at startup, evaluates every window including the last, and finishes. Other options: `--zone-offset` (default `+02:00`, the literal CEST of D-3), `--watermark-bound-ms` and `--idleness-ms` (0 = off). The defaults of the last two depend on the mode (D-38). A live job waits 1 s of event time for out-of-order events and treats a partition as idle after 30 s without a price event, so it rejects Wednesday's 5,506 burst rows at 01:00 as late. A `--bounded` job uses the 64,265,001 ms bound that admits them, with idleness off, and so meets the admit-all correctness target of D-30 ([full-week analysis](docs/eda-week.md#watermarks-and-downstream-effects)). Start a live replay within 30 s of submitting the job, or the rows before `--pace-from` can be rejected as late too. [docs/interfaces.md](docs/interfaces.md#event-time-late-events-and-end-of-input-d-5-d-38) explains both. The subscription format, how changes take effect, and how to rerun are in [docs/interfaces.md](docs/interfaces.md).
+### Job options
 
-The job's counts are exported to Prometheus, and [docs/interfaces.md](docs/interfaces.md#counts-d-28) lists them. The parser's are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
+| Option | Default | Meaning |
+|---|---|---|
+| `--bounded` | off | Read the `ticks` and `subscriptions` offsets that exist at startup, evaluate every window including the last, and finish. |
+| `--zone-offset` | `+02:00` | The UTC offset of the trading timestamps, the literal CEST of D-3. |
+| `--watermark-bound-ms` | 1,000 live, 64,265,001 bounded | How long event time waits for out-of-order events (D-38). |
+| `--idleness-ms` | 30,000 live, 0 bounded | After how long without a price event a partition counts as idle; 0 turns it off. |
 
-Prometheus also scrapes the Kafka broker (through a JMX exporter agent) and cAdvisor (CPU, memory and network per container and for the Docker host). [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query and the exporter for each measurement.
+A live job rejects Wednesday's 5,506 burst rows at 01:00 as late. The bounded defaults admit them, so a `--bounded` run meets the admit-all correctness target of D-30 ([full-week analysis](docs/eda-week.md#watermarks-and-downstream-effects)). [docs/interfaces.md](docs/interfaces.md#event-time-late-events-and-end-of-input-d-5-d-38) explains both modes, and [the subscriptions section](docs/interfaces.md#subscriptions-d-17) covers the format, when a change takes effect and how to rerun.
 
-The producer uses the `tools` profile and is not built by the default start command. Build it explicitly:
+The design comparisons of the roadmap are switches of the job and the replayer: the Window API instead of the process function, early filtering, RocksDB, binary `ticks` and carry-forward of empty windows (D-42). Each default is the baseline.
 
-```bash
-docker compose build producer
-```
+### Replayer options
 
-The producer image contains the replayer in `/app/producer.jar`. Compose mounts `data/` read-only at `/data`, and the analysis downloads day files into `data/daily/` (see [Dataset profile](#dataset-profile)). This preloads every day file there into `ticks`, in day order, and keeps the JSON report in the gitignored `bench/results/raw/`:
+`--mode preload` (the default) loads the input as fast as Kafka takes it, `--mode realtime --rate K` paces it at K times real time, and `--pace-from T` sends everything before source time T unpaced. `--exchanges`, `--symbols` and `--limit` select a subset. The JSON report on stdout says whether the replay completed and which offsets it wrote, and progress goes to stderr. [docs/replayer.md](docs/replayer.md) covers the modes, the report, how to verify a replay against Kafka and the source files, and how to reset `ticks`.
 
-```bash
-mkdir -p bench/results/raw
-docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily > bench/results/raw/replay.json
-```
+### Metrics
 
-The report says whether the replay completed and which offsets it wrote. Progress goes to stderr. `--mode realtime --rate 10` paces the rows at ten times real time instead, and `--exchanges`, `--symbols` and `--limit` select a subset. [docs/replayer.md](docs/replayer.md) covers the modes, the report, how to verify a replay against Kafka and the source files, and how to reset `ticks`.
-
-The verification fixture below exercises the packaged Kafka connector independently of Query 1.
-
-`TICKS_PARTITIONS` defaults to 8, `TM_SLOTS` to 2, and `PARALLELISM` to 2. Changing the partition setting does not resize existing topics; reset a disposable stack to apply it. More TaskManagers need more Docker memory; the two-TaskManager check was designed for an 8 GiB Docker VM.
-
-Host ports can be changed with `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT`, and `VIZ_HOST_PORT`. Kafka advertises the selected host port; clients inside Compose use `kafka:9092`. `docker compose -p <project>` also isolates the built image tags.
+Prometheus scrapes the job's counts, the Kafka broker through a JMX exporter agent, and cAdvisor for CPU, memory and network per container. [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query for each measurement, and [the counts section](docs/interfaces.md#counts-d-28) lists what the job counts. The parser's counts are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
 
 ## Dashboard
 
-`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results` and `advisories` as a trading terminal: a watchlist of every published symbol with its trend over the last 24 hours of five-minute windows, sorted by latest crossover; one symbol's close, EMA38 and EMA100 with ▲ BUY and ▼ SELL markers, the EMA spread whose sign changes are the crossovers, and the market's breadth; the live advisories with their latency; and a replay clock with the feed time next to wall-clock time. The watchlist and the advisories filter by exchange, SecType and subscription (a trader's current list in `subscriptions`). It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Prometheus, whose UI at http://localhost:9090 graphs the queries in [docs/interfaces.md](docs/interfaces.md#metrics-d-35).
+The dashboard is a dark trading terminal over `ema-results` and `advisories` (D-33, D-41, D-43):
 
-To watch it fill, replay a subset live, for example:
+- a watchlist of every published symbol with its 24-hour trend, newest close and EMA spread, sorted by latest crossover
+- the selected symbol's close, EMA38 and EMA100 with ▲ BUY and ▼ SELL markers, the EMA spread whose sign changes are the crossovers, and the market's breadth
+- the advisories as they are published, with their latency
+- a clock bar with the results' time, the feed time and wall-clock time
+
+Filters by exchange, SecType and subscription apply to the watchlist and the advisories, and they live in the URL, so a view can be linked. Operational metrics stay in Prometheus.
+
+[viz/README.md](viz/README.md) covers its options, the WebSocket protocol, frontend development, and the scripted end-to-end check that replays two days, changes subscriptions mid-run and compares what the dashboard shows with the topics and the oracle ([recorded run](docs/validation/2026-11-10-dashboard/README.md)).
+
+## Tests
+
+Run the Maven tests in a container with a cached dependency volume, the fastest loop for day-to-day work:
 
 ```bash
-docker compose run --rm -T producer fi.aalto.cse4780.replay.Replayer --input /data/daily \
-  --mode realtime --rate 10 --pace-from 2021-11-08T09:00 --symbols RDSA.NL,ASML.NL,AIR.FR,SIE.ETR > /dev/null
-curl -s localhost:8088/health
+scripts/mvn.sh test
 ```
 
-[viz/README.md](viz/README.md) covers its options, the WebSocket protocol and frontend development, and the scripted end-to-end check that replays two days with subscriptions changed mid-run and compares what the dashboard shows with the topics and the oracle ([recorded run](docs/validation/2026-11-10-dashboard/README.md)).
+The Docker test target runs Maven `clean verify`, including the Flink mini-cluster tests, and the dashboard's frontend tests:
+
+```bash
+docker build --target test --no-cache-filter test .
+```
 
 ## Correctness check
 
-[correctness/README.md](correctness/README.md) has the tools: `export` dumps `ema-results` and `advisories` after a run, `compare` diffs them against the oracle (D-18), and `inject` rewrites day files with bounded disorder and late events. For a finished `--bounded` run with the `["*"]` subscription and an admit-all oracle run in `oracle/out/`:
+The correctness check compares a finished run with the oracle (D-18). Run the oracle over the same day files, then export and compare a `--bounded` run with the `["*"]` subscription:
 
 ```bash
+oracle/run.sh data/daily/debs2022-gc-trading-day-*.csv     # results in oracle/out/
 correctness/run.sh export --zone-offset +02:00 --out /out/run-1
 correctness/run.sh compare --oracle oracle/out --job correctness/out/run-1 --job-late-ticks 0 --out /out/run-1-vs-oracle
 ```
 
-[The weekday evidence](docs/validation/2026-10-13-weekday/README.md) has this check for every symbol of 08 November: at both modes' watermark defaults, at replay speeds from 10× to a preload, and on reordered input (D-39).
+`correctness/run.sh inject` rewrites day files with bounded disorder and late events. [The weekday evidence](docs/validation/2026-10-13-weekday/README.md) runs this check for every symbol of 8 November, at both modes' watermark defaults, at replay speeds from 10× to a preload, and on reordered input (D-39). [The full-week evidence](docs/validation/2026-11-01-full-week/README.md) does it for the whole week.
 
 ## Benchmarks
 
-[bench/README.md](bench/README.md) describes the harness. `bench/run.py` resets the stack, replays an input, runs the job to completion and keeps the raw measurements, the effective configuration, a count reconciliation and, given an oracle run, the correctness check. `bench/summarize.py` turns repeated runs into CSV tables and plots with mean and std:
+`bench/run.py` resets the stack, replays an input, runs the job to completion and keeps the raw measurements, the effective configuration, a count reconciliation and, given an oracle run, the correctness check. `bench/summarize.py` turns repeated runs into CSV tables and plots with mean and standard deviation. A config's `variant` picks a design comparison ([bench/README.md](bench/README.md#variants-d-42)).
 
 ```bash
 python3 bench/run.py bench/configs/subset12-preload-p2.json
 bench/.venv/bin/python bench/summarize.py bench/results/raw/subset12-preload-p2-<stamp>
 ```
 
-The design comparisons of the roadmap (process function against the Window API, early filtering, RocksDB, binary `ticks`, carry-forward of empty windows) are switches of the job and the replayer, and a config's `variant` selects them ([bench/README.md](bench/README.md#variants-d-42), D-42). Each default is the baseline.
-
 ## Verify the local stack
 
-The verification script builds the images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through Prometheus. It also proves that stop/start retains Kafka records and reset removes them.
+<details>
+<summary>What the script checks, and how to run it</summary>
 
-The checker needs Python 3.9+ and one Python client to reach the host Kafka listener. It uses its own Compose project, unused host ports, and synthetic topics, then removes its containers and images. Base images and build caches remain available for subsequent runs.
+`scripts/verify-local-stack.py` builds the images, runs the containerized Maven target, tests both Kafka connection paths, runs a bounded Flink and Kafka roundtrip, checks the slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through Prometheus. It also proves that stop and start keep Kafka's records and a reset removes them. It uses its own Compose project, free host ports and synthetic topics, then removes its containers and images.
+
+It needs Python 3.9 or later and one Python Kafka client:
 
 ```bash
 python3 -m venv .venv
@@ -151,64 +254,61 @@ python3 -m venv .venv
 .venv/bin/python scripts/verify-local-stack.py
 ```
 
-Each run prints its evidence directory, containing `commands.log`, `results.json`, and metric samples. Use `--output <new-directory>` to choose the location. A failed check returns a nonzero exit code and retains its evidence. [Validation notes](docs/local-stack-validation.md) record the observed results and limitations.
+Each run prints its evidence directory, with `commands.log`, `results.json` and metric samples; `--output <new-directory>` picks it. A failed check exits nonzero and keeps its evidence. [docs/local-stack-validation.md](docs/local-stack-validation.md) records the observed results and limits.
+
+</details>
 
 ## Dev container
 
-Open the repository using your IDE's dev-container support, then run `mvn -B -ntp clean verify` in its terminal. JDK 17, Maven, Python, and the Docker CLI run inside the container. Run the Compose commands above from the host terminal, so its bind-mount paths refer to the host workspace.
+<details>
+<summary>Using the dev container, and checking it in the stack verification</summary>
 
-To include the same workflow in automated validation, use the reference dev-container CLI. This optional setup needs Node.js and pnpm on the host:
+Open the repository with your IDE's dev-container support and run `mvn -B -ntp clean verify` in its terminal. JDK 17, Maven, Python and the Docker CLI run inside the container. Run the Compose commands from a host terminal, so their bind-mount paths refer to the host workspace.
+
+To check the dev container in the stack verification too, install the reference CLI, which needs Node.js and pnpm on the host:
 
 ```bash
 validation_cli_dir=$(mktemp -d)
 pnpm --dir "$validation_cli_dir" add @devcontainers/cli@0.89.0
-.venv/bin/python scripts/verify-local-stack.py \
-  --devcontainer "$validation_cli_dir/node_modules/.bin/devcontainer"
+.venv/bin/python scripts/verify-local-stack.py --devcontainer "$validation_cli_dir/node_modules/.bin/devcontainer"
 ```
 
-This builds `.devcontainer/devcontainer.json`, runs Maven `clean verify` inside it, and checks access to the host Docker daemon and Compose. The CLI step is opt-in; a run without it explicitly records that the dev container was not checked.
+This builds `.devcontainer/devcontainer.json`, runs Maven `clean verify` inside it, and checks that it reaches the host's Docker daemon and Compose. Without the flag, the run records that the dev container was not checked.
+
+</details>
 
 ## Dataset profile
 
-The complete-day analysis and Monday checkpoint are documented in [analysis/README.md](analysis/README.md) and [docs/eda-monday.md](docs/eda-monday.md).
-The [full-week report](docs/eda-week.md) extends that checkpoint across all seven daily files.
-Run one selected day with `bash analysis/daily.sh 2021-11-08`; it verifies the download, resumes from a parsed checkpoint, and regenerates the tables and figures in a 4 GiB container.
+<details>
+<summary>How the dataset was profiled, and what the analysis containers may touch</summary>
 
-The dataset is CC BY-NC-SA 4.0 and is never committed. `analysis/` downloads a
-reproducible sample of one weekday file and profiles it; the measured results and the
-data contract they justify are in [docs/data-contract.md](docs/data-contract.md).
+The dataset is CC BY-NC-SA 4.0 and is never committed. [docs/data-contract.md](docs/data-contract.md) holds the measured facts the queries rely on, [docs/eda-monday.md](docs/eda-monday.md) the Monday profile and [docs/eda-week.md](docs/eda-week.md) the full week. [analysis/README.md](analysis/README.md) explains how they are produced:
 
 ```bash
-analysis/src/fetch_slice.sh     # ~1 GB stratified sample into data/slice (gitignored)
-analysis/run.sh analysis/src/profile.py    # evidence tables into analysis/out/
-analysis/run.sh analysis/src/golden.py     # golden fixtures into fixtures/golden/
+bash analysis/daily.sh 2021-11-08                # one day's tables and figures, in a 4 GiB container
+analysis/src/fetch_slice.sh                      # a ~1 GB stratified sample into data/slice
+analysis/run.sh analysis/src/profile.py          # evidence tables into analysis/out/
+analysis/run.sh analysis/src/golden.py           # golden fixtures into fixtures/golden/
 ```
 
-`run.sh` uses the container in `analysis/Dockerfile`, which is what the report cites. Set
-`USE_VENV=1` to run the same scripts in a local virtualenv instead, which is faster for
-iteration because bind mounts on macOS are slow for multi-GB scans. Both paths produce
-the same output.
+`run.sh` uses the container in `analysis/Dockerfile`, which is what the report cites. `USE_VENV=1` runs the same scripts in a local virtualenv, which is faster for iteration because bind mounts on macOS are slow for multi-GB scans. Both produce the same output.
 
-The analysis container runs read-only, with `--network none`, `--cap-drop ALL` and
-`no-new-privileges`. The input data is mounted read-only. `run.sh` can write only
-`analysis/out/` and `fixtures/`; `daily.sh` and `week.sh` write their output under
-`analysis/out/` and their cache in `data/analysis/`. Only `fetch_slice.sh` and
-`fetch_day.py` touch the network, and both run on the host.
+The analysis container runs read-only, with `--network none`, `--cap-drop ALL` and `no-new-privileges`, and mounts the input data read-only. `run.sh` can write only `analysis/out/` and `fixtures/`, and `daily.sh` and `week.sh` write their output under `analysis/out/` and their cache in `data/analysis/`. Only `fetch_slice.sh` and `fetch_day.py` use the network, and both run on the host.
 
 ### Container file access
 
-Containers can read host files only where a bind mount grants it, and every mount in this
-repo is a project-relative path except cAdvisor's. cAdvisor runs privileged and mounts the
-Docker host's `/`, `/sys`, `/var/run` and `/var/lib/docker` read-only. To enforce the rest
-rather than rely on convention, restrict
-Docker Desktop's shared paths (Settings -> Resources -> File sharing) to this repository
-alone. The defaults include `/Users`, so without that change a bind mount anywhere under
-your home directory would be permitted.
+Containers read host files only where a bind mount grants it, and every mount in this repository is a project-relative path except cAdvisor's. cAdvisor runs privileged and mounts the Docker host's `/`, `/sys`, `/var/run` and `/var/lib/docker` read-only. To enforce the rest instead of relying on convention, restrict Docker Desktop's shared paths (Settings, Resources, File sharing) to this repository. The defaults include `/Users`, so without that change a bind mount anywhere in your home directory is allowed.
 
-## Dataset
+</details>
 
-The seven day files total about 25 GB. Check the free disk space first. Download them from Zenodo into `data/daily/`, which is gitignored and where the analysis, replayer and oracle examples expect them. `fetch_day.py` resumes interrupted transfers and verifies the published MD5:
+## Further reading
 
-```bash
-for day in 08 09 10 11 12 13 14; do python3 analysis/src/fetch_day.py 2021-11-$day; done
-```
+| Document | What it covers |
+|---|---|
+| [docs/ROADMAP.md](docs/ROADMAP.md) | The plan and its status |
+| [docs/decisions.md](docs/decisions.md) | Every design decision, with its alternatives and evidence |
+| [docs/interfaces.md](docs/interfaces.md) | Topic formats, counts, metrics and the oracle comparison |
+| [docs/replayer.md](docs/replayer.md) | Replay modes, the report, disk use and throughput |
+| [docs/validation/](docs/validation/) | The recorded validation runs |
+
+<div align="center"><sub>The DEBS 2022 Grand Challenge data is CC BY-NC-SA 4.0 and is never committed to this repository.</sub></div>
