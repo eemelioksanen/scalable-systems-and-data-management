@@ -28,7 +28,7 @@ class TickDeserializerTest {
 
     private final Map<String, Counter> counters = new HashMap<>();
     private final List<Tick> emitted = new ArrayList<>();
-    private final TickDeserializer deserializer = new TickDeserializer(new TickParser());
+    private final TickDeserializer deserializer = new TickDeserializer(new TickParser(), Variant.TicksEncoding.CSV);
 
     @BeforeEach
     void setUp() {

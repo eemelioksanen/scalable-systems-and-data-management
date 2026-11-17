@@ -5,7 +5,6 @@ import org.apache.flink.api.common.functions.OpenContext;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueState;
-import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.metrics.Counter;
@@ -43,11 +42,6 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
     /** Price events whose window had already been evaluated when they arrived. */
     public static final OutputTag<Tick> LATE_TICKS = new OutputTag<>("late-ticks") {};
 
-    static final ValueStateDescriptor<EmaState> EMAS =
-            new ValueStateDescriptor<>("emas", TypeInformation.of(EmaState.class));
-    static final ValueStateDescriptor<LastWindow> LAST_WINDOW =
-            new ValueStateDescriptor<>("last-window", TypeInformation.of(LastWindow.class));
-
     private final Variant.EmptyWindows emptyWindows;
 
     private transient MapState<Long, CloseCandidate> openWindows;
@@ -55,12 +49,7 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
     private transient ValueState<LastWindow> lastWindow;
     private transient WindowEvaluator evaluator;
     private transient Counter lateTicks;
-    private transient volatile long emaStateCount;
     private transient volatile long openWindowCount;
-
-    public EmaCalculator() {
-        this(Variant.EmptyWindows.SKIP);
-    }
 
     public EmaCalculator(Variant.EmptyWindows emptyWindows) {
         this.emptyWindows = emptyWindows;
@@ -70,15 +59,14 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
     public void open(OpenContext openContext) {
         openWindows = getRuntimeContext().getMapState(new MapStateDescriptor<>(
                 "open-windows", Types.LONG, TypeInformation.of(CloseCandidate.class)));
-        emas = getRuntimeContext().getState(EMAS);
-        if (emptyWindows == Variant.EmptyWindows.CARRY_FORWARD) {
-            lastWindow = getRuntimeContext().getState(LAST_WINDOW);
-        }
         MetricGroup metrics = getRuntimeContext().getMetricGroup();
         lateTicks = metrics.counter("lateTicks");
-        evaluator = new WindowEvaluator(metrics);
-        metrics.gauge("emaStates", () -> emaStateCount);
+        evaluator = new WindowEvaluator(emptyWindows, metrics);
         metrics.gauge("openWindows", () -> openWindowCount);
+        emas = getRuntimeContext().getState(WindowEvaluator.EMAS);
+        if (evaluator.carriesForward()) {
+            lastWindow = getRuntimeContext().getState(WindowEvaluator.LAST_WINDOW);
+        }
     }
 
     @Override
@@ -109,25 +97,7 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
         CloseCandidate close = openWindows.get(windowEnd);
         openWindows.remove(windowEnd);
         openWindowCount--;
-
-        EmaState state = emas.value();
-        if (state == null) {
-            state = new EmaState();
-            emaStateCount++;
-        }
-        String symbol = ctx.getCurrentKey();
-        if (lastWindow != null) {
-            LastWindow last = lastWindow.value();
-            if (last != null) {
-                evaluator.carryForward(
-                        symbol, state, last, windowEnd, close.maxIngestTimeMillis, out);
-            }
-            lastWindow.update(new LastWindow(windowEnd, close.price, close.secType));
-        }
-        EmaResult result = evaluator.evaluate(symbol, state, close.secType, windowEnd, close.price,
-                close.maxIngestTimeMillis);
-        emas.update(state);
-        out.collect(result);
+        evaluator.evaluate(ctx.getCurrentKey(), close, windowEnd, emas, lastWindow, out);
     }
 
     /** Exclusive end of the 5-minute window containing {@code eventTimeMillis}. */

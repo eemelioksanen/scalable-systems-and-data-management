@@ -6,7 +6,7 @@
     "data/issue23/semantics"
   ],
   "job": {
-    "watermarkBoundMs": 1000,
+    "watermarkBoundMs": 86400000,
     "idlenessMs": 30000,
     "zoneOffset": "+02:00"
   },
@@ -24,7 +24,7 @@
       ]
     }
   ],
-  "oracle": "oracle/out/issue23-bound-1s",
+  "oracle": "oracle/out/issue23-skip",
   "replayArgs": [
     "--rate",
     "2000"

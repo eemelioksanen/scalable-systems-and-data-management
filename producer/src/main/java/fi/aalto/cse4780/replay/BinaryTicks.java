@@ -58,21 +58,20 @@ final class BinaryTicks {
 
     /** {@code DD-MM-YYYY} as days since 1970-01-01. */
     private void date(String field) {
-        if (field.length() == 10 && field.charAt(2) == '-' && field.charAt(5) == '-') {
-            int day = digits(field, 0, 2);
-            int month = digits(field, 3, 5);
-            int year = digits(field, 6, 10);
-            if (day >= 0 && month >= 0 && year >= 0) {
-                try {
-                    long epochDay = LocalDate.of(year, month, day).toEpochDay();
-                    buffer.put(DAY).putInt((int) epochDay);
-                    return;
-                } catch (DateTimeException invalid) {
-                    // Left to the job as text.
-                }
-            }
+        boolean shape = field.length() == 10 && field.charAt(2) == '-' && field.charAt(5) == '-'
+                && digits(field, 0, 2) >= 0 && digits(field, 3, 5) >= 0 && digits(field, 6, 10) >= 0;
+        if (!shape) {
+            text(field);
+            return;
         }
-        text(field);
+        long epochDay;
+        try {
+            epochDay = LocalDate.of(digits(field, 6, 10), digits(field, 3, 5), digits(field, 0, 2)).toEpochDay();
+        } catch (DateTimeException invalid) {
+            text(field);
+            return;
+        }
+        buffer.put(DAY).putInt((int) epochDay);
     }
 
     /** {@code HH:MM:SS} or {@code HH:MM:SS.mmm} as milliseconds since midnight. */
@@ -95,16 +94,14 @@ final class BinaryTicks {
     }
 
     private void number(String field) {
-        if (!field.isEmpty()) {
-            try {
-                double value = Double.parseDouble(field);
-                buffer.put(NUMBER).putDouble(value);
-                return;
-            } catch (NumberFormatException notANumber) {
-                // Left to the job as text.
-            }
+        double value;
+        try {
+            value = Double.parseDouble(field);
+        } catch (NumberFormatException notANumber) {
+            text(field);
+            return;
         }
-        text(field);
+        buffer.put(NUMBER).putDouble(value);
     }
 
     /** {@code s[from, to)} as a non-negative decimal integer, or -1. */

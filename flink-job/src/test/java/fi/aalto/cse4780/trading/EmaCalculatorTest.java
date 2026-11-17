@@ -31,7 +31,7 @@ class EmaCalculatorTest {
     @BeforeEach
     void setUp() throws Exception {
         harness = ProcessFunctionTestHarnesses.forKeyedProcessFunction(
-                new EmaCalculator(), tick -> tick.symbol, Types.STRING);
+                new EmaCalculator(Variant.EmptyWindows.SKIP), tick -> tick.symbol, Types.STRING);
     }
 
     @AfterEach

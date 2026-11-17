@@ -19,6 +19,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import polars as pl  # noqa: E402
 
+from run import VARIANTS  # noqa: E402
+
 
 def busy_ratio(vertex: dict | None) -> float | None:
     """Busy share of the tasks' whole run, as D-35 defines busy: the rest after idle and backpressured time."""
@@ -81,8 +83,7 @@ def run_row(run: Path) -> dict:
         **{k: effective[k] for k in ("mode", "finish", "partitions", "taskmanagers", "slots", "parallelism")},
         "checkpointing": config["checkpointing"],
         # Runs recorded before D-42 ran the baseline variant.
-        **effective.get("variant", {"operator": "process", "emptyWindows": "skip", "stateBackend": "hashmap",
-                                    "ticksEncoding": "csv", "filtering": "flink"}),
+        **effective.get("variant", {key: choices[0] for key, choices in VARIANTS.items()}),
     }
     if not (run / "summary.json").exists():
         return row

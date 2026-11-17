@@ -83,7 +83,6 @@ VARIANTS = {
     "ticksEncoding": ("csv", "binary"),
     "filtering": ("flink", "replayer"),
 }
-# The job's flag for each variant key it receives; filtering is the replayer's.
 JOB_FLAGS = {"operator": "--operator", "emptyWindows": "--empty-windows", "stateBackend": "--state-backend",
              "ticksEncoding": "--ticks-encoding"}
 
@@ -374,9 +373,8 @@ class Run:
     def job_effective(self, job_id: str) -> dict:
         """The configuration the job resolved and published as its global job parameters, checked against the run's."""
         effective = http_json(f"{FLINK}/jobs/{job_id}/config")["execution-config"]["user-config"]
-        expected = {**self.cfg.variant, "watermarkBoundMs": str(self.cfg.bound_ms),
+        expected = {**{k: self.cfg.variant[k] for k in JOB_FLAGS}, "watermarkBoundMs": str(self.cfg.bound_ms),
                     "idlenessMs": str(self.cfg.idleness_ms)}
-        expected.pop("filtering")
         differing = {k: (v, effective.get(k)) for k, v in expected.items() if effective.get(k) != v}
         if differing:
             raise RuntimeError(f"the job runs another configuration than the run's (requested, job): {differing}")
@@ -550,8 +548,12 @@ class Run:
         }
         if self.cfg.oracle:
             oracle = json.loads((ROOT / self.cfg.oracle / "manifest.json").read_text())["counts"]["total"]
+            # The oracle counts rows of the wrong field count as data; the replayer rejects them, and blank lines.
             checks += [
-                ("replayed data rows = oracle data rows", report["counts"]["dataRows"], oracle["dataRows"]),
+                ("replayed data rows = oracle data rows less its malformed rows", report["counts"]["dataRows"],
+                 oracle["dataRows"] - oracle.get("malformedRow", 0)),
+                ("rows the replayer rejected = oracle's malformed and blank rows", report["counts"]["rejected"],
+                 oracle.get("malformedRow", 0) + oracle.get("blank", 0)),
                 ("price events = oracle price events", total(source, "write-records"), oracle["accepted"]),
             ]
             if final["split"]:

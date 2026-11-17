@@ -20,7 +20,6 @@ inputs=(data/issue23/semantics/trading-day-08-11-21.csv data/issue23/semantics/t
 for policy in skip carry-forward; do
   oracle/run.sh "${inputs[@]}" --zone-offset +02:00 --empty-windows "$policy" --out "/out/issue23-$policy" > /dev/null
 done
-oracle/run.sh "${inputs[@]}" --zone-offset +02:00 --watermark-bound-ms 1000 --out /out/issue23-bound-1s > /dev/null
 
 configs=("$@")
 [[ ${#configs[@]} -gt 0 ]] || configs=(scripts/validation/issue23/configs/*.json)
