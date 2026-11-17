@@ -60,6 +60,7 @@ class BroadcasterTest {
         JsonNode snapshot = client.sent.get(0);
         assertEquals(StoreTest.T0, snapshot.get("spanEnd").asLong());
         assertEquals(288, snapshot.get("symbols").get(0).get("cells").asText().length());
+        assertEquals("[1636355100000,10.0,2.0,1.0]", snapshot.get("symbols").get(0).get("last").toString());
         assertTrue(snapshot.get("series").isNull());
         assertEquals("+02:00", snapshot.get("clock").get("zoneOffset").asText());
         assertEquals(0, snapshot.get("advisories").size());

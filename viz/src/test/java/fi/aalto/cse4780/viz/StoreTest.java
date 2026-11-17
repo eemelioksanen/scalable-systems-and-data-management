@@ -94,6 +94,17 @@ class StoreTest {
     }
 
     @Test
+    void aRowCarriesItsNewestWindowUntilEveryWindowHasLeftTheSpan() {
+        store.add(new Result("A.FR", "E", w(2), 12.5, 2.0, 1.0));
+        store.add(new Result("A.FR", "E", w(1), 11.0, 2.0, 1.0));
+        assertEquals(new Store.Point(w(2), 12.5, 2.0, 1.0), store.rows().get(0).last());
+
+        store.add(up("B.NL", w(SLOTS + 2)));
+        Store.Row a = store.rows().stream().filter(r -> r.symbol().equals("A.FR")).findFirst().orElseThrow();
+        assertNull(a.last());
+    }
+
+    @Test
     void theFirstWindowIsAFlipFromZero() {
         store.add(up("A.FR", w(0)));
         store.add(up("A.FR", w(1)));
@@ -133,6 +144,7 @@ class StoreTest {
         Store.Cell a = first.cells().stream().filter(c -> c.symbol().equals("A.FR")).findFirst().orElseThrow();
         assertEquals('-', a.sign());
         assertEquals("FR", a.exchange());
+        assertEquals(List.of(10.0, 1.0, 2.0), List.of(a.close(), a.ema38(), a.ema100()));
         assertEquals(List.of(w(0)), first.points().get("A.FR").stream().map(Store.Point::windowEnd).toList());
         assertFalse(first.points().containsKey("B.NL"));
 

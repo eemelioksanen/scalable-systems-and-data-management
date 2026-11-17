@@ -11,6 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionStage;
@@ -107,6 +108,8 @@ class DashboardTest {
         store.addAdvisory(StoreTest.sell("A.FR", StoreTest.w(1)));
         JsonNode delta = browser.next("delta");
         assertEquals("-", delta.get("cells").get(0).get(2).asText());
+        JsonNode cell = delta.get("cells").get(0);
+        assertEquals(List.of(10.0, 1.0, 2.0), List.of(cell.get(6).asDouble(), cell.get(7).asDouble(), cell.get(8).asDouble()));
         assertEquals(StoreTest.w(1), delta.get("points").get("points").get(0).get(0).asLong());
         assertEquals("SELL", delta.get("advisories").get(0).get(2).asText());
 

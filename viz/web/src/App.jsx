@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import AdvisoryFeed from './AdvisoryFeed.jsx';
-import ClockBar from './ClockBar.jsx';
-import Filters from './Filters.jsx';
-import Heatmap from './Heatmap.jsx';
-import SymbolChart from './SymbolChart.jsx';
+import Signals from './Signals.jsx';
+import SymbolPanel from './SymbolPanel.jsx';
+import TopBar, { Ticker } from './TopBar.jsx';
+import Watchlist from './Watchlist.jsx';
 import { useDashboardSocket } from './useDashboardSocket.js';
-import { feedItems, indexAdvisories, visibleRows } from './state.js';
+import { breadth, feedItems, indexAdvisories, quantile, visibleRows } from './state.js';
 
 const SUBSCRIBE = `echo 'all|{"trader":"all","symbols":["*"]}' | docker compose exec -T kafka \\
   /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic subscriptions \\
@@ -55,7 +54,7 @@ export default function App() {
   const [defaultSymbol, setDefaultSymbol] = useState(null);
   const [{ filters, sort }, setView] = useState(readQuery);
   const selected = picked ?? defaultSymbol;
-  const { state, status } = useDashboardSocket(selected);
+  const { state, status, arrivals } = useDashboardSocket(selected);
   const adv = useMemo(() => indexAdvisories(state.advisories, { firstWindows: filters.firstWindows }),
     [state.advisories, filters.firstWindows]);
   const order = useMemo(
@@ -63,6 +62,11 @@ export default function App() {
     [state.rows, filters, sort, adv, state.traders],
   );
   const feed = useMemo(() => feedItems(adv.all, filters, state.traders), [adv, filters, state.traders]);
+  const latencies = useMemo(() => feed.map((a) => a.latencyMs).filter((v) => v != null).sort((a, b) => a - b), [feed]);
+  // state.version moves on every change to the signs.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const share = useMemo(() => breadth(state, order), [state.version, order]);
+  const buys = feed.filter((a) => a.type === 'BUY').length;
 
   useEffect(() => writeQuery(filters, sort), [filters, sort]);
 
@@ -86,26 +90,32 @@ export default function App() {
   const row = selected == null ? null : state.rows[state.index.get(selected)];
   const series = state.series?.symbol === selected ? state.series : null;
 
+  const setFilters = (f) => setView({ filters: f, sort });
+
   return (
     <div className={status === 'live' ? 'app' : 'app dimmed'}>
-      <ClockBar clock={state.clock} status={status} slotMs={state.slotMs} />
+      <TopBar clock={state.clock} status={status} slotMs={state.slotMs} breadthNow={share.findLast((v) => v != null) ?? null}
+        buys={buys} sells={feed.length - buys} p50={quantile(latencies, 0.5)} />
       {state.received && state.rows.length === 0 ? (
         <NoResults />
       ) : (
         <>
-          <Filters filters={filters} traders={state.traders} onChange={(f) => setView({ filters: f, sort })} />
-          <main className="grid">
-            <Heatmap state={state} order={order} sort={sort} onSort={(s) => setView({ filters, sort: s })} adv={adv}
-              showFirst={filters.firstWindows}
-              selected={selected} onSelect={select} zoneOffset={zone} />
-            <div className="right">
-              <SymbolChart series={series} row={row} markers={selected ? adv.bySymbol.get(selected) ?? [] : []}
-                slotMs={state.slotMs} slots={state.slots} zoneOffset={zone} />
-              <AdvisoryFeed items={feed} total={adv.all.length} hiddenFirst={filters.firstWindows ? 0 : adv.all.filter((a) => a.firstWindow).length} selected={selected} onSelect={select} zoneOffset={zone} />
-            </div>
-          </main>
+          <Ticker rows={state.rows} order={order} selected={selected} onSelect={select} />
+          <Watchlist state={state} order={order} sort={sort} onSort={(s) => setView({ filters, sort: s })}
+            filters={filters} onFilters={setFilters} adv={adv} showFirst={filters.firstWindows}
+            selected={selected} onSelect={select} zoneOffset={zone} />
+          <SymbolPanel state={state} series={series} row={row} share={share}
+            markers={selected ? adv.bySymbol.get(selected) ?? [] : []} zoneOffset={zone} />
+          <Signals items={feed} arrivals={arrivals} latencies={latencies} total={adv.all.length}
+            hiddenFirst={filters.firstWindows ? 0 : adv.all.filter((a) => a.firstWindow).length}
+            showFirst={filters.firstWindows} onShowFirst={(firstWindows) => setFilters({ ...filters, firstWindows })}
+            selected={selected} onSelect={select} zoneOffset={zone} />
         </>
       )}
+      <footer className="foot">
+        <span>ema-results · advisories</span>
+        <span>{state.rows.length.toLocaleString('en')} symbols published</span>
+      </footer>
     </div>
   );
 }

@@ -18,7 +18,7 @@ shoot() {  # name path
   node viz/web/scripts/screenshot.mjs --url "$BASE$2" --out "$OUT/$1.png" --width 1600 --height 900
 }
 
-# The whole dashboard: heatmap by latest crossover, INVDS.FR charted with its SELL and BUY, the feed.
+# The whole dashboard: watchlist by latest crossover, INVDS.FR charted with its SELL and BUY, the signals.
 shoot dashboard-overview '/#INVDS.FR'
 # One trader's view: trader-b added IPLU3.FR at 12:00, before its 15:40 SELL and 16:55 BUY.
 shoot dashboard-trader '/?trader=trader-b#IPLU3.FR'

@@ -30,6 +30,11 @@ final class Messages {
             o.put("exchange", row.exchange());
             putLong(o, "lastFlip", row.lastFlip());
             o.put("cells", row.cells());
+            if (row.last() == null) {
+                o.putNull("last");
+            } else {
+                o.set("last", pointNode(row.last()));
+            }
         }
         if (series == null) {
             root.putNull("series");
@@ -68,6 +73,7 @@ final class Messages {
             } else {
                 a.add(c.lastFlip());
             }
+            a.add(c.close()).add(c.ema38()).add(c.ema100());
         }
         if (points == null) {
             root.putNull("points");
@@ -126,9 +132,13 @@ final class Messages {
     private static ArrayNode pointArray(List<Store.Point> points) {
         ArrayNode out = JSON.createArrayNode();
         for (Store.Point p : points) {
-            out.addArray().add(p.windowEnd()).add(p.close()).add(p.ema38()).add(p.ema100());
+            out.add(pointNode(p));
         }
         return out;
+    }
+
+    private static ArrayNode pointNode(Store.Point p) {
+        return JSON.createArrayNode().add(p.windowEnd()).add(p.close()).add(p.ema38()).add(p.ema100());
     }
 
     private static ObjectNode clockNode(Clock clock) {

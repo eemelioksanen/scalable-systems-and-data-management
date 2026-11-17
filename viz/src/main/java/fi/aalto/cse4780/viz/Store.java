@@ -21,9 +21,11 @@ final class Store {
 
     record Point(long windowEnd, double close, double ema38, double ema100) {}
 
-    record Cell(String symbol, long windowEnd, char sign, String secType, String exchange, Long lastFlip) {}
+    record Cell(String symbol, long windowEnd, char sign, String secType, String exchange, Long lastFlip,
+            double close, double ema38, double ema100) {}
 
-    record Row(String symbol, String secType, String exchange, Long lastFlip, String cells) {}
+    /** {@code last} is the newest retained window, null when none is left in the span. */
+    record Row(String symbol, String secType, String exchange, Long lastFlip, String cells, Point last) {}
 
     record Series(String symbol, Long firstWindowEnd, List<Point> points) {}
 
@@ -112,7 +114,8 @@ final class Store {
         List<Row> rows = new ArrayList<>(symbols.size());
         for (Map.Entry<String, History> e : symbols.entrySet()) {
             History h = e.getValue();
-            rows.add(new Row(e.getKey(), h.secType, h.exchange, h.lastFlip(), h.cells(latestWindowEnd)));
+            rows.add(new Row(e.getKey(), h.secType, h.exchange, h.lastFlip(), h.cells(latestWindowEnd),
+                    h.size == 0 ? null : h.point(h.size - 1)));
         }
         return rows;
     }
@@ -139,7 +142,8 @@ final class Store {
                 if (i < 0) {
                     continue;
                 }
-                cells.add(new Cell(e.getKey(), windowEnd, signChar(h.sign[i]), h.secType, h.exchange, lastFlip));
+                cells.add(new Cell(e.getKey(), windowEnd, signChar(h.sign[i]), h.secType, h.exchange, lastFlip,
+                        h.close[i], h.ema38[i], h.ema100[i]));
                 if (wanted) {
                     points.computeIfAbsent(e.getKey(), s -> new ArrayList<>()).add(h.point(i));
                 }

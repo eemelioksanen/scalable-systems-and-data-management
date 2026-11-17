@@ -17,6 +17,7 @@ export const initialState = {
   rows: [],
   index: new Map(),
   signs: new Int8Array(0),
+  // Moves whenever a sign or the span changes, not on a clock-only delta.
   version: 0,
   series: null,
   // Advisories in the span, keyed by advisoryKey; advVersion moves whenever they change.
@@ -81,7 +82,7 @@ export function applySnapshot(_state, msg) {
   const index = new Map();
   const signs = new Int8Array(Math.max(16, msg.symbols.length) * slots);
   msg.symbols.forEach((s, r) => {
-    rows.push({ symbol: s.symbol, secType: s.secType, exchange: s.exchange, lastFlip: s.lastFlip });
+    rows.push({ symbol: s.symbol, secType: s.secType, exchange: s.exchange, lastFlip: s.lastFlip, last: s.last ?? null });
     index.set(s.symbol, r);
     if (spanEnd == null) return;
     for (let i = 0; i < slots; i++) {
@@ -129,11 +130,12 @@ export function applyDelta(state, msg) {
   if (msg.cells.length > 0) {
     rows = rows.slice();
     index = new Map(index);
-    for (const [symbol, windowEnd, sign, secType, exchange, lastFlip] of msg.cells) {
+    for (const [symbol, windowEnd, sign, secType, exchange, lastFlip, close, ema38, ema100] of msg.cells) {
+      const point = [windowEnd, close, ema38, ema100];
       let r = index.get(symbol);
       if (r === undefined) {
         r = rows.length;
-        rows.push({ symbol, secType, exchange, lastFlip });
+        rows.push({ symbol, secType, exchange, lastFlip, last: point });
         index.set(symbol, r);
         if ((r + 1) * slots > signs.length) {
           const grown = new Int8Array(Math.max(signs.length * 2, (r + 1) * slots));
@@ -141,11 +143,18 @@ export function applyDelta(state, msg) {
           signs = grown;
         }
       } else {
-        rows[r] = { ...rows[r], secType, exchange, lastFlip };
+        const { last } = rows[r];
+        rows[r] = { ...rows[r], secType, exchange, lastFlip, last: last == null || windowEnd >= last[0] ? point : last };
       }
       if (spanEnd != null && windowEnd > spanEnd - slots * slotMs) {
         signs[r * slots + slotOf(windowEnd, slots, slotMs)] = SIGN[sign] ?? NONE;
       }
+    }
+  }
+  if (spanEnd !== state.spanEnd && spanEnd != null) {
+    const start = spanEnd - slots * slotMs;
+    if (rows.some((row) => row.last && row.last[0] <= start)) {
+      rows = rows.map((row) => (row.last && row.last[0] <= start ? { ...row, last: null } : row));
     }
   }
   let series = state.series;
@@ -173,7 +182,7 @@ export function applyDelta(state, msg) {
     rows,
     index,
     signs,
-    version: state.version + 1,
+    version: msg.cells.length > 0 || spanEnd !== state.spanEnd ? state.version + 1 : state.version,
     series,
     advisories,
     advVersion,
@@ -276,6 +285,48 @@ export function visibleRows(rows, filters, { sort = 'flip', lastCross = new Map(
   return out;
 }
 
+// Per span column, the share of symbols in rows whose EMA38 is above their EMA100, or null where
+// none of them had a window. A symbol without a window in a column is not counted there, so a
+// quiet symbol does not pull the share down; one with equal EMAs is counted as not above.
+export function breadth(state, rows) {
+  const share = new Array(state.slots).fill(null);
+  if (state.spanEnd == null) return share;
+  for (let c = 0; c < state.slots; c++) {
+    const slot = slotOf(state.spanEnd - (state.slots - 1 - c) * state.slotMs, state.slots, state.slotMs);
+    let up = 0;
+    let n = 0;
+    for (const r of rows) {
+      const v = state.signs[r * state.slots + slot];
+      if (v === UP) up++;
+      if (v !== NONE) n++;
+    }
+    if (n > 0) share[c] = up / n;
+  }
+  return share;
+}
+
+// The element at quantile q of an ascending array, or null when it is empty.
+export function quantile(sorted, q) {
+  return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : null;
+}
+
+// A row's EMA spread at its newest window, or null before it has one.
+export function rowSpread(row) {
+  return row.last ? spreadPct(row.last[2], row.last[3]) : null;
+}
+
+// Which way a spread points: UP, DOWN, EQUAL, or NONE for no value.
+export function trendOf(spread) {
+  if (spread == null) return NONE;
+  return spread > 0 ? UP : spread < 0 ? DOWN : EQUAL;
+}
+
+// EMA38 − EMA100 as a percentage of EMA100: positive above, negative below, so a crossover is a
+// change of sign. Null when EMA100 is 0.
+export function spreadPct(ema38, ema100) {
+  return ema100 === 0 ? null : ((ema38 - ema100) / Math.abs(ema100)) * 100;
+}
+
 // uPlot data in seconds. A step longer than one slot gets a null point, so the lines break
 // where windows had no trades instead of interpolating across them (D-6).
 export function toChartData(points, slotMs) {
@@ -283,17 +334,20 @@ export function toChartData(points, slotMs) {
   const close = [];
   const ema38 = [];
   const ema100 = [];
+  const spread = [];
   points.forEach((p, i) => {
     if (i > 0 && p[0] - points[i - 1][0] > slotMs) {
       xs.push((points[i - 1][0] + slotMs) / 1000);
       close.push(null);
       ema38.push(null);
       ema100.push(null);
+      spread.push(null);
     }
     xs.push(p[0] / 1000);
     close.push(p[1]);
     ema38.push(p[2]);
     ema100.push(p[3]);
+    spread.push(spreadPct(p[2], p[3]));
   });
-  return [xs, close, ema38, ema100];
+  return [xs, close, ema38, ema100, spread];
 }
