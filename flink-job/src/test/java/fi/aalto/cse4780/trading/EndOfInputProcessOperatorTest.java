@@ -14,7 +14,7 @@ class EndOfInputProcessOperatorTest {
     void endOfInputEvaluatesTheOpenWindowsInOrderWithoutAnyWatermark() throws Exception {
         try (KeyedOneInputStreamOperatorTestHarness<String, Tick, EmaResult> harness =
                 new KeyedOneInputStreamOperatorTestHarness<>(
-                        new EndOfInputProcessOperator<>(new EmaCalculator()),
+                        new EndOfInputProcessOperator<>(new EmaCalculator(Variant.EmptyWindows.SKIP)),
                         tick -> tick.symbol,
                         Types.STRING)) {
             harness.open();

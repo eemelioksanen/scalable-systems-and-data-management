@@ -58,6 +58,7 @@ def price_event(value: bytes | None, zone_offset_ms: int) -> dict | None:
     return {"eventTime": day * _SECONDS_PER_DAY * 1000 + millis - zone_offset_ms}
 
 
+_BINARY_VERSION = 1
 _EMPTY, _TEXT, _DAY, _TIME, _NUMBER = range(5)
 
 
@@ -85,7 +86,7 @@ def price_event_binary(value: bytes | None, zone_offset_ms: int) -> dict | None:
 
 def _binary_fields(value: bytes | None) -> list[tuple[int, object]] | None:
     """The seven (tag, payload) pairs of a binary value, or None if it does not follow the layout."""
-    if not value or value[0] != 1:
+    if not value or value[0] != _BINARY_VERSION:
         return None
     fields, at = [], 1
     try:

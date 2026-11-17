@@ -154,7 +154,7 @@ public final class TickParser implements Serializable {
         } catch (BufferUnderflowException | IllegalArgumentException e) {
             return Outcome.MALFORMED;
         }
-        if (in.hasRemaining() || row.id.tag != TEXT || !row.secType.isText()) {
+        if (in.hasRemaining() || row.id.tag != TEXT || !row.secType.isTextOrEmpty()) {
             return Outcome.MALFORMED;
         }
 
@@ -246,7 +246,7 @@ public final class TickParser implements Serializable {
             }
         }
 
-        boolean isText() {
+        boolean isTextOrEmpty() {
             return tag == EMPTY || tag == TEXT;
         }
     }

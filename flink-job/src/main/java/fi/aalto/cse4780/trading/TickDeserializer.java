@@ -38,10 +38,6 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
     private transient Counter missingTimestampEvents;
     private transient Counter malformedEvents;
 
-    public TickDeserializer(TickParser parser) {
-        this(parser, Variant.TicksEncoding.CSV);
-    }
-
     public TickDeserializer(TickParser parser, Variant.TicksEncoding encoding) {
         this.parser = parser;
         this.encoding = encoding;

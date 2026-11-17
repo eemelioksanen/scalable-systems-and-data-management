@@ -76,6 +76,7 @@ Alternatives considered:
 Consequences / measurements ([evidence](validation/2026-11-17-variants/README.md)):
 - On the semantics fixtures, carry-forward turns 61 windows into 250: SPARSE.ETR's 3 empty windows and DAY.NL's night of 186. Its advisories stay the same there, because both gaps repeat a close at or above every earlier one. A full week would publish every window from each symbol's first to its last, including nights and the weekend. Not measured here.
 - The latency of carried windows is the latency of the window that ends the gap; the D-40 stages are not defined for them.
+- The Window API variant subclasses Flink's internal `WindowOperator`, as `EndOfInputProcessOperator` subclasses `KeyedProcessOperator`, so a Flink upgrade can break either.
 - `ReplayVerifier` verifies CSV replays only and reports a binary replay as unverifiable. The dashboard's feed clock reads `ticks` as CSV, so it shows no feed time during a binary replay.
 - No performance is measured here; #11 does that.
 

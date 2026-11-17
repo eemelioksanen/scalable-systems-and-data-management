@@ -17,6 +17,9 @@ from pathlib import Path
 import polars as pl
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "bench"))
+from run import JOB_FLAGS  # noqa: E402
+
 CONFIGS = ROOT / "scripts/validation/issue23/configs"
 RAW = ROOT / "bench/results/raw"
 OUT = ROOT / "docs/validation/2026-11-17-variants/runs.json"
@@ -75,7 +78,7 @@ def main() -> int:
         "everyRunComplete": all(r["status"] == "COMPLETE" for r in runs.values()),
         "everyCorrectnessPass": all(r["correctness"] == "pass" for r in runs.values()),
         "jobRanTheRequestedVariant": all(
-            all(r["jobEffective"][k] == v for k, v in r["requested"].items() if k != "filtering")
+            all(r["jobEffective"][k] == r["requested"][k] for k in JOB_FLAGS)
             for r in runs.values()),
         "sameOutputAsBaseline": {n: runs[n]["emaDigest"] == base["emaDigest"]
                                  and runs[n]["advisoryDigest"] == base["advisoryDigest"] for n in SAME_AS_BASELINE},

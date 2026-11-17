@@ -57,14 +57,19 @@ class VariantsTest {
     /** Fixture prices are at most 100, where binary64 carries about 1e-14. */
     private static final double EMA_TOLERANCE = 1e-12;
 
+    /**
+     * Every operator, empty-window policy and state backend. The two encodings give the same ticks
+     * on these rows ({@link BinaryTicksContractTest}), so each combination runs with one of them,
+     * picked by parity so that both meet every value of the other switches.
+     */
     static Stream<Variant> variants() {
         List<Variant> all = new ArrayList<>();
         for (Variant.Operator operator : Variant.Operator.values()) {
             for (Variant.EmptyWindows emptyWindows : Variant.EmptyWindows.values()) {
                 for (Variant.StateBackend backend : Variant.StateBackend.values()) {
-                    for (Variant.TicksEncoding encoding : Variant.TicksEncoding.values()) {
-                        all.add(new Variant(operator, emptyWindows, backend, encoding));
-                    }
+                    int parity = (operator.ordinal() + emptyWindows.ordinal() + backend.ordinal()) % 2;
+                    Variant.TicksEncoding encoding = Variant.TicksEncoding.values()[parity];
+                    all.add(new Variant(operator, emptyWindows, backend, encoding));
                 }
             }
         }

@@ -19,6 +19,7 @@ import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsIni
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
 import org.apache.flink.util.ParameterTool;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -206,23 +207,15 @@ public class TradingTrendsJob {
      * EmaCalculator#LATE_TICKS}.
      */
     static SingleOutputStreamOperator<EmaResult> emaResults(DataStream<Tick> ticks, Variant variant) {
-        return switch (variant.operator()) {
-            case PROCESS -> ticks
-                    .keyBy(tick -> tick.symbol)
-                    .transform(
-                            "q1-ema",
-                            TypeInformation.of(EmaResult.class),
-                            new EndOfInputProcessOperator<>(new EmaCalculator(variant.emptyWindows())))
-                    .uid("q1-ema");
-            case WINDOW -> ticks
-                    .keyBy(tick -> tick.symbol)
-                    .transform(
-                            "q1-ema",
-                            TypeInformation.of(EmaResult.class),
-                            new EndOfInputWindowOperator(variant.emptyWindows(),
-                                    ticks.getExecutionConfig().getSerializerConfig()))
-                    .uid("q1-ema-window");
+        OneInputStreamOperator<Tick, EmaResult> operator = switch (variant.operator()) {
+            case PROCESS -> new EndOfInputProcessOperator<>(new EmaCalculator(variant.emptyWindows()));
+            case WINDOW -> new EndOfInputWindowOperator(
+                    variant.emptyWindows(), ticks.getExecutionConfig().getSerializerConfig());
         };
+        return ticks
+                .keyBy(tick -> tick.symbol)
+                .transform("q1-ema", TypeInformation.of(EmaResult.class), operator)
+                .uid("q1-ema");
     }
 
     /**
