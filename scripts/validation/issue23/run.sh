@@ -27,7 +27,7 @@ configs=("$@")
 build=()
 status=0
 for config in "${configs[@]}"; do
-  "$python" bench/run.py "$config" "${build[@]}" || status=1
+  "$python" bench/run.py "$config" ${build[@]+"${build[@]}"} || status=1
   build=(--no-build)
   name="$("$python" -c 'import json, sys; print(json.load(open(sys.argv[1]))["name"])' "$config")"
   experiment="$(ls -d bench/results/raw/"$name"-* | tail -1)"
