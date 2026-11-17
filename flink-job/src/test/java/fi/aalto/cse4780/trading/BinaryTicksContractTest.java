@@ -57,6 +57,34 @@ class BinaryTicksContractTest {
                 TickParser.Outcome.MALFORMED, 3), outcomes);
     }
 
+    /** Field by field per docs/interfaces.md: A.FR, E, 08-11-2021, 09:00:01.123, 19.28, 09:00:01.100, empty. */
+    static final String VALID = "01010004412e46520100014502000049fb0301ee66e304403347ae147ae1480301ee66cc00";
+
+    @Test
+    void aValidValueIsAPriceEvent() {
+        Tick tick = new Tick();
+        assertEquals(TickParser.Outcome.PRICE_SYSTEM_DATE,
+                new TickParser(ZoneOffset.UTC).parseBinary(HexFormat.of().parseHex(VALID), tick));
+        assertEquals("A.FR", tick.symbol);
+        assertEquals(19.28, tick.price);
+        assertEquals(1636362001100L, tick.eventTimeMillis);
+    }
+
+    /** The valid value with one field changed, so each is malformed for that field alone. */
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "010100000100014502000049fb0301ee66e304403347ae147ae1480301ee66cc00",
+        "01010004412e46520100014502000049fb0301ee66e304403347ae147ae1480305265c0000",
+        "01010004412e46520100014502000049fb0301ee66e304403347ae147ae14803ffffffff00",
+        "01010004412e46520100014502002cc0a10301ee66e304403347ae147ae1480301ee66cc00",
+        "01010004412e465201000145043ff00000000000000301ee66e304403347ae147ae1480301ee66cc02000049fb",
+        "01010004412e46520100014502000049fb02000049fb04403347ae147ae1480301ee66cc00",
+    })
+    void aValueNoCsvFieldCouldHoldIsMalformed(String hex) {
+        assertEquals(TickParser.Outcome.MALFORMED,
+                new TickParser().parseBinary(HexFormat.of().parseHex(hex), new Tick()));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
         "",

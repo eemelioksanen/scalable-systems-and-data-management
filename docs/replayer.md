@@ -36,7 +36,7 @@ docker compose run --rm -T --no-deps producer fi.aalto.cse4780.replay.Replayer -
 | `--rate K`, `--pace-from T` | Real-time only: K times faster than real time; rows before source time T are sent unpaced. |
 | `--exchanges FR,NL`, `--symbols …`, `--symbols-file F` | Replay only these exchanges (the `ID` suffix) or symbols. Both together means both must match. |
 | `--limit N` | Stop after N records. |
-| `--early-filter` | Send only rows with a `Last`; the rest count as `filtered` (D-42). |
+| `--early-filter` | Drop rows with an `ID` but no `Last`, counting them as `filtered` (D-42). Rows without an `ID` still go to the job, which counts them as malformed. |
 | `--encoding csv\|binary` | The value format, default `csv`. `binary` is [interfaces.md](interfaces.md#binary-value-d-42)'s, and the job needs `--ticks-encoding binary` (D-42). |
 | `--topic`, `--bootstrap-servers`, `--producer-property K=V` | Kafka target and producer overrides. The bootstrap default is `$BOOTSTRAP_SERVERS` (`kafka:9092` in Compose). |
 | `--dry-run [--partitions N]` | Read, project and assign partitions with Kafka's rule, without Kafka. |

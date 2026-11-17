@@ -29,7 +29,7 @@ class BinaryTicksTest {
         return HexFormat.of().formatHex(binary.encode(row));
     }
 
-    /** Expected bytes worked out with Python's struct module, field by field (docs/interfaces.md). */
+    /** Expected bytes follow docs/interfaces.md field by field. */
     @Test
     void encodesDatesTimesAndThePriceAsNumbers() {
         String rdsa = row("RDSA.NL", "08-11-2021", "09:00:01.123", "19.280000", "09:00:01.100", "");

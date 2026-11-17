@@ -60,6 +60,12 @@ def price_event(value: bytes | None, zone_offset_ms: int) -> dict | None:
 
 _BINARY_VERSION = 1
 _EMPTY, _TEXT, _DAY, _TIME, _NUMBER = range(5)
+# The typed tag each field may carry besides empty and text, in projection order.
+_BINARY_FIELDS = (_TEXT, _TEXT, _DAY, _TIME, _NUMBER, _TIME, _DAY)
+# Java's LocalDate.of(0, 1, 1) and LocalDate.of(9999, 12, 31): the days DD-MM-YYYY can name.
+_FIRST_DAY = dt.date(1, 1, 1).toordinal() - 366 - _EPOCH
+_LAST_DAY = dt.date(9999, 12, 31).toordinal() - _EPOCH
+_MILLIS_PER_DAY = 86_400_000
 
 
 def price_event_binary(value: bytes | None, zone_offset_ms: int) -> dict | None:
@@ -67,8 +73,8 @@ def price_event_binary(value: bytes | None, zone_offset_ms: int) -> dict | None:
     fields = _binary_fields(value)
     if fields is None:
         return None
-    (id_tag, _), (sec_tag, _), date, _time, (last_tag, last), trading_time, trading_date = fields
-    if id_tag != _TEXT or sec_tag not in (_EMPTY, _TEXT):
+    (id_tag, _), _sec, date, _time, (last_tag, last), trading_time, trading_date = fields
+    if id_tag != _TEXT:
         return None
     price = last if last_tag == _NUMBER else _java_double(last) if last_tag == _TEXT else None
     if price is None or not math.isfinite(price) or price <= 0:
@@ -90,25 +96,32 @@ def _binary_fields(value: bytes | None) -> list[tuple[int, object]] | None:
         return None
     fields, at = [], 1
     try:
-        for _ in range(7):
+        for typed in _BINARY_FIELDS:
             tag = value[at]
             at += 1
             if tag == _EMPTY:
                 payload = None
             elif tag == _TEXT:
                 (length,) = struct.unpack_from(">H", value, at)
-                if at + 2 + length > len(value):
+                if length == 0 or at + 2 + length > len(value):
                     return None
                 payload = value[at + 2:at + 2 + length].decode("utf-8", "replace")
                 at += 2 + length
-            elif tag in (_DAY, _TIME):
+            elif tag != typed:
+                return None
+            elif tag == _DAY:
                 (payload,) = struct.unpack_from(">i", value, at)
                 at += 4
-            elif tag == _NUMBER:
+                if not _FIRST_DAY <= payload <= _LAST_DAY:
+                    return None
+            elif tag == _TIME:
+                (payload,) = struct.unpack_from(">i", value, at)
+                at += 4
+                if not 0 <= payload < _MILLIS_PER_DAY:
+                    return None
+            else:
                 (payload,) = struct.unpack_from(">d", value, at)
                 at += 8
-            else:
-                return None
             fields.append((tag, payload))
     except (IndexError, struct.error):
         return None

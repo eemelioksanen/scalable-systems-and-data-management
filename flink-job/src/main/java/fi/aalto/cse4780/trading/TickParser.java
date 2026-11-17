@@ -69,6 +69,11 @@ public final class TickParser implements Serializable {
     static final byte TIME = 3;
     static final byte NUMBER = 4;
 
+    /** The days a {@code DD-MM-YYYY} date can name. */
+    private static final long FIRST_DAY = LocalDate.of(0, 1, 1).toEpochDay();
+    private static final long LAST_DAY = LocalDate.of(9999, 12, 31).toEpochDay();
+    private static final int MILLIS_PER_DAY = 86_400_000;
+
     private final int offsetSeconds;
 
     private transient String cachedDate;
@@ -132,7 +137,8 @@ public final class TickParser implements Serializable {
 
     /**
      * Classifies a binary {@code ticks} value as {@link #parse} classifies the CSV one. A value
-     * that does not follow the layout is {@link Outcome#MALFORMED}.
+     * that does not follow the layout, including a number no CSV field could hold, is
+     * {@link Outcome#MALFORMED}.
      */
     public Outcome parseBinary(byte[] value, Tick into) {
         if (binary == null) {
@@ -144,17 +150,17 @@ public final class TickParser implements Serializable {
             if (in.get() != BINARY_VERSION) {
                 return Outcome.MALFORMED;
             }
-            row.id.read(in);
-            row.secType.read(in);
-            row.date.read(in);
-            row.time.read(in);
-            row.last.read(in);
-            row.tradingTime.read(in);
-            row.tradingDate.read(in);
+            row.id.read(in, TEXT);
+            row.secType.read(in, TEXT);
+            row.date.read(in, DAY);
+            row.time.read(in, TIME);
+            row.last.read(in, NUMBER);
+            row.tradingTime.read(in, TIME);
+            row.tradingDate.read(in, DAY);
         } catch (BufferUnderflowException | IllegalArgumentException e) {
             return Outcome.MALFORMED;
         }
-        if (in.hasRemaining() || row.id.tag != TEXT || !row.secType.isTextOrEmpty()) {
+        if (in.hasRemaining() || row.id.tag == EMPTY) {
             return Outcome.MALFORMED;
         }
 
@@ -167,13 +173,13 @@ public final class TickParser implements Serializable {
                 break;
             case TEXT:
                 try {
-                    price = Double.parseDouble(row.last.text);
+                    price = Double.parseDouble(row.last.text(value));
                 } catch (NumberFormatException e) {
                     return Outcome.MALFORMED;
                 }
                 break;
             default:
-                return Outcome.MALFORMED;
+                throw new IllegalStateException("unreachable tag " + row.last.tag);
         }
         if (!Double.isFinite(price)) {
             return Outcome.MALFORMED;
@@ -188,22 +194,16 @@ public final class TickParser implements Serializable {
             return Outcome.MISSING_TIMESTAMP;
         }
 
-        long epochDay = switch (date.tag) {
-            case DAY -> date.integer;
-            case TEXT -> parseEpochDay(date.text);
-            default -> INVALID;
-        };
-        long millisOfDay = switch (row.tradingTime.tag) {
-            case TIME -> row.tradingTime.integer;
-            case TEXT -> parseMillisOfDay(row.tradingTime.text);
-            default -> INVALID;
-        };
+        long epochDay = date.tag == DAY ? date.integer : parseEpochDay(date.text(value));
+        long millisOfDay = row.tradingTime.tag == TIME
+                ? row.tradingTime.integer
+                : parseMillisOfDay(row.tradingTime.text(value));
         if (epochDay == INVALID || millisOfDay == INVALID) {
             return Outcome.MALFORMED;
         }
 
-        into.symbol = row.id.text;
-        into.secType = row.secType.tag == TEXT ? row.secType.text : "";
+        into.symbol = row.id.text(value);
+        into.secType = row.secType.tag == TEXT ? row.secType.text(value) : "";
         into.price = price;
         into.eventTimeMillis =
                 (epochDay * SECONDS_PER_DAY - offsetSeconds) * MILLIS_PER_SECOND + millisOfDay;
@@ -221,33 +221,55 @@ public final class TickParser implements Serializable {
         final BinaryField tradingDate = new BinaryField();
     }
 
-    /** One binary field: a tag byte, then nothing, text, an int or a double. */
+    /**
+     * One binary field: a tag byte, then nothing, text, an int or a double. Text stays in the
+     * value until {@link #text} asks for it, so rows the job drops make no strings.
+     */
     private static final class BinaryField {
         byte tag;
-        String text;
+        int textOffset;
+        int textLength;
         int integer;
         double number;
 
-        void read(ByteBuffer in) {
+        /** Reads a field that is empty, text, or {@code typed}. Any other tag or value throws. */
+        void read(ByteBuffer in, byte typed) {
             tag = in.get();
-            switch (tag) {
-                case EMPTY -> {}
-                case TEXT -> {
-                    int length = Short.toUnsignedInt(in.getShort());
-                    if (length > in.remaining()) {
-                        throw new IllegalArgumentException("text runs past the value");
-                    }
-                    text = new String(in.array(), in.position(), length, StandardCharsets.UTF_8);
-                    in.position(in.position() + length);
+            if (tag == EMPTY) {
+                return;
+            }
+            if (tag == TEXT) {
+                textLength = Short.toUnsignedInt(in.getShort());
+                if (textLength == 0 || textLength > in.remaining()) {
+                    throw new IllegalArgumentException("text of " + textLength + " bytes");
                 }
-                case DAY, TIME -> integer = in.getInt();
+                textOffset = in.position();
+                in.position(textOffset + textLength);
+                return;
+            }
+            if (tag != typed) {
+                throw new IllegalArgumentException("tag " + tag + " where " + typed + " belongs");
+            }
+            switch (tag) {
+                case DAY -> {
+                    integer = in.getInt();
+                    if (integer < FIRST_DAY || integer > LAST_DAY) {
+                        throw new IllegalArgumentException("day " + integer);
+                    }
+                }
+                case TIME -> {
+                    integer = in.getInt();
+                    if (integer < 0 || integer >= MILLIS_PER_DAY) {
+                        throw new IllegalArgumentException("time " + integer);
+                    }
+                }
                 case NUMBER -> number = in.getDouble();
                 default -> throw new IllegalArgumentException("unknown tag " + tag);
             }
         }
 
-        boolean isTextOrEmpty() {
-            return tag == EMPTY || tag == TEXT;
+        String text(byte[] value) {
+            return new String(value, textOffset, textLength, StandardCharsets.UTF_8);
         }
     }
 

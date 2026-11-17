@@ -14,7 +14,7 @@ import java.util.Arrays;
  * number from the text. Any other non-empty field stays text, which the job then parses itself,
  * so every row is classified exactly as its CSV value would be.
  *
- * <p>Not thread-safe: it reuses one buffer.
+ * <p>Not thread-safe: it reuses one buffer and caches the last date.
  */
 final class BinaryTicks {
 
@@ -29,83 +29,110 @@ final class BinaryTicks {
 
     private final ByteBuffer buffer = ByteBuffer.allocate(1 + 7 * (3 + MAX_TEXT_BYTES));
 
+    private String cachedDate;
+    private int cachedEpochDay;
+
     /** The value of a {@link CsvLine.Kind#DATA} row. Throws if a field exceeds {@link #MAX_TEXT_BYTES}. */
     byte[] encode(CsvLine row) {
+        String line = row.line();
         buffer.clear();
         buffer.put(VERSION);
-        text(row.field(CsvLine.ID));
-        text(row.field(CsvLine.SEC_TYPE));
-        date(row.field(CsvLine.DATE));
-        time(row.field(CsvLine.TIME));
-        number(row.field(CsvLine.LAST));
-        time(row.field(CsvLine.TRADING_TIME));
-        date(row.field(CsvLine.TRADING_DATE));
+        text(line, row.start(CsvLine.ID), row.end(CsvLine.ID));
+        text(line, row.start(CsvLine.SEC_TYPE), row.end(CsvLine.SEC_TYPE));
+        date(line, row.start(CsvLine.DATE), row.end(CsvLine.DATE));
+        time(line, row.start(CsvLine.TIME), row.end(CsvLine.TIME));
+        number(line, row.start(CsvLine.LAST), row.end(CsvLine.LAST));
+        time(line, row.start(CsvLine.TRADING_TIME), row.end(CsvLine.TRADING_TIME));
+        date(line, row.start(CsvLine.TRADING_DATE), row.end(CsvLine.TRADING_DATE));
         return Arrays.copyOf(buffer.array(), buffer.position());
     }
 
-    private void text(String field) {
-        if (field.isEmpty()) {
+    /** {@code line[from, to)} as UTF-8 text, or empty. */
+    private void text(String line, int from, int to) {
+        if (from == to) {
             buffer.put(EMPTY);
             return;
         }
-        byte[] bytes = field.getBytes(StandardCharsets.UTF_8);
-        if (bytes.length > MAX_TEXT_BYTES) {
-            throw new IllegalArgumentException(
-                    "a field of " + bytes.length + " bytes is longer than the binary encoding allows");
+        boolean ascii = true;
+        for (int i = from; i < to && ascii; i++) {
+            ascii = line.charAt(i) < 0x80;
         }
-        buffer.put(TEXT).putShort((short) bytes.length).put(bytes);
+        byte[] bytes = ascii ? null : line.substring(from, to).getBytes(StandardCharsets.UTF_8);
+        int length = ascii ? to - from : bytes.length;
+        if (length > MAX_TEXT_BYTES) {
+            throw new IllegalArgumentException(
+                    "a field of " + length + " bytes is longer than the binary encoding allows");
+        }
+        buffer.put(TEXT).putShort((short) length);
+        if (ascii) {
+            for (int i = from; i < to; i++) {
+                buffer.put((byte) line.charAt(i));
+            }
+        } else {
+            buffer.put(bytes);
+        }
     }
 
     /** {@code DD-MM-YYYY} as days since 1970-01-01. */
-    private void date(String field) {
-        boolean shape = field.length() == 10 && field.charAt(2) == '-' && field.charAt(5) == '-'
-                && digits(field, 0, 2) >= 0 && digits(field, 3, 5) >= 0 && digits(field, 6, 10) >= 0;
+    private void date(String line, int from, int to) {
+        if (to - from == 10 && cachedDate != null && line.regionMatches(from, cachedDate, 0, 10)) {
+            buffer.put(DAY).putInt(cachedEpochDay);
+            return;
+        }
+        int day = digits(line, from, from + 2);
+        int month = digits(line, from + 3, from + 5);
+        int year = digits(line, from + 6, from + 10);
+        boolean shape = to - from == 10 && line.charAt(from + 2) == '-' && line.charAt(from + 5) == '-'
+                && day >= 0 && month >= 0 && year >= 0;
         if (!shape) {
-            text(field);
+            text(line, from, to);
             return;
         }
-        long epochDay;
         try {
-            epochDay = LocalDate.of(digits(field, 6, 10), digits(field, 3, 5), digits(field, 0, 2)).toEpochDay();
+            cachedEpochDay = (int) LocalDate.of(year, month, day).toEpochDay();
         } catch (DateTimeException invalid) {
-            text(field);
+            text(line, from, to);
             return;
         }
-        buffer.put(DAY).putInt((int) epochDay);
+        cachedDate = line.substring(from, to);
+        buffer.put(DAY).putInt(cachedEpochDay);
     }
 
     /** {@code HH:MM:SS} or {@code HH:MM:SS.mmm} as milliseconds since midnight. */
-    private void time(String field) {
-        int length = field.length();
-        boolean shape = (length == 8 || (length == 12 && field.charAt(8) == '.'))
-                && field.charAt(2) == ':' && field.charAt(5) == ':';
+    private void time(String line, int from, int to) {
+        int length = to - from;
+        boolean shape = (length == 8 || (length == 12 && line.charAt(from + 8) == '.'))
+                && line.charAt(from + 2) == ':' && line.charAt(from + 5) == ':';
         if (shape) {
-            int hours = digits(field, 0, 2);
-            int minutes = digits(field, 3, 5);
-            int seconds = digits(field, 6, 8);
-            int millis = length == 12 ? digits(field, 9, 12) : 0;
+            int hours = digits(line, from, from + 2);
+            int minutes = digits(line, from + 3, from + 5);
+            int seconds = digits(line, from + 6, from + 8);
+            int millis = length == 12 ? digits(line, from + 9, from + 12) : 0;
             if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59 && seconds >= 0 && seconds <= 59
                     && millis >= 0) {
                 buffer.put(TIME).putInt(((hours * 60 + minutes) * 60 + seconds) * 1000 + millis);
                 return;
             }
         }
-        text(field);
+        text(line, from, to);
     }
 
-    private void number(String field) {
+    private void number(String line, int from, int to) {
         double value;
         try {
-            value = Double.parseDouble(field);
+            value = Double.parseDouble(line.substring(from, to));
         } catch (NumberFormatException notANumber) {
-            text(field);
+            text(line, from, to);
             return;
         }
         buffer.put(NUMBER).putDouble(value);
     }
 
-    /** {@code s[from, to)} as a non-negative decimal integer, or -1. */
+    /** {@code s[from, to)} as a non-negative decimal integer, or -1, also when it runs past {@code s}. */
     private static int digits(String s, int from, int to) {
+        if (to > s.length()) {
+            return -1;
+        }
         int value = 0;
         for (int i = from; i < to; i++) {
             char c = s.charAt(i);

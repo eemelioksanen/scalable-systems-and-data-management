@@ -66,7 +66,7 @@ oracle/run.sh data/subset12/*.csv --out /out/subset12
 
 The harness always passes all of them, so a baseline run states its variant too. `effective.variant` in `config.json` records the request. After submitting, the harness reads the configuration the job resolved from Flink's `/jobs/<id>/config` into `job.effective`, and fails the run if any of it differs from the request. `runs.csv` has a column per key.
 
-With `carry-forward`, `oracle` must be an oracle run with `--empty-windows carry-forward`; the harness refuses any other. With `filtering: replayer`, the job counts no non-price events, so the reconciliation adds the replay report's `filtered` to the job's count before comparing with the oracle's. [The variant check](../docs/validation/2026-11-17-variants/README.md) runs every variant on the semantics fixtures, and its configs are templates for #11.
+With `carry-forward`, `oracle` must be an oracle run with `--empty-windows carry-forward`; the harness refuses any other. A live carry-forward run reports no latency stages: its carried windows have no admission of their own, so `latency.json` says `complete: false`. With `filtering: replayer`, the job counts no non-price events, so the reconciliation adds the replay report's `filtered` to the job's count before comparing with the oracle's. [The variant check](../docs/validation/2026-11-17-variants/README.md) runs every variant on the semantics fixtures, and its configs are templates for #11.
 
 ## What a run does
 

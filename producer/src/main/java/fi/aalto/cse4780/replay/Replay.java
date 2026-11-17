@@ -202,7 +202,7 @@ final class Replay implements Callback {
             excluded++;
             return;
         }
-        if (options.earlyFilter() && row.isEmpty(CsvLine.LAST)) {
+        if (options.earlyFilter() && row.isEmpty(CsvLine.LAST) && !symbol.isEmpty()) {
             filtered++;
             return;
         }
