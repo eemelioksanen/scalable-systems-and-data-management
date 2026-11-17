@@ -26,7 +26,7 @@ Results go to `correctness/out/` (gitignored), which the container sees as `/out
 
 Each topic is read from its start up to the end offsets taken when the export starts. `manifest.json` records both for every partition, with the record count. A topic is `complete` only if every partition starts at offset 0 and holds one record per offset up to its end. `compare` refuses an incomplete export.
 
-Every exported row keeps its record's `kafkaTs` and `kafkaTsType`. `--ticks-topic ticks` also writes `price_events.parquet`, the partition, offset, record timestamp and event time of every record the job would parse as a price event.
+Every exported row keeps its record's `kafkaTs` and `kafkaTsType`. `--ticks-topic ticks` also writes `price_events.parquet`, the partition, offset, record timestamp and event time of every record the job would parse as a price event. Add `--ticks-encoding binary` after a binary replay (D-42).
 
 Pass the job's `--zone-offset`: the export records it, uses it for price events' event times, and `compare` requires it to equal the oracle's (D-3).
 

@@ -178,6 +178,19 @@ So `--watermark-bound-ms 0` rejects both, and the closes fall back to the next-l
 `EDGE.NL 10:05` = **20 (line 17)** and `DAY.NL 17:30` = **40 (day 1, line 46)**.
 `--watermark-bound-ms 1` rejects only line 63.
 
+## Carry-forward
+
+With `--empty-windows carry-forward` (D-42), a window without a trade repeats the symbol's previous close. Only two symbols have such windows between two of their trades:
+
+- `SPARSE.ETR`: windows `14:15`, `14:20` and `14:25` close at **9**, the close of `14:10` (line 44). Window `14:30` then follows from `14:25`, not from `14:10`.
+- `DAY.NL`: every window from day 1 `17:35` to day 2 `09:00`, 186 of them, closes at **41**, the close of day 1 `17:30` (day 2, line 63).
+
+No window follows a symbol's last trade. That makes 189 more windows, 250 in all. Both gaps repeat a close at or above every earlier close of the symbol, so EMA38 stays above EMA100 and the advisories are the same 10 BUY and 1 SELL. `expected.json` has them under `variants.emptyWindowsCarryForward`.
+
+## Binary `ticks`
+
+`ticks-binary.tsv` lists every row the replayer sends from these two files: file index, line, the CSV value and the binary value of D-42 in hex. The replayer's `BinaryTicksTest` writes it (`-DregenerateFixtures=true`) and checks it. The job's and the correctness export's tests check that each binary value gives the same outcome as its CSV value.
+
 ## Counts
 
 | | day 1 | day 2 |

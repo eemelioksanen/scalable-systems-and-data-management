@@ -45,11 +45,28 @@ oracle/run.sh data/subset12/*.csv --out /out/subset12
 | `input` | Files or directories under `data/`, passed to the replayer as `/data/...`. |
 | `replayArgs` | Further replayer options: `--rate` and `--pace-from` (required `--rate` in live runs), `--exchanges`, `--symbols`, `--limit`. The harness sets `--mode` and `--run-id`. |
 | `job` | `watermarkBoundMs`, `idlenessMs` and `zoneOffset`, all required, and optional extra `args`. The harness has no defaults for the bound and idleness, so every record states them. The job's own are 64265001 and 0 with `--bounded`, and 1000 and 30000 live (D-38). |
+| `variant` | The design-comparison variant ([Variants](#variants-d-42)). Optional; each missing key is the baseline. |
 | `stack` | `partitions` (`TICKS_PARTITIONS`), `taskmanagers` (`--scale`), `slots` (`TM_SLOTS`), `parallelism` (`PARALLELISM`). Defaults 8, 1, 2, 2. |
 | `checkpointing` | `true` submits with `-Dexecution.checkpointing.interval=10s -Drestart-strategy.type=none`, which state bytes need (D-35). Default `false`. It needs `"finish": "drain"`: a bounded job would wait for a final checkpoint before it ends, and a few-second one takes none. |
 | `subscriptions` | Trader records written to `subscriptions` before the job starts. Default `[{"trader":"all","symbols":["*"]}]`. |
 | `repeats`, `warmupS`, `timeoutS` | Repeats; seconds excluded from the start of the measurement interval; how long the replay, the job and the drain may each take (default 3600). Startup waits have fixed limits of a few minutes. |
 | `oracle` | An oracle output directory for the correctness check. The harness refuses one computed from other files than `input`, and one combined with `--limit`, `--symbols`, `--symbols-file` or `--exchanges`, since the oracle covers whole files. For a live run, use an oracle run at the job's bound: a live job rejects the burst that the admit-all output includes (D-38). |
+
+## Variants (D-42)
+
+`variant` picks one alternative per key. The first value is the baseline and the default:
+
+| Key | Values | Passed as |
+|---|---|---|
+| `operator` | `process`, `window` | the job's `--operator` |
+| `emptyWindows` | `skip`, `carry-forward` | the job's `--empty-windows` |
+| `stateBackend` | `hashmap`, `rocksdb` | the job's `--state-backend` |
+| `ticksEncoding` | `csv`, `binary` | the job's `--ticks-encoding` and the replayer's `--encoding`; a live run's export decodes `ticks` with it |
+| `filtering` | `flink`, `replayer` | the replayer's `--early-filter` for `replayer` |
+
+The harness always passes all of them, so a baseline run states its variant too. `effective.variant` in `config.json` records the request. After submitting, the harness reads the configuration the job resolved from Flink's `/jobs/<id>/config` into `job.effective`, and fails the run if any of it differs from the request. `runs.csv` has a column per key.
+
+With `carry-forward`, `oracle` must be an oracle run with `--empty-windows carry-forward`; the harness refuses any other. With `filtering: replayer`, the job counts no non-price events, so the reconciliation adds the replay report's `filtered` to the job's count before comparing with the oracle's. [The variant check](../docs/validation/2026-11-17-variants/README.md) runs every variant on the semantics fixtures, and its configs are templates for #11.
 
 ## What a run does
 

@@ -139,6 +139,8 @@ python3 bench/run.py bench/configs/subset12-preload-p2.json
 bench/.venv/bin/python bench/summarize.py bench/results/raw/subset12-preload-p2-<stamp>
 ```
 
+The design comparisons of the roadmap (process function against the Window API, early filtering, RocksDB, binary `ticks`, carry-forward of empty windows) are switches of the job and the replayer, and a config's `variant` selects them ([bench/README.md](bench/README.md#variants-d-42), D-42). Each default is the baseline.
+
 ## Verify the local stack
 
 The verification script builds the images, runs the containerized Maven target, tests both Kafka connection paths, executes a bounded Flink Kafka roundtrip, checks slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through both Prometheus and Grafana. It also proves that stop/start retains Kafka records and reset removes them.
