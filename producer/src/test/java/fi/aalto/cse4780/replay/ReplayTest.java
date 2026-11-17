@@ -180,6 +180,37 @@ class ReplayTest {
     }
 
     @Test
+    void anEarlyFilterSendsOnlyRowsWithALast() throws IOException {
+        MockProducer<byte[], byte[]> producer = producer();
+        ReplayReport report = replay(producer, options("--input", week().toString(), "--early-filter"));
+
+        assertEquals(List.of("RDSA.NL", "AIR.FR", "846741.ETR", "RDSA.NL"),
+                producer.history().stream().map(r -> text(r.key())).toList());
+        assertEquals(List.of("0:14", "0:17", "0:18", "1:14"), producer.history().stream()
+                .map(r -> text(r.headers().lastHeader(Replay.SOURCE_HEADER).value())).toList());
+        ReplayReport.Counts counts = report.counts();
+        assertEquals(2, counts.filtered());
+        assertEquals(4, counts.attempted());
+        assertEquals(counts.dataRows(), counts.excluded() + counts.filtered() + counts.attempted());
+        assertTrue(report.selection().earlyFilter());
+        assertEquals("csv", report.encoding());
+    }
+
+    @Test
+    void aBinaryReplaySendsTheBinaryValues() throws IOException {
+        MockProducer<byte[], byte[]> producer = producer();
+        ReplayReport report = replay(producer, options("--input", week().toString(), "--encoding", "binary"));
+
+        assertEquals("binary", report.encoding());
+        assertEquals(6, producer.history().size());
+        CsvLine row = new CsvLine();
+        row.parse(price("RDSA.NL", "09:00:01.123", "19.280000"));
+        assertArrayEquals(new BinaryTicks().encode(row), producer.history().get(0).value());
+        assertEquals(producer.history().stream().mapToLong(r -> r.value().length).sum(),
+                report.counts().valueBytes());
+    }
+
+    @Test
     void stopsAtTheFirstUnacknowledgedRecord() throws IOException {
         MockProducer<byte[], byte[]> producer = new MockProducer<>(cluster("ticks"), true, null,
                 new ByteArraySerializer(), new ByteArraySerializer()) {

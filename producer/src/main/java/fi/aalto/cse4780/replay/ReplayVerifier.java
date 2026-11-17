@@ -46,7 +46,8 @@ import org.slf4j.LoggerFactory;
  * create times within the run.
  *
  * <p>The source pass re-reads the CSV files without the replayer's code: it locates the 7 columns
- * by header name, splits rows naively, and applies the report's selection. Equal per-partition
+ * by header name, splits rows naively, and applies the report's selection, including its early
+ * filter. Only CSV values can be verified; a binary replay (D-42) is reported as unverifiable. Equal per-partition
  * {@link ContentDigest}s then show that every field and the per-partition order were preserved.
  * {@code contentDigest} does not depend on offsets or timestamps, so it is identical for replays of
  * the same rows at different speeds.
@@ -59,6 +60,7 @@ public final class ReplayVerifier {
 
     private static final List<String> PROJECTED_COLUMNS =
             List.of("ID", "SecType", "Date", "Time", "Last", "Trading time", "Trading date");
+    private static final int LAST_COLUMN = PROJECTED_COLUMNS.indexOf("Last");
     private static final Duration IDLE_TIMEOUT = Duration.ofSeconds(30);
     private static final long TIMESTAMP_SLACK_MS = 1_000;
 
@@ -155,6 +157,10 @@ public final class ReplayVerifier {
 
     static Verification verify(ReplayReport report, String bootstrap, boolean withSource) throws IOException {
         List<String> problems = new ArrayList<>();
+        if (report.encoding() != null && !report.encoding().equals(ReplayOptions.Encoding.CSV.label())) {
+            problems.add("only CSV values can be verified, and this replay wrote " + report.encoding() + " ones");
+            return new Verification(report.runId(), report.topic(), false, problems, null, null, null);
+        }
         if (report.status() != ReplayReport.Status.COMPLETE) {
             problems.add("the replay did not complete: " + report.status());
         }
@@ -381,6 +387,9 @@ public final class ReplayVerifier {
                     String exchange = dot < 0 ? null : symbol.substring(dot + 1);
                     if ((!symbols.isEmpty() && !symbols.contains(symbol))
                             || (!exchanges.isEmpty() && !exchanges.contains(exchange))) {
+                        continue;
+                    }
+                    if (report.selection().earlyFilter() && fields[columns[LAST_COLUMN]].isEmpty()) {
                         continue;
                     }
                     if (selected == limit) {

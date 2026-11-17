@@ -80,6 +80,9 @@ def run_row(run: Path) -> dict:
         "experiment": config["experiment"], "run": config["runId"], "status": config["status"],
         **{k: effective[k] for k in ("mode", "finish", "partitions", "taskmanagers", "slots", "parallelism")},
         "checkpointing": config["checkpointing"],
+        # Runs recorded before D-42 ran the baseline variant.
+        **effective.get("variant", {"operator": "process", "emptyWindows": "skip", "stateBackend": "hashmap",
+                                    "ticksEncoding": "csv", "filtering": "flink"}),
     }
     if not (run / "summary.json").exists():
         return row

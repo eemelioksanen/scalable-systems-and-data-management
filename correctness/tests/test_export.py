@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import polars as pl
@@ -100,6 +101,22 @@ def test_export_keeps_output_timestamps_and_the_price_events_of_ticks(tmp_path, 
     exported = pl.read_parquet(tmp_path / "ema_results.parquet")
     assert exported.select("kafkaTs", "kafkaTsType").row(0) == (1_000, "CreateTime")
     assert manifest["topics"]["ticks"] | {"partitions": None} == {
-        "file": "price_events.parquet", "partitions": None, "records": 2, "rows": 1, "complete": True}
+        "file": "price_events.parquet", "encoding": "csv", "partitions": None, "records": 2, "rows": 1, "complete": True}
     events = pl.read_parquet(tmp_path / "price_events.parquet")
     assert events.select("offset", "kafkaTs", "eventTime").row(0) == (1, 1_001, 1636354801000)
+
+
+def test_export_decodes_binary_ticks(tmp_path, monkeypatch):
+    from ema_check import export as module
+    rows = [line.split("\t") for line in (Path(__file__).resolve().parents[2] / "fixtures/semantics/ticks-binary.tsv")
+            .read_text().splitlines()]
+    events = {}
+    for encoding in ("csv", "binary"):
+        values = [r[2].encode() if encoding == "csv" else bytes.fromhex(r[3]) for r in rows]
+        monkeypatch.setattr(module, "KafkaConsumer", lambda **kw: Consumer({"ticks": values}))
+        out = tmp_path / encoding
+        manifest = export("unused", "ema-results", "advisories", out, "Z", ticks_topic="ticks", ticks_encoding=encoding)
+        assert manifest["topics"]["ticks"]["encoding"] == encoding
+        events[encoding] = pl.read_parquet(out / "price_events.parquet")
+    assert events["binary"].height == 71
+    assert events["binary"].equals(events["csv"])

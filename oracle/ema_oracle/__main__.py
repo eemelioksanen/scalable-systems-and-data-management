@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 
-from . import parse
+from . import parse, windows
 from .run import Config, run
 
 
@@ -29,6 +29,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="reject events a streaming run with this bound would treat as late (source-order model); default admit all",
     )
+    p.add_argument(
+        "--empty-windows",
+        choices=windows.EMPTY_WINDOW_POLICIES,
+        default="skip",
+        help="windows without a price event: skip them (D-6, default) or carry the previous close forward (D-42)",
+    )
     p.add_argument("--exclude-events", type=Path, default=None, help="CSV/Parquet of (sourceFile, sourceLine) to reject, e.g. the job's late events")
     p.add_argument("--no-input-checksums", dest="input_checksums", action="store_false", help="skip MD5 of the inputs")
     p.add_argument("--no-precision-check", dest="precision_check", action="store_false", help="skip the 50-digit decimal recomputation")
@@ -40,6 +46,7 @@ def main(argv: list[str] | None = None) -> int:
         zone_offset=args.zone_offset,
         missing_trading_date=args.missing_trading_date,
         watermark_bound_ms=args.watermark_bound_ms,
+        empty_windows=args.empty_windows,
         exclude_events=args.exclude_events,
         input_checksums=args.input_checksums,
         precision_check=args.precision_check,

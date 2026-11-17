@@ -22,6 +22,7 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--replay-report", type=Path, help="completed replay JSON mapping src file indices to filenames")
     e.add_argument("--zone-offset", required=True, help="the job's --zone-offset, recorded for the comparison (D-3)")
     e.add_argument("--ticks-topic", help="also export this topic's price events, for latency")
+    e.add_argument("--ticks-encoding", choices=("csv", "binary"), default="csv", help="the replayer's --encoding of that topic (D-42)")
     e.add_argument("--stall-seconds", type=float, default=30.0, help="give up after this long without a record before the end offsets")
     e.add_argument("--out", type=Path, required=True)
 
@@ -64,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args = p.parse_args(argv)
     if args.command == "export":
-        result = export.export(args.bootstrap_servers, args.ema_topic, args.advisories_topic, args.out, args.zone_offset, args.stall_seconds, args.late_topic, args.replay_report, args.ticks_topic)
+        result = export.export(args.bootstrap_servers, args.ema_topic, args.advisories_topic, args.out, args.zone_offset, args.stall_seconds, args.late_topic, args.replay_report, args.ticks_topic, args.ticks_encoding)
     elif args.command == "compare":
         result = compare.compare(compare.Inputs(
             oracle=args.oracle, job=args.job, out=args.out, job_late_ticks=args.job_late_ticks,
