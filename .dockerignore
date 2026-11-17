@@ -6,6 +6,7 @@
 !flink-job/pom.xml
 !flink-job/src/
 !fixtures/golden/
+!fixtures/semantics/
 !viz/pom.xml
 !viz/src/
 !viz/web/
