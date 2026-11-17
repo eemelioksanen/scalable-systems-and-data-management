@@ -118,6 +118,10 @@ final class BinaryTicks {
     }
 
     private void number(String line, int from, int to) {
+        if (from == to) {
+            buffer.put(EMPTY);
+            return;
+        }
         double value;
         try {
             value = Double.parseDouble(line.substring(from, to));
