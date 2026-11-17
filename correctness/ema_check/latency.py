@@ -14,6 +14,7 @@ import heapq
 import json
 import math
 import re
+import struct
 from pathlib import Path
 
 import polars as pl
@@ -44,10 +45,8 @@ def price_event(value: bytes | None, zone_offset_ms: int) -> dict | None:
     fields = value.decode("utf-8", "replace").split(",")
     if len(fields) != 7 or not fields[0] or not fields[4]:
         return None
-    if not _JAVA_DECIMAL.fullmatch(fields[4]):
-        return None
-    price = float(fields[4].strip(_JAVA_WHITESPACE).rstrip("fFdD"))
-    if not math.isfinite(price) or price <= 0:
+    price = _java_double(fields[4])
+    if price is None or not math.isfinite(price) or price <= 0:
         return None
     date = fields[6] or fields[2]
     time = fields[5]
@@ -57,6 +56,83 @@ def price_event(value: bytes | None, zone_offset_ms: int) -> dict | None:
     if day is None or millis is None:
         return None
     return {"eventTime": day * _SECONDS_PER_DAY * 1000 + millis - zone_offset_ms}
+
+
+_BINARY_VERSION = 1
+_EMPTY, _TEXT, _DAY, _TIME, _NUMBER = range(5)
+# The typed tag each field may carry besides empty and text, in projection order.
+_BINARY_FIELDS = (_TEXT, _TEXT, _DAY, _TIME, _NUMBER, _TIME, _DAY)
+# Java's LocalDate.of(0, 1, 1) and LocalDate.of(9999, 12, 31): the days DD-MM-YYYY can name.
+_FIRST_DAY = dt.date(1, 1, 1).toordinal() - 366 - _EPOCH
+_LAST_DAY = dt.date(9999, 12, 31).toordinal() - _EPOCH
+_MILLIS_PER_DAY = 86_400_000
+
+
+def price_event_binary(value: bytes | None, zone_offset_ms: int) -> dict | None:
+    """`price_event` for a binary `ticks` value (D-42), mirroring the job's TickParser.parseBinary."""
+    fields = _binary_fields(value)
+    if fields is None:
+        return None
+    (id_tag, _), _sec, date, _time, (last_tag, last), trading_time, trading_date = fields
+    if id_tag != _TEXT:
+        return None
+    price = last if last_tag == _NUMBER else _java_double(last) if last_tag == _TEXT else None
+    if price is None or not math.isfinite(price) or price <= 0:
+        return None
+    date_tag, date_value = trading_date if trading_date[0] != _EMPTY else date
+    time_tag, time_value = trading_time
+    if date_tag == _EMPTY or time_tag == _EMPTY:
+        return None
+    day = date_value if date_tag == _DAY else _epoch_day(date_value) if date_tag == _TEXT else None
+    millis = time_value if time_tag == _TIME else _millis_of_day(time_value) if time_tag == _TEXT else None
+    if day is None or millis is None:
+        return None
+    return {"eventTime": day * _SECONDS_PER_DAY * 1000 + millis - zone_offset_ms}
+
+
+def _binary_fields(value: bytes | None) -> list[tuple[int, object]] | None:
+    """The seven (tag, payload) pairs of a binary value, or None if it does not follow the layout."""
+    if not value or value[0] != _BINARY_VERSION:
+        return None
+    fields, at = [], 1
+    try:
+        for typed in _BINARY_FIELDS:
+            tag = value[at]
+            at += 1
+            if tag == _EMPTY:
+                payload = None
+            elif tag == _TEXT:
+                (length,) = struct.unpack_from(">H", value, at)
+                if length == 0 or at + 2 + length > len(value):
+                    return None
+                payload = value[at + 2:at + 2 + length].decode("utf-8", "replace")
+                at += 2 + length
+            elif tag != typed:
+                return None
+            elif tag == _DAY:
+                (payload,) = struct.unpack_from(">i", value, at)
+                at += 4
+                if not _FIRST_DAY <= payload <= _LAST_DAY:
+                    return None
+            elif tag == _TIME:
+                (payload,) = struct.unpack_from(">i", value, at)
+                at += 4
+                if not 0 <= payload < _MILLIS_PER_DAY:
+                    return None
+            else:
+                (payload,) = struct.unpack_from(">d", value, at)
+                at += 8
+            fields.append((tag, payload))
+    except (IndexError, struct.error):
+        return None
+    return fields if at == len(value) else None
+
+
+def _java_double(text: str) -> float | None:
+    """Java's Double.parseDouble for decimal text, or None where it would throw."""
+    if not _JAVA_DECIMAL.fullmatch(text):
+        return None
+    return float(text.strip(_JAVA_WHITESPACE).rstrip("fFdD"))
 
 
 @functools.lru_cache(maxsize=64)

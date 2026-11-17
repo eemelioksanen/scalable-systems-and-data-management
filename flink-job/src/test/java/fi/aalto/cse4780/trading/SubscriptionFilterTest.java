@@ -136,7 +136,7 @@ class SubscriptionFilterTest {
     void aLateSubscriptionPublishesEmasBuiltFromTheWholeHistory() throws Exception {
         KeyedOneInputStreamOperatorTestHarness<String, Tick, EmaResult> emas =
                 ProcessFunctionTestHarnesses.forKeyedProcessFunction(
-                        new EmaCalculator(), tick -> tick.symbol, Types.STRING);
+                        new EmaCalculator(Variant.EmptyWindows.SKIP), tick -> tick.symbol, Types.STRING);
         try {
             start(Map.of());
             emas.processElement(new Tick("A.FR", "E", 100.0, millis("2021-11-08T09:01:00"), 0, 0),

@@ -36,6 +36,7 @@ class Config:
     zone_offset: str = "+02:00"
     missing_trading_date: str = "system-date"
     watermark_bound_ms: int | None = None
+    empty_windows: str = "skip"
     exclude_events: Path | None = None
     input_checksums: bool = True
     precision_check: bool = True
@@ -142,6 +143,8 @@ def run(cfg: Config) -> dict[str, object]:
 def _run(cfg: Config) -> dict[str, object]:
     t0 = time.monotonic()
     timings: dict[str, float] = {}
+    if cfg.empty_windows not in windows.EMPTY_WINDOW_POLICIES:
+        raise ValueError(f"empty_windows must be one of {windows.EMPTY_WINDOW_POLICIES}: {cfg.empty_windows}")
     zone_ms = parse.parse_zone_offset(cfg.zone_offset)
     inputs = parse.order_inputs(cfg.inputs)
     names = [p.name for p in inputs]
@@ -183,6 +186,8 @@ def _run(cfg: Config) -> dict[str, object]:
     t = time.monotonic()
     closes = windows.select_closes(candidates, names)
     del candidates
+    if cfg.empty_windows == "carry-forward":
+        closes = windows.carry_forward(closes)
     results, advisories = ema.compute(closes)
     results = results.with_columns(exchange=_exchange(pl.col("symbol"))).select(EMA_COLUMNS)
     advisories = advisories.with_columns(exchange=_exchange(pl.col("symbol"))).select(ADVISORY_COLUMNS)
@@ -279,6 +284,7 @@ def _run(cfg: Config) -> dict[str, object]:
             "zoneOffset": cfg.zone_offset,
             "missingTradingDate": cfg.missing_trading_date,
             "watermarkBoundMs": cfg.watermark_bound_ms,
+            "emptyWindows": cfg.empty_windows,
             "excludeEvents": str(cfg.exclude_events) if cfg.exclude_events else None,
             "excludedEventsListed": exclusions.height,
             "windowMs": windows.WINDOW_MS,

@@ -9,7 +9,7 @@ These are the contracts between the replayer (`producer/`), the Flink job (`flin
 
 | Topic | Written by | Read by | Key | Value | Partitions |
 |---|---|---|---|---|---|
-| `ticks` | replayer | Flink job; viz reads the tail for its replay clock | symbol (`ID`) | CSV line, 7 raw fields | 8 locally (`TICKS_PARTITIONS`) |
+| `ticks` | replayer | Flink job; viz reads the tail for its replay clock | symbol (`ID`) | CSV line, 7 raw fields; [binary](#binary-value-d-42) with `--encoding binary` | 8 locally (`TICKS_PARTITIONS`) |
 | `ema-results` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `advisories` | Flink job | viz, correctness check | symbol | JSON | 8 |
 | `late-ticks` | Flink job | correctness check | symbol | JSON source position and window end | 8 |
@@ -43,7 +43,28 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
 - **Ordering:** the replayer keeps file order per symbol: day files in date order, lines in file order. It sends from one thread with an idempotent producer and `acks=all`, so retries don't reorder records.
   - Because the key is the symbol, all of a symbol's events land in one partition. **The Kafka offset is therefore the arrival order** used to break ties when picking a window's close (D-4).
   - The oracle uses (file date, line number) as the same arrival order.
+- **Early filtering (D-42):** with `--early-filter`, the replayer does not send rows that have an `ID` but no `Last`, and counts them as `filtered` in its report. Every other row still goes to the job, which classifies it as above.
 - **Completion:** a finite replay ends with a JSON report (D-31). Only a report with `"status": "COMPLETE"` describes a whole input. Its `offsets` give each partition's `[startOffset, endOffset)`, which hold exactly this run's records when `endOffset - startOffset = records`. A `FAILED` replay leaves a partial input in the topic, so reset `ticks` before retrying.
+
+### Binary value (D-42)
+
+With `--encoding binary` the replayer writes the same 7 fields in binary, and the job must run with `--ticks-encoding binary`. Key, `src` header, record timestamp and ordering are as above.
+
+The value is a version byte, `1`, then the 7 fields in projection order. Each field is a tag byte and its payload, big-endian:
+
+| Tag | Name | Payload | Used for |
+|---|---|---|---|
+| 0 | empty | none | an empty field |
+| 1 | text | unsigned 16-bit length, at least 1, then that many bytes of UTF-8, as in the CSV | `ID` and `SecType`, and any field below that is not a number |
+| 2 | day | signed 32-bit days since 1970-01-01 | `Date`, `Trading date` |
+| 3 | time | signed 32-bit milliseconds since midnight | `Time`, `Trading time` |
+| 4 | number | IEEE 754 binary64 | `Last` |
+
+The replayer writes a date as a day only if it is `DD-MM-YYYY` with a valid date, a time as a time only if it is `HH:MM:SS` or `HH:MM:SS.mmm` within range, and `Last` as a number only if Java's `Double.parseDouble` reads it. These are the values the job's parser would read from the text. Any other non-empty field stays text, and the job parses it with the CSV rules. So the job classifies every row the same in both encodings, including the malformed ones. A field longer than 65,535 bytes cannot be encoded, and the replay fails on it.
+
+A value with another version, an unknown tag, a tag that does not fit its field, empty text, a day outside the years 0000 to 9999, a time outside the day, a text running past the end or bytes after the last field is `malformedEvents`. An empty `ID` is too, as in the CSV.
+
+`fixtures/semantics/ticks-binary.tsv` lists every row the replayer sends from the semantics fixtures: file index, line, CSV value and binary value in hex. The replayer's, the job's and the correctness export's tests check their encoder and decoders against it.
 
 ## `ema-results` (D-16)
 
@@ -51,6 +72,8 @@ The Flink job emits one JSON record per (symbol, window) when **both** of these 
 
 - the window had at least one price event (D-6), and
 - at least one trader subscribes to the symbol (D-9).
+
+With `--empty-windows carry-forward` (D-42), each window between two windows of a symbol that have price events is also emitted, with the earlier window's `close` and `secType`. It is emitted with the later window and carries that window's `maxIngestTs`.
 
 ```json
 {"symbol":"RDSA.NL","secType":"E","windowEnd":1636355100000,"close":19.28,"ema38":19.2712,"ema100":19.2655,"maxIngestTs":1790000000123,"emitTs":1790000000456}
@@ -126,11 +149,11 @@ The job's counts are Flink metrics, exported to Prometheus (see the README). Not
 
 | Operator | Metrics | Meaning |
 |---|---|---|
-| `ticks` source | `priceEvents`, `nonPriceEvents`, `nonPositivePriceEvents`, `missingTimestampEvents`, `malformedEvents` | Split every `ticks` record: each counts in exactly one. |
+| `ticks` source | `priceEvents`, `nonPriceEvents`, `nonPositivePriceEvents`, `missingTimestampEvents`, `malformedEvents` | Split every `ticks` record: each counts in exactly one. After an early-filtered replay, the report's `filtered` holds the non-price rows instead (D-42). |
 | | `systemDateEvents` | Price events dated from `Date` (D-25), a subset of `priceEvents`. |
-| `q1-ema` | `lateTicks` | Price events whose window had already been evaluated ([late events](#event-time-late-events-and-end-of-input-d-5-d-38)). |
-| | `evaluatedWindows`, `buyCrossovers`, `sellCrossovers` | Windows and crossovers of every symbol, subscribed or not. |
-| | `emaStates`, `openWindows` (gauges) | Per subtask: symbols whose EMAs it holds, and windows holding a close candidate. They count state entries, not bytes (D-35). |
+| `q1-ema` | `lateTicks` | Price events whose window had already been evaluated ([late events](#event-time-late-events-and-end-of-input-d-5-d-38)). Not in the Window API variant, whose late events only reach `late-ticks` (D-42). |
+| | `evaluatedWindows`, `buyCrossovers`, `sellCrossovers` | Windows and crossovers of every symbol, subscribed or not, carried-forward windows included. |
+| | `emaStates`, `openWindows` (gauges) | Per subtask: symbols whose EMAs it holds, and windows holding a close candidate. They count state entries, not bytes (D-35). The Window API variant has no `openWindows`. |
 | `subscriptions` source | `subscriptionUpdates`, `subscriptionTombstones`, `malformedSubscriptions` | Split every `subscriptions` record. |
 | `subscription-filter` | `publishedResults`, `publishedAdvisories`, `suppressedResults` | At the end of a run, `publishedResults` + `suppressedResults` = `evaluatedWindows`. |
 | | `subscriptionsReady` (gauge) | 1 once the startup subscriptions have been read. |
@@ -175,6 +198,19 @@ Each measurement and its query:
 - A `[15s]` rate spans three scrapes, so it smooths bursts shorter than that.
 - Flink's own `busyTimeMsPerSecond`, `idleTimeMsPerSecond` and `backPressuredTimeMsPerSecond` are 60 s averages, and busy reads 1000 until a task's first 5 s update. The rates of the accumulated idle and backpressured times follow a run within about 5 s. Busy is taken as the rest: Flink computes `accumulateBusyTimeMs` as wall time minus an idle time that only updates every 5 s, so its rate can exceed 1000 ms/s.
 - To get state bytes, submit with `-Dexecution.checkpointing.interval=10s -Drestart-strategy.type=none`. Without the restart setting, checkpointing would also restart a failed job instead of failing it (D-28). The state gauges count from the job's start, so they are wrong after any restore from a checkpoint or savepoint.
+
+## Variants (D-42)
+
+The job's design-comparison flags, each defaulting to the baseline:
+
+| Flag | Values | Effect |
+|---|---|---|
+| `--operator` | `process` (default), `window` | Query 1 as `EmaCalculator`, or as Flink's window operator. Same output. |
+| `--empty-windows` | `skip` (default), `carry-forward` | D-6, or the carried windows of [`ema-results`](#ema-results-d-16). |
+| `--state-backend` | `hashmap` (default), `rocksdb` | Flink's `state.backend.type`. Same output. |
+| `--ticks-encoding` | `csv` (default), `binary` | The [`ticks` value](#binary-value-d-42), which must match the replayer's `--encoding`. Same output. |
+
+The job sets its effective configuration, these four with `watermarkBoundMs`, `idlenessMs`, `zoneOffset` and `bounded`, as its global job parameters. Flink's REST API serves them in `execution-config.user-config` of `/jobs/<id>/config`.
 
 ## Restart and replay (D-28)
 

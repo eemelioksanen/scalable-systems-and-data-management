@@ -16,7 +16,7 @@ import java.util.Map;
  * {@code endOffset - startOffset == records} for every partition.
  *
  * <p>Line accounting: {@code lines = comments + headers + rejected + dataRows},
- * {@code dataRows = excluded + attempted}, and for a completed replay
+ * {@code dataRows = excluded + filtered + attempted}, and for a completed replay
  * {@code attempted = acknowledged} with {@code failed = 0}.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -30,6 +30,7 @@ record ReplayReport(
         boolean dryRun,
         String bootstrapServers,
         String topic,
+        String encoding,
         int partitions,
         Selection selection,
         List<InputFile> files,
@@ -47,8 +48,12 @@ record ReplayReport(
         INTERRUPTED
     }
 
-    /** Which rows were replayed. Empty lists mean all. */
-    record Selection(List<String> exchanges, List<String> symbols, Long limit, boolean limitReached) {}
+    /**
+     * Which rows were replayed. Empty lists mean all. {@code earlyFilter} drops the selected rows
+     * with an {@code ID} but no {@code Last}, which {@code counts.filtered} counts (D-42).
+     */
+    record Selection(List<String> exchanges, List<String> symbols, Long limit, boolean limitReached,
+            boolean earlyFilter) {}
 
     /** {@code index} is the file part of each record's {@code src} header. {@code md5} is set with {@code --checksum}. */
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -61,6 +66,7 @@ record ReplayReport(
             long rejected,
             long dataRows,
             long excluded,
+            long filtered,
             long attempted,
             long acknowledged,
             long failed,

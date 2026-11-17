@@ -1,0 +1,31 @@
+{
+  "name": "issue23-rocksdb",
+  "mode": "preload",
+  "repeats": 1,
+  "input": [
+    "data/issue23/semantics"
+  ],
+  "job": {
+    "watermarkBoundMs": 86400000,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 2,
+    "parallelism": 2
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "oracle": "oracle/out/issue23-skip",
+  "variant": {
+    "stateBackend": "rocksdb"
+  }
+}

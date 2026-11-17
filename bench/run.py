@@ -75,6 +75,17 @@ COUNTERS = {
 }
 SPLIT = COUNTERS["source"][:5]
 
+# The design-comparison variants (D-42): each key's choices, the baseline first.
+VARIANTS = {
+    "operator": ("process", "window"),
+    "emptyWindows": ("skip", "carry-forward"),
+    "stateBackend": ("hashmap", "rocksdb"),
+    "ticksEncoding": ("csv", "binary"),
+    "filtering": ("flink", "replayer"),
+}
+JOB_FLAGS = {"operator": "--operator", "emptyWindows": "--empty-windows", "stateBackend": "--state-backend",
+             "ticksEncoding": "--ticks-encoding"}
+
 
 def utc_stamp() -> str:
     return dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -147,14 +158,25 @@ class Config:
         self.replay_args = [str(a) for a in raw.get("replayArgs", [])]
         if self.mode == "live" and "--rate" not in self.replay_args:
             raise ValueError("a live run needs --rate in replayArgs")
-        if "--mode" in self.replay_args or "--run-id" in self.replay_args:
-            raise ValueError("replayArgs must not set --mode or --run-id; the harness does")
+        if {"--mode", "--run-id", "--encoding", "--early-filter"} & set(self.replay_args):
+            raise ValueError("replayArgs must not set --mode, --run-id, --encoding or --early-filter; "
+                             "the harness does, the last two from variant")
+        variant = raw.get("variant", {})
+        unknown = set(variant) - set(VARIANTS)
+        if unknown:
+            raise ValueError(f"unknown variant keys {sorted(unknown)}; known: {sorted(VARIANTS)}")
+        self.variant = {key: variant.get(key, choices[0]) for key, choices in VARIANTS.items()}
+        for key, value in self.variant.items():
+            if value not in VARIANTS[key]:
+                raise ValueError(f"variant.{key} must be one of {VARIANTS[key]}: {value!r}")
         job = raw["job"]
         # No defaults here, so every record states the bound and idleness it ran with (D-38 has the job's).
         self.bound_ms = int(job["watermarkBoundMs"])
         self.idleness_ms = int(job["idlenessMs"])
         self.zone_offset = job["zoneOffset"]
         self.job_args = [str(a) for a in job.get("args", [])]
+        if set(JOB_FLAGS.values()) & set(self.job_args):
+            raise ValueError("job.args must not set the variant flags; use variant")
         stack = raw.get("stack", {})
         self.partitions = int(stack.get("partitions", 8))
         self.taskmanagers = int(stack.get("taskmanagers", 1))
@@ -182,12 +204,26 @@ class Config:
             raise ValueError(f"the oracle covers whole files, so {sorted(selecting)} would make every run differ")
         if self.oracle and not (ROOT / self.oracle / "manifest.json").exists():
             raise ValueError(f"{self.oracle} holds no oracle output")
+        if self.oracle:
+            parameters = json.loads((ROOT / self.oracle / "manifest.json").read_text())["parameters"]
+            oracle_policy = parameters.get("emptyWindows", "skip")
+            if oracle_policy != self.variant["emptyWindows"]:
+                raise ValueError(f"{self.oracle} skips or carries empty windows as {oracle_policy!r}, the job as "
+                                 f"{self.variant['emptyWindows']!r}: run the oracle with --empty-windows "
+                                 f"{self.variant['emptyWindows']}")
 
     def effective(self) -> dict:
         return {"mode": self.mode, "finish": self.finish, "partitions": self.partitions,
                 "taskmanagers": self.taskmanagers, "slots": self.slots, "parallelism": self.parallelism,
                 "watermarkBoundMs": self.bound_ms, "idlenessMs": self.idleness_ms, "zoneOffset": self.zone_offset,
-                "warmupS": self.warmup_s, "subscribers": len(self.subscriptions)}
+                "warmupS": self.warmup_s, "subscribers": len(self.subscriptions), "variant": self.variant}
+
+    def replayer_variant_args(self) -> list[str]:
+        return ["--encoding", self.variant["ticksEncoding"],
+                *(["--early-filter"] if self.variant["filtering"] == "replayer" else [])]
+
+    def job_variant_args(self) -> list[str]:
+        return [arg for key, flag in JOB_FLAGS.items() for arg in (flag, self.variant[key])]
 
     @property
     def all_subscribed(self) -> bool:
@@ -304,7 +340,8 @@ class Run:
         container = f"{self.id}-replay"
         try:
             self.compose("run", "--rm", "-T", "--name", container, "producer", "fi.aalto.cse4780.replay.Replayer",
-                         *args, "--mode", mode, "--run-id", self.id, *self.cfg.replay_args,
+                         *args, "--mode", mode, "--run-id", self.id, *self.cfg.replayer_variant_args(),
+                         *self.cfg.replay_args,
                          stdout_path=self.dir / "replay.json", timeout=self.cfg.timeout_s, check=False, watch=watch)
         except BaseException:
             # Stopping the Compose client does not always stop the container it started.
@@ -320,15 +357,28 @@ class Run:
     def submit(self, bounded: bool) -> str:
         flags = CHECKPOINTING if self.cfg.checkpointing else []
         job_args = ["--watermark-bound-ms", self.cfg.bound_ms, "--idleness-ms", self.cfg.idleness_ms,
-                    "--zone-offset", self.cfg.zone_offset, *(["--bounded"] if bounded else []), *self.cfg.job_args]
+                    "--zone-offset", self.cfg.zone_offset, *(["--bounded"] if bounded else []),
+                    *self.cfg.job_variant_args(), *self.cfg.job_args]
         output = self.compose("exec", "-T", "jobmanager", "flink", "run", "-d", *flags, "-c", JOB_CLASS,
                               "/opt/job/flink-job.jar", *job_args)
         match = re.search(r"JobID ([0-9a-f]{32})", output)
         if not match:
             raise RuntimeError(f"no JobID in the flink run output:\n{output[-2000:]}")
-        self.record["job"] = {"id": match.group(1), "bounded": bounded, "flinkRunFlags": flags,
+        job_id = match.group(1)
+        self.record["job"] = {"id": job_id, "bounded": bounded, "flinkRunFlags": flags,
                               "args": [str(a) for a in job_args]}
-        return match.group(1)
+        self.record["job"]["effective"] = self.job_effective(job_id)
+        return job_id
+
+    def job_effective(self, job_id: str) -> dict:
+        """The configuration the job resolved and published as its global job parameters, checked against the run's."""
+        effective = http_json(f"{FLINK}/jobs/{job_id}/config")["execution-config"]["user-config"]
+        expected = {**{k: self.cfg.variant[k] for k in JOB_FLAGS}, "watermarkBoundMs": str(self.cfg.bound_ms),
+                    "idlenessMs": str(self.cfg.idleness_ms)}
+        differing = {k: (v, effective.get(k)) for k, v in expected.items() if effective.get(k) != v}
+        if differing:
+            raise RuntimeError(f"the job runs another configuration than the run's (requested, job): {differing}")
+        return effective
 
     def wait_ended(self, job_id: str) -> dict:
         return wait_for(f"job {job_id} to end", lambda: http_json(f"{FLINK}/jobs/{job_id}"),
@@ -392,13 +442,20 @@ class Run:
         return values
 
     def export(self) -> dict:
-        ticks = ["--ticks-topic", "ticks"] if self.cfg.mode == "live" else []
+        ticks = (["--ticks-topic", "ticks", "--ticks-encoding", self.cfg.variant["ticksEncoding"]]
+                 if self.cfg.mode == "live" else [])
         self.sh("correctness/run.sh", "export", "--zone-offset", self.cfg.zone_offset,
                 "--replay-report", self.dir / "replay.json", *ticks,
                 "--out", f"/out/bench/{self.id}/export", timeout=1800)
         return self._collect("export", "manifest.json")
 
     def latency(self) -> dict:
+        if self.cfg.variant["emptyWindows"] == "carry-forward":
+            report = {"complete": False, "problems": [
+                "carried windows are published with the next window and have no admission of their own (D-42)"]}
+            (self.dir / "latency").mkdir()
+            self.save("latency/latency.json", report)
+            return report
         interval = self.interval()
         self.sh("correctness/run.sh", "latency", "--export", self.dir / "export",
                 "--replay-report", self.dir / "replay.json", "--metrics", self.dir / "metrics.json",
@@ -497,13 +554,20 @@ class Run:
         }
         if self.cfg.oracle:
             oracle = json.loads((ROOT / self.cfg.oracle / "manifest.json").read_text())["counts"]["total"]
+            # The replayer rejects blank lines and rows of the wrong field count; the oracle counts blank
+            # lines apart and the rest as data.
             checks += [
-                ("replayed data rows = oracle data rows", report["counts"]["dataRows"], oracle["dataRows"]),
+                ("replayed data and rejected rows = oracle data and blank rows",
+                 report["counts"]["dataRows"] + report["counts"]["rejected"],
+                 oracle["dataRows"] + oracle.get("blank", 0)),
                 ("price events = oracle price events", total(source, "write-records"), oracle["accepted"]),
             ]
             if final["split"]:
+                # An early filter leaves the non-price rows in the replayer's count instead of the job's (D-42).
+                non_price = counters["nonPriceEvents"] + report["counts"].get("filtered", 0)
                 checks += [
-                    ("non-price events = oracle's", counters["nonPriceEvents"], oracle["nonPrice"]),
+                    ("non-price events, the job's and the replayer's filtered = oracle's", non_price,
+                     oracle["nonPrice"]),
                     ("non-positive prices = oracle's", counters["nonPositivePriceEvents"], oracle["nonPositivePrice"]),
                     ("events dated from Date = oracle's", counters["systemDateEvents"], oracle["systemDateEvents"]),
                 ]

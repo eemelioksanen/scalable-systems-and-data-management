@@ -45,7 +45,7 @@ class GoldenFixturesTest {
 
         KeyedOneInputStreamOperatorTestHarness<String, Tick, EmaResult> harness =
                 ProcessFunctionTestHarnesses.forKeyedProcessFunction(
-                        new EmaCalculator(), tick -> tick.symbol, Types.STRING);
+                        new EmaCalculator(Variant.EmptyWindows.SKIP), tick -> tick.symbol, Types.STRING);
         try {
             long order = 0;
             for (JsonNode window : windows) {

@@ -1,6 +1,9 @@
 package fi.aalto.cse4780.trading;
 
 import java.io.Serializable;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -16,7 +19,12 @@ import java.time.ZoneOffset;
  * and any finer digits are truncated. Timestamps are local times at a fixed {@link ZoneOffset}
  * (D-3). Any whole-hour offset keeps 5-minute windows aligned to local midnight.
  *
- * <p>Not thread-safe: it caches the last parsed date. Use one instance per source reader.
+ * <p>{@link #parseBinary} reads the binary value of D-42 (docs/interfaces.md) and classifies it
+ * by the same rules, in the same order. Its typed fields carry the values this class would parse
+ * from the text; anything else arrives as text and is parsed here.
+ *
+ * <p>Not thread-safe: it caches the last parsed date and reuses its binary fields. Use one
+ * instance per source reader.
  */
 public final class TickParser implements Serializable {
 
@@ -54,10 +62,23 @@ public final class TickParser implements Serializable {
     private static final long SECONDS_PER_DAY = 86_400L;
     private static final long INVALID = Long.MIN_VALUE;
 
+    static final byte BINARY_VERSION = 1;
+    static final byte EMPTY = 0;
+    static final byte TEXT = 1;
+    static final byte DAY = 2;
+    static final byte TIME = 3;
+    static final byte NUMBER = 4;
+
+    /** The days a {@code DD-MM-YYYY} date can name. */
+    private static final long FIRST_DAY = LocalDate.of(0, 1, 1).toEpochDay();
+    private static final long LAST_DAY = LocalDate.of(9999, 12, 31).toEpochDay();
+    private static final int MILLIS_PER_DAY = 86_400_000;
+
     private final int offsetSeconds;
 
     private transient String cachedDate;
     private transient long cachedEpochDay;
+    private transient BinaryRow binary;
 
     /** Interprets trading timestamps as UTC. */
     public TickParser() {
@@ -112,6 +133,144 @@ public final class TickParser implements Serializable {
         into.eventTimeMillis =
                 (epochDay * SECONDS_PER_DAY - offsetSeconds) * MILLIS_PER_SECOND + millisOfDay;
         return systemDate ? Outcome.PRICE_SYSTEM_DATE : Outcome.PRICE;
+    }
+
+    /**
+     * Classifies a binary {@code ticks} value as {@link #parse} classifies the CSV one. A value
+     * that does not follow the layout, including a number no CSV field could hold, is
+     * {@link Outcome#MALFORMED}.
+     */
+    public Outcome parseBinary(byte[] value, Tick into) {
+        if (binary == null) {
+            binary = new BinaryRow();
+        }
+        BinaryRow row = binary;
+        ByteBuffer in = ByteBuffer.wrap(value);
+        try {
+            if (in.get() != BINARY_VERSION) {
+                return Outcome.MALFORMED;
+            }
+            row.id.read(in, TEXT);
+            row.secType.read(in, TEXT);
+            row.date.read(in, DAY);
+            row.time.read(in, TIME);
+            row.last.read(in, NUMBER);
+            row.tradingTime.read(in, TIME);
+            row.tradingDate.read(in, DAY);
+        } catch (BufferUnderflowException | IllegalArgumentException e) {
+            return Outcome.MALFORMED;
+        }
+        if (in.hasRemaining() || row.id.tag == EMPTY) {
+            return Outcome.MALFORMED;
+        }
+
+        double price;
+        switch (row.last.tag) {
+            case EMPTY:
+                return Outcome.NON_PRICE;
+            case NUMBER:
+                price = row.last.number;
+                break;
+            case TEXT:
+                try {
+                    price = Double.parseDouble(row.last.text(value));
+                } catch (NumberFormatException e) {
+                    return Outcome.MALFORMED;
+                }
+                break;
+            default:
+                throw new IllegalStateException("unreachable tag " + row.last.tag);
+        }
+        if (!Double.isFinite(price)) {
+            return Outcome.MALFORMED;
+        }
+        if (price <= 0) {
+            return Outcome.NON_POSITIVE_PRICE;
+        }
+
+        boolean systemDate = row.tradingDate.tag == EMPTY;
+        BinaryField date = systemDate ? row.date : row.tradingDate;
+        if (row.tradingTime.tag == EMPTY || date.tag == EMPTY) {
+            return Outcome.MISSING_TIMESTAMP;
+        }
+
+        long epochDay = date.tag == DAY ? date.integer : parseEpochDay(date.text(value));
+        long millisOfDay = row.tradingTime.tag == TIME
+                ? row.tradingTime.integer
+                : parseMillisOfDay(row.tradingTime.text(value));
+        if (epochDay == INVALID || millisOfDay == INVALID) {
+            return Outcome.MALFORMED;
+        }
+
+        into.symbol = row.id.text(value);
+        into.secType = row.secType.tag == TEXT ? row.secType.text(value) : "";
+        into.price = price;
+        into.eventTimeMillis =
+                (epochDay * SECONDS_PER_DAY - offsetSeconds) * MILLIS_PER_SECOND + millisOfDay;
+        return systemDate ? Outcome.PRICE_SYSTEM_DATE : Outcome.PRICE;
+    }
+
+    /** The seven fields of a binary value, in projection order, reused from value to value. */
+    private static final class BinaryRow {
+        final BinaryField id = new BinaryField();
+        final BinaryField secType = new BinaryField();
+        final BinaryField date = new BinaryField();
+        final BinaryField time = new BinaryField();
+        final BinaryField last = new BinaryField();
+        final BinaryField tradingTime = new BinaryField();
+        final BinaryField tradingDate = new BinaryField();
+    }
+
+    /**
+     * One binary field: a tag byte, then nothing, text, an int or a double. Text stays in the
+     * value until {@link #text} asks for it, so rows the job drops make no strings.
+     */
+    private static final class BinaryField {
+        byte tag;
+        int textOffset;
+        int textLength;
+        int integer;
+        double number;
+
+        /** Reads a field that is empty, text, or {@code typed}. Any other tag or value throws. */
+        void read(ByteBuffer in, byte typed) {
+            tag = in.get();
+            if (tag == EMPTY) {
+                return;
+            }
+            if (tag == TEXT) {
+                textLength = Short.toUnsignedInt(in.getShort());
+                if (textLength == 0 || textLength > in.remaining()) {
+                    throw new IllegalArgumentException("text of " + textLength + " bytes");
+                }
+                textOffset = in.position();
+                in.position(textOffset + textLength);
+                return;
+            }
+            if (tag != typed) {
+                throw new IllegalArgumentException("tag " + tag + " where " + typed + " belongs");
+            }
+            switch (tag) {
+                case DAY -> {
+                    integer = in.getInt();
+                    if (integer < FIRST_DAY || integer > LAST_DAY) {
+                        throw new IllegalArgumentException("day " + integer);
+                    }
+                }
+                case TIME -> {
+                    integer = in.getInt();
+                    if (integer < 0 || integer >= MILLIS_PER_DAY) {
+                        throw new IllegalArgumentException("time " + integer);
+                    }
+                }
+                case NUMBER -> number = in.getDouble();
+                default -> throw new IllegalArgumentException("unknown tag " + tag);
+            }
+        }
+
+        String text(byte[] value) {
+            return new String(value, textOffset, textLength, StandardCharsets.UTF_8);
+        }
     }
 
     /** {@code DD-MM-YYYY} to days since 1970-01-01, or {@link #INVALID}. */

@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
  * Streams the input files into the {@code ticks} topic, one record per data row, and accounts for
  * every line it reads.
  *
- * <p>Each record is keyed by the symbol, carries the 7-field projection as its value (D-13, D-24)
- * and a {@code src} header of {@code <file index>:<line number>}, and is timestamped with the
+ * <p>Each record is keyed by the symbol, carries the 7-field projection as its value (D-13, D-24),
+ * as CSV or {@link BinaryTicks} (D-42), and a {@code src} header of {@code <file index>:<line number>}, and is timestamped with the
  * wall-clock time it was handed to the producer, which is the ingest time used for latency (D-15).
  * Rows are sent from one thread in file order, and the idempotent producer keeps that order per
  * partition through retries, so each symbol's Kafka offsets follow its file order (D-23).
@@ -64,6 +64,7 @@ final class Replay implements Callback {
     private final Pacer pacer;
 
     private final CsvLine row = new CsvLine();
+    private final BinaryTicks binary = new BinaryTicks();
     private final SourceClock clock = new SourceClock();
 
     private volatile boolean stopRequested;
@@ -77,6 +78,7 @@ final class Replay implements Callback {
     private long rejected;
     private long dataRows;
     private long excluded;
+    private long filtered;
     private long attempted;
     private long keyBytes;
     private long valueBytes;
@@ -200,6 +202,19 @@ final class Replay implements Callback {
             excluded++;
             return;
         }
+        if (options.earlyFilter() && row.isEmpty(CsvLine.LAST) && !symbol.isEmpty()) {
+            filtered++;
+            return;
+        }
+        byte[] value;
+        try {
+            value = options.encoding() == ReplayOptions.Encoding.CSV
+                    ? row.projection().getBytes(StandardCharsets.UTF_8)
+                    : binary.encode(row);
+        } catch (IllegalArgumentException e) {
+            fail(new IllegalArgumentException("file " + fileIndex + " line " + lineNumber + ": " + e.getMessage(), e));
+            return;
+        }
         if (pacer != null) {
             if (producer != null && pacer.startsPacing(now)) {
                 // Drain the unpaced rows first, so the paced part starts with an empty producer buffer.
@@ -213,7 +228,6 @@ final class Replay implements Callback {
         }
 
         byte[] key = symbol.getBytes(StandardCharsets.UTF_8);
-        byte[] value = row.projection().getBytes(StandardCharsets.UTF_8);
         byte[] source = (fileIndex + ":" + lineNumber).getBytes(StandardCharsets.US_ASCII);
         attempted++;
         keyBytes += key.length;
@@ -356,11 +370,13 @@ final class Replay implements Callback {
                 producer == null,
                 producer == null ? null : options.bootstrapServers(),
                 options.topic(),
+                options.encoding().label(),
                 partitions,
                 new ReplayReport.Selection(List.copyOf(options.exchanges()), List.copyOf(options.symbols()),
-                        options.limit() == Long.MAX_VALUE ? null : options.limit(), attempted >= options.limit()),
+                        options.limit() == Long.MAX_VALUE ? null : options.limit(), attempted >= options.limit(),
+                        options.earlyFilter()),
                 inputs,
-                new ReplayReport.Counts(lines, comments, headers, rejected, dataRows, excluded, attempted,
+                new ReplayReport.Counts(lines, comments, headers, rejected, dataRows, excluded, filtered, attempted,
                         acknowledged, failed, keyBytes, valueBytes, headerBytes),
                 offsets,
                 timing,

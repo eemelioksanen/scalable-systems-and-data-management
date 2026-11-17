@@ -23,6 +23,8 @@ record ReplayOptions(
         Set<String> exchanges,
         Set<String> symbols,
         long limit,
+        boolean earlyFilter,
+        Encoding encoding,
         Mode mode,
         double rate,
         String paceFrom,
@@ -35,6 +37,18 @@ record ReplayOptions(
         String runId,
         boolean checksum,
         int progressSeconds) {
+
+    /** The {@code ticks} value format (D-14, D-42). */
+    enum Encoding {
+        /** The 7-field CSV projection. */
+        CSV,
+        /** {@link BinaryTicks}. */
+        BINARY;
+
+        String label() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
 
     enum Mode {
         /** Write the input into Kafka before the job runs, as fast as possible (throughput runs). */
@@ -60,6 +74,10 @@ record ReplayOptions(
               --symbols RDSA.NL,AIR.FR      only these symbols
               --symbols-file PATH           only the symbols listed in the file, one per line
               --limit N                     stop after N records
+              --early-filter                drop rows with an ID but no Last (non-price rows), counting them as filtered
+
+            Encoding
+              --encoding csv|binary         ticks value format (default csv); the job's --ticks-encoding must match
 
             Mode
               --mode preload|max|realtime   default preload
@@ -102,6 +120,8 @@ record ReplayOptions(
         Set<String> exchanges = new LinkedHashSet<>();
         Set<String> symbols = new LinkedHashSet<>();
         long limit = Long.MAX_VALUE;
+        boolean earlyFilter = false;
+        Encoding encoding = Encoding.CSV;
         Mode mode = Mode.PRELOAD;
         Double rate = null;
         String paceFrom = null;
@@ -120,6 +140,7 @@ record ReplayOptions(
             switch (option) {
                 case "--dry-run" -> dryRun = true;
                 case "--checksum" -> checksum = true;
+                case "--early-filter" -> earlyFilter = true;
                 default -> {
                     if (i + 1 >= args.length) {
                         throw new IllegalArgumentException("unknown option or missing value: " + option);
@@ -132,6 +153,7 @@ record ReplayOptions(
                         case "--symbols-file" -> symbols.addAll(symbolsFile(Path.of(value)));
                         case "--limit" -> limit = positiveLong(option, value);
                         case "--mode" -> mode = mode(value);
+                        case "--encoding" -> encoding = encoding(value);
                         case "--rate" -> rate = positiveDouble(option, value);
                         case "--pace-from" -> paceFrom = sourceTime(value);
                         case "--bootstrap-servers" -> bootstrap = value;
@@ -162,7 +184,8 @@ record ReplayOptions(
         if (!dryRun && partitions != null) {
             throw new IllegalArgumentException("--partitions applies only to --dry-run; a replay uses the topic's");
         }
-        return new ReplayOptions(inputs, exchanges, symbols, limit, mode, rate == null ? 1 : rate, paceFrom,
+        return new ReplayOptions(inputs, exchanges, symbols, limit, earlyFilter, encoding, mode,
+                rate == null ? 1 : rate, paceFrom,
                 bootstrap, topic, producerProperties, dryRun, partitions == null ? 8 : partitions, report, runId,
                 checksum, progressSeconds);
     }
@@ -183,6 +206,14 @@ record ReplayOptions(
             return Mode.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("--mode must be preload, max or realtime: " + value);
+        }
+    }
+
+    private static Encoding encoding(String value) {
+        try {
+            return Encoding.valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("--encoding must be csv or binary: " + value);
         }
     }
 

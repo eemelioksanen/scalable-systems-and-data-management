@@ -3,7 +3,10 @@ import json
 import polars as pl
 import pytest
 
-from ema_check.latency import Feed, Watermark, decompose, latency, price_event, prometheus_samples, stats, watermark_lag
+from pathlib import Path
+
+from ema_check.latency import (Feed, Watermark, decompose, latency, price_event, price_event_binary, prometheus_samples,
+                               stats, watermark_lag)
 
 DAY = 18939  # 08-11-2021
 MINUTE = 60_000
@@ -35,6 +38,43 @@ def tick(last="10.5", trading_time="09:00:00.1234", trading_date="08-11-2021", d
 def test_price_events_follow_the_job_parser(value, expected):
     parsed = price_event(value, 0)
     assert (parsed and parsed["eventTime"]) == expected
+
+
+def test_binary_values_give_the_event_times_of_their_csv_values():
+    """Every row the replayer sends from the semantics fixtures, binary against CSV (D-42)."""
+    rows = (Path(__file__).resolve().parents[2] / "fixtures/semantics/ticks-binary.tsv").read_text().splitlines()
+    prices = 0
+    for row in rows:
+        _, _, csv, binary = row.split("\t")
+        expected = price_event(csv.encode(), 7_200_000)
+        assert price_event_binary(bytes.fromhex(binary), 7_200_000) == expected, row
+        prices += expected is not None
+    assert len(rows) == 80 and prices == 71
+
+
+@pytest.mark.parametrize("value", [b"", b"\x02", b"\x01\x01\x00\x04R", bytes.fromhex("01010001410000000000000000"),
+                                   bytes.fromhex("0101000141000000000000ff")])
+def test_a_binary_value_off_the_layout_is_not_a_price_event(value):
+    assert price_event_binary(value, 0) is None
+
+
+VALID_BINARY = "01010004412e46520100014502000049fb0301ee66e304403347ae147ae1480301ee66cc00"
+
+
+def test_a_valid_binary_value_is_a_price_event():
+    assert price_event_binary(bytes.fromhex(VALID_BINARY), 0) == {"eventTime": 1636362001100}
+
+
+@pytest.mark.parametrize("hex_value", [
+    "010100000100014502000049fb0301ee66e304403347ae147ae1480301ee66cc00",
+    "01010004412e46520100014502000049fb0301ee66e304403347ae147ae1480305265c0000",
+    "01010004412e46520100014502000049fb0301ee66e304403347ae147ae14803ffffffff00",
+    "01010004412e46520100014502002cc0a10301ee66e304403347ae147ae1480301ee66cc00",
+    "01010004412e465201000145043ff00000000000000301ee66e304403347ae147ae1480301ee66cc02000049fb",
+    "01010004412e46520100014502000049fb02000049fb04403347ae147ae1480301ee66cc00",
+])
+def test_a_binary_value_no_csv_field_could_hold_is_not_a_price_event(hex_value):
+    assert price_event_binary(bytes.fromhex(hex_value), 0) is None
 
 
 def test_zone_offset_moves_event_time_back():
