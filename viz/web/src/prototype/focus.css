@@ -1,0 +1,68 @@
+.f-root {
+  --bg: #ffffff; --surface: #f4f4f4; --line: #e8e8e8; --ink: #111111; --muted: #6b6b6b; --accent: #1a4be0;
+  --up: #0a8f5a; --dn: #d6334a;
+  min-height: 100vh; background: var(--bg); color: var(--ink); padding: 0 40px 96px;
+  font: 14px/1.45 "Instrument Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums;
+}
+.f-root .up { color: var(--up); } .f-root .dn { color: var(--dn); } .f-root .dim { color: var(--muted); }
+.f-root button { all: unset; box-sizing: border-box; cursor: pointer; }
+.f-root .fill { width: 100%; height: 100%; }
+.f-nav { display: flex; align-items: center; gap: 24px; height: 64px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: rgba(255,255,255,.92); backdrop-filter: saturate(1.4) blur(8px); z-index: 5; }
+.f-brand { font-weight: 600; font-size: 16px; letter-spacing: -0.02em; white-space: nowrap; }
+.f-tabs { display: flex; gap: 2px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.f-tabs button { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; font-size: 13px; white-space: nowrap; transition: background .15s; }
+.f-tabs button:hover { background: var(--surface); }
+.f-tabs button.on { background: var(--ink); color: #fff; }
+.f-tabs button.on small { color: #fff; opacity: .8; }
+.f-tabs small { font: 11px "DM Mono", monospace; }
+.f-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.f-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.f-status.live i { background: var(--up); }
+.f-filters { display: flex; align-items: center; gap: 4px; padding: 14px 0; flex-wrap: wrap; }
+.f-filters button { padding: 5px 12px; border-radius: 999px; font-size: 13px; color: var(--muted); transition: color .15s, background .15s; }
+.f-filters button:hover { color: var(--ink); }
+.f-filters button.on { background: var(--surface); color: var(--ink); font-weight: 500; }
+.f-filters select { font: inherit; font-size: 13px; border: 0; background: var(--surface); padding: 5px 10px; border-radius: 999px; }
+.f-div { width: 1px; height: 18px; background: var(--line); margin: 0 8px; }
+.f-hero { display: grid; grid-template-columns: 1fr 380px; gap: 48px; padding-top: 12px; }
+.f-main { min-width: 0; }
+.f-name { font-size: 15px; font-weight: 500; display: flex; gap: 10px; align-items: baseline; }
+.f-name small { color: var(--muted); font-size: 13px; font-weight: 400; }
+.f-price { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; }
+.f-price b { font: 500 64px/1 "Instrument Sans", sans-serif; letter-spacing: -0.02em; }
+.f-chip { font: 500 14px "DM Mono", monospace; padding: 4px 10px; border-radius: 999px; background: rgba(10,143,90,.1); }
+.f-chip.dn { background: rgba(214,51,74,.1); }
+.f-at { color: var(--muted); font: 13px "DM Mono", monospace; }
+.f-says { margin: 0 0 18px; color: var(--muted); max-width: 640px; }
+.f-says b { color: var(--ink); font-weight: 600; }
+.f-says b.up { color: var(--up); } .f-says b.dn { color: var(--dn); }
+.f-range { display: flex; gap: 4px; align-items: center; margin-bottom: 6px; }
+.f-range button { font: 500 12px "DM Mono", monospace; padding: 4px 10px; border-radius: 6px; color: var(--muted); }
+.f-range button.on { color: var(--accent); background: rgba(26,75,224,.08); }
+.f-legend { margin-left: auto; display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
+.f-legend i { display: inline-block; width: 12px; height: 2px; margin-right: 6px; vertical-align: middle; }
+.f-legend i.dash { background: repeating-linear-gradient(90deg, #b9b9b9 0 4px, transparent 4px 7px); }
+.f-pc { height: 380px; }
+.f-sc-label { font-size: 13px; font-weight: 500; margin-top: 18px; }
+.f-sc-label small, .f-root h2 small { color: var(--muted); font-weight: 400; margin-left: 8px; font-size: 12px; }
+.f-sc { height: 110px; }
+.f-side h2, .f-hist h2 { font-size: 13px; font-weight: 600; margin: 0 0 10px; letter-spacing: -0.005em; }
+.f-side h2:not(:first-child) { margin-top: 28px; }
+.f-story { list-style: none; margin: 0; padding: 0; }
+.f-story li button { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 10px 8px; border-radius: 8px; width: 100%; transition: background .15s; }
+.f-story li button:hover { background: var(--surface); }
+.f-story li.sel button { background: rgba(26,75,224,.06); }
+.f-story b { display: block; font-weight: 500; font-size: 14px; }
+.f-story small { color: var(--muted); font-size: 12px; }
+.f-dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; background: rgba(10,143,90,.1); }
+.f-dot.dn { background: rgba(214,51,74,.1); }
+.f-hist { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); }
+.f-history svg text { font-family: "DM Mono", monospace; }
+@media (prefers-reduced-motion: reduce) { .f-root * { transition: none !important; } }
+@media (max-width: 1100px) {
+  .f-root { padding: 0 16px 96px; }
+  .f-hero { grid-template-columns: 1fr; gap: 24px; }
+  .f-price b { font-size: 44px; }
+  .f-pc { height: 300px; }
+  .f-brand { display: none; }
+}

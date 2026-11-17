@@ -79,3 +79,11 @@ code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-si
 .pill.state.idle, .pill.state.off { color: var(--muted); }
 .first-tag { color: var(--muted); font-weight: 400; margin-left: 4px; }
 .filters label.check { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; }
+.proto-switch {
+  position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 1000;
+  display: flex; align-items: center; gap: 10px; padding: 6px 8px;
+  background: #ff2d87; color: #fff; border-radius: 999px; box-shadow: 0 6px 24px rgba(0,0,0,.35);
+  font: 12px/1 ui-monospace, Menlo, monospace;
+}
+.proto-switch button { all: unset; cursor: pointer; padding: 4px 8px; border-radius: 999px; background: rgba(255,255,255,.18); }
+.proto-switch button:hover { background: rgba(255,255,255,.32); }

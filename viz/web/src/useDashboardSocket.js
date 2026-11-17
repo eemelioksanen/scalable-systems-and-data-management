@@ -1,5 +1,8 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { applyDelta, applySeries, applySnapshot, initialState } from './state.js';
+import { MockSocket } from './prototype/mockSocket.js';
+
+const MOCK = import.meta.env.VITE_MOCK === '1';
 
 function reducer(state, msg) {
   switch (msg.type) {
@@ -24,6 +27,7 @@ function socketUrl() {
 export function useDashboardSocket(selected) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [status, setStatus] = useState('connecting');
+  const [quotes, setQuotes] = useState({});
   const socketRef = useRef(null);
   const selectedRef = useRef(selected);
 
@@ -33,14 +37,18 @@ export function useDashboardSocket(selected) {
     let timer = null;
 
     function connect() {
-      const ws = new WebSocket(socketUrl());
+      const ws = MOCK ? new MockSocket() : new WebSocket(socketUrl());
       socketRef.current = ws;
       ws.onopen = () => {
         retryMs = 1000;
         setStatus('live');
         if (selectedRef.current) ws.send(JSON.stringify({ type: 'select', symbol: selectedRef.current }));
       };
-      ws.onmessage = (event) => dispatch(JSON.parse(event.data));
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.quotes) setQuotes(msg.quotes);
+        dispatch(msg);
+      };
       ws.onclose = () => {
         socketRef.current = null;
         if (closed) return;
@@ -66,5 +74,5 @@ export function useDashboardSocket(selected) {
     }
   }, [selected]);
 
-  return { state, status };
+  return { state, status, quotes };
 }

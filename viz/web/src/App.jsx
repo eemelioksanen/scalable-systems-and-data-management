@@ -6,6 +6,7 @@ import Heatmap from './Heatmap.jsx';
 import SymbolChart from './SymbolChart.jsx';
 import { useDashboardSocket } from './useDashboardSocket.js';
 import { feedItems, indexAdvisories, visibleRows } from './state.js';
+import { PrototypeSwitcher, VARIANTS, readVariant } from './prototype/PrototypeSwitcher.jsx';
 
 const SUBSCRIBE = `echo 'all|{"trader":"all","symbols":["*"]}' | docker compose exec -T kafka \\
   /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic subscriptions \\
@@ -28,6 +29,8 @@ function readQuery() {
 
 function writeQuery(filters, sort) {
   const q = new URLSearchParams();
+  const variant = new URLSearchParams(window.location.search).get('variant');
+  if (variant) q.set('variant', variant);
   for (const k of ['exchange', 'secType', 'trader']) if (filters[k]) q.set(k, filters[k]);
   if (filters.firstWindows) q.set('first', '1');
   if (sort !== 'cross') q.set('sort', sort);
@@ -55,7 +58,8 @@ export default function App() {
   const [defaultSymbol, setDefaultSymbol] = useState(null);
   const [{ filters, sort }, setView] = useState(readQuery);
   const selected = picked ?? defaultSymbol;
-  const { state, status } = useDashboardSocket(selected);
+  const { state, status, quotes } = useDashboardSocket(selected);
+  const [variant, setVariant] = useState(readVariant);
   const adv = useMemo(() => indexAdvisories(state.advisories, { firstWindows: filters.firstWindows }),
     [state.advisories, filters.firstWindows]);
   const order = useMemo(
@@ -86,6 +90,18 @@ export default function App() {
   const row = selected == null ? null : state.rows[state.index.get(selected)];
   const series = state.series?.symbol === selected ? state.series : null;
 
+  const Variant = VARIANTS[variant]?.component;
+  if (Variant) {
+    return (
+      <>
+        <Variant state={state} status={status} quotes={quotes} adv={adv} order={order} feed={feed}
+          filters={filters} setFilters={(f) => setView({ filters: f, sort })} sort={sort} setSort={(s) => setView({ filters, sort: s })}
+          selected={selected} select={select} series={series} row={row} zone={zone} />
+        <PrototypeSwitcher current={variant} onChange={setVariant} />
+      </>
+    );
+  }
+
   return (
     <div className={status === 'live' ? 'app' : 'app dimmed'}>
       <ClockBar clock={state.clock} status={status} slotMs={state.slotMs} />
@@ -106,6 +122,7 @@ export default function App() {
           </main>
         </>
       )}
+      <PrototypeSwitcher current={variant} onChange={setVariant} />
     </div>
   );
 }

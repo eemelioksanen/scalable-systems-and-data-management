@@ -1,0 +1,94 @@
+.t-root {
+  --bg: #0a0d14; --surface: #131824; --line: rgba(136,145,161,.14); --ink: #e9edf3; --muted: #8891a1; --accent: #5ab9fc;
+  --up: #2ec4a0; --dn: #f0616d;
+  position: fixed; inset: 0; display: grid; background: var(--bg); color: var(--ink);
+  grid-template: 40px 30px 1fr 24px / 344px 1fr 380px;
+  grid-template-areas: "top top top" "tape tape tape" "watch main blot" "foot foot foot";
+  font: 12px/1.35 Geist, -apple-system, system-ui, sans-serif; letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+}
+.t-root .up { color: var(--up); } .t-root .dn { color: var(--dn); } .t-root .dim { color: var(--muted); }
+.t-root .num { font-family: "Geist Mono", ui-monospace, monospace; text-align: right; }
+.t-root button { all: unset; box-sizing: border-box; cursor: pointer; }
+.t-top { grid-area: top; display: flex; align-items: center; gap: 22px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.t-mark { display: flex; align-items: center; gap: 8px; font-weight: 600; letter-spacing: .08em; }
+.t-mark i { width: 10px; height: 10px; background: var(--accent); transform: rotate(45deg); }
+.t-mark b { color: var(--accent); }
+.t-kv { display: flex; gap: 8px; align-items: baseline; font-family: "Geist Mono", monospace; }
+.t-kv > span { color: var(--muted); font-size: 10px; letter-spacing: .08em; }
+.t-kv b { font-weight: 500; }
+.t-kv.dim { color: var(--muted); }
+.t-sp { flex: 1; }
+.t-state { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border: 1px solid var(--line); color: var(--muted); }
+.t-state.live { color: var(--accent); border-color: rgba(90,185,252,.4); }
+.t-state.wait { color: #f5b84a; border-color: rgba(245,184,74,.4); }
+.t-live { font: 600 10px "Geist Mono", monospace; letter-spacing: .1em; padding: 3px 8px; color: var(--muted); border: 1px solid var(--line); }
+.t-live.on { color: var(--bg); background: var(--up); border-color: var(--up); }
+.t-tape { grid-area: tape; display: flex; overflow: hidden; border-bottom: 1px solid var(--line); font-family: "Geist Mono", monospace; font-size: 11px; }
+.t-tape button { display: flex; gap: 8px; align-items: center; padding: 0 14px; border-right: 1px solid var(--line); white-space: nowrap; transition: background .15s; }
+.t-tape button:hover, .t-tape button.sel { background: rgba(90,185,252,.07); }
+.t-tape b { font-weight: 500; }
+.t-watch, .t-blotter { display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
+.t-watch { grid-area: watch; border-right: 1px solid var(--line); }
+.t-blotter { grid-area: blot; border-left: 1px solid var(--line); }
+.t-ph { display: flex; justify-content: space-between; padding: 10px 12px 6px; font: 500 10px "Geist Mono", monospace; letter-spacing: .1em; }
+.t-filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 10px; border-bottom: 1px solid var(--line); }
+.t-seg { display: inline-flex; border: 1px solid var(--line); }
+.t-seg button { padding: 3px 8px; font: 10px "Geist Mono", monospace; color: var(--muted); transition: color .15s, background .15s; }
+.t-seg button:hover { color: var(--ink); }
+.t-seg button.on { background: var(--accent); color: var(--bg); }
+.t-filters select { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font: 10px "Geist Mono", monospace; padding: 2px 4px; }
+.t-wl-head, .t-wl button { display: grid; grid-template-columns: minmax(84px, 1fr) 84px 64px 64px; gap: 8px; align-items: center; padding: 0 12px; }
+.t-wl-head, .t-bl-head { font: 9px "Geist Mono", monospace; color: var(--muted); letter-spacing: .08em; padding-top: 8px; padding-bottom: 6px; }
+.t-wl-head span:nth-child(n+3) { text-align: right; }
+.t-wl, .t-bl { overflow-y: auto; flex: 1; }
+.t-wl button, .t-bl button { width: 100%; }
+.t-wl button { height: 46px; border-bottom: 1px solid var(--line); transition: background .12s; }
+.t-wl button:hover { background: rgba(255,255,255,.025); }
+.t-wl button.sel { background: rgba(90,185,252,.08); box-shadow: inset 2px 0 var(--accent); }
+.t-wl .sym { display: flex; flex-direction: column; gap: 2px; }
+.t-wl .sym b { font-weight: 600; font-size: 13px; }
+.t-wl .sym small { white-space: nowrap; color: var(--muted); font: 10px "Geist Mono", monospace; }
+.t-wl .sym em { font-style: normal; }
+.t-wl .chg { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; }
+.t-wl .chg i { font: 600 8px "Geist Mono", monospace; letter-spacing: .1em; font-style: normal; padding: 1px 4px; border: 1px solid currentColor; opacity: .8; }
+.t-main { grid-area: main; display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 14px 16px 10px; gap: 6px; }
+.t-quote { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.t-sym { font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+.t-sym small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.t-price { display: flex; align-items: baseline; gap: 12px; }
+.t-price b { font: 500 34px/1.1 "Geist Mono", monospace; letter-spacing: -0.03em; }
+.t-price span { font: 500 14px "Geist Mono", monospace; }
+.t-price small { color: var(--muted); font-size: 10px; }
+.t-stats { display: flex; gap: 22px; margin: 0; }
+.t-stats div { display: flex; flex-direction: column; gap: 3px; }
+.t-stats dt { font: 9px "Geist Mono", monospace; letter-spacing: .08em; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.t-stats dt i { width: 8px; height: 2px; }
+.t-stats dd { margin: 0; font: 500 14px "Geist Mono", monospace; }
+.t-chart { flex: 3; min-height: 160px; position: relative; }
+.t-spread { flex: 1; min-height: 70px; }
+.t-breadth { flex: 0.9; min-height: 70px; }
+.t-pc, .t-sc, .t-bc { width: 100%; height: 100%; }
+.t-pane-label { font: 9px "Geist Mono", monospace; letter-spacing: .08em; color: var(--ink); padding-top: 6px; border-top: 1px solid var(--line); }
+.t-bl-head, .t-bl button { display: grid; grid-template-columns: 44px 44px 1fr 70px 58px; gap: 6px; align-items: center; padding: 0 12px; }
+.t-bl-head { border-bottom: 1px solid var(--line); }
+.t-bl button { height: 30px; border-bottom: 1px solid var(--line); font: 11px "Geist Mono", monospace; transition: background .12s; }
+.t-bl button:hover { background: rgba(255,255,255,.025); }
+.t-bl button.sel { background: rgba(90,185,252,.08); }
+.t-bl .side { font-weight: 600; font-size: 10px; letter-spacing: .06em; }
+.t-bl button.fresh { animation: t-flash 1.4s ease-out 1; }
+@keyframes t-flash { from { background: rgba(90,185,252,.35); } to { background: transparent; } }
+.t-empty { padding: 24px 12px; color: var(--muted); }
+.t-lat { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+.t-lat div { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid var(--line); }
+.t-lat span { font: 9px "Geist Mono", monospace; color: var(--muted); letter-spacing: .08em; }
+.t-lat b { font: 500 15px "Geist Mono", monospace; }
+.t-foot { grid-area: foot; display: flex; gap: 18px; align-items: center; padding: 0 14px; border-top: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 10px "Geist Mono", monospace; }
+.t-root .uplot, .t-root .u-wrap { background: transparent; }
+@media (prefers-reduced-motion: reduce) { .t-root * { animation: none !important; transition: none !important; } }
+@media (max-width: 1100px) {
+  .t-root { position: static; grid-template: 40px 30px auto auto auto 24px / 1fr; grid-template-areas: "top" "tape" "main" "watch" "blot" "foot"; min-height: 100vh; }
+  .t-main { height: 720px; }
+  .t-watch, .t-blotter { max-height: 420px; }
+  .t-top { overflow-x: auto; }
+}
