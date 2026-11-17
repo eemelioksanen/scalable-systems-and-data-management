@@ -28,6 +28,7 @@ taken from the `DD-MM-YY` date in each file name, not from the command line.
 | `--zone-offset` | `+02:00` | UTC offset of the trading timestamps (D-3, D-32) | `--zone-offset` (same default) |
 | `--missing-trading-date` | `system-date` | `system-date` substitutes `Date` for a missing `Trading date` (D-25); `drop` counts the event as missingTimestamp (the D-10 alternative) | none: the job always applies D-25 (D-26) |
 | `--watermark-bound-ms` | unset | reject the events a streaming run with this bound would treat as late, under the model below | `--watermark-bound-ms` |
+| `--empty-windows` | `skip` | `skip` leaves out windows without a price event (D-6); `carry-forward` fills each gap between a symbol's windows with windows that repeat the earlier close, with `priceEvents` 0 (D-42) | `--empty-windows` |
 | `--exclude-events` | unset | CSV or Parquet of `(sourceFile, sourceLine)` to reject, e.g. the job's own late events | |
 | `--no-input-checksums` | | skip the MD5 of each input | |
 | `--no-precision-check` | | skip the 50-digit decimal recomputation | |

@@ -15,7 +15,7 @@ The Flink job (`flink-job/`) and the oracle (`oracle/`) must implement exactly t
 | D-3 | Event time | `Trading date` + `Trading time`, using `Date` only when trading date is absent. Interpret recorded times at fixed UTC+2, literal CEST, with a configurable offset. | **accepted** | Emilia selected the literal course wording on 2026-09-28. This is an interpretation of the brief, not an inference from the November calendar. See D-29. |
 | D-4 | Close | The price with the latest event time in the window. Ties broken by source position (D-23). | **accepted** | Load-bearing, not a formality: **11.06%** of consecutive per-symbol price pairs (257,149 / 2,325,956) run *backward* in `Trading time` within file order, so "latest event time" and "last to arrive" genuinely differ. 9,981 same-millisecond groups carry **differing** prices, so a tie-break is required for determinism. |
 | D-5 | Window firing | Discard and count events for closed windows; flush remaining windows at finite-input completion. Evaluate bounded out-of-orderness and idleness settings separately. | **late/EOF policy accepted; bound and idleness proposed (D-38)** | Emilia selected the late/EOF policy on 2026-09-28. The bound targets zero changed closes; faster bounds are ablations. Monday alone cannot settle the full-week bound, and D-28 shows replay timing and idleness matter. See D-29. D-38 proposes the defaults: the all-admitting bound without idleness for a finite replay, 1 s and 30 s for a live job. |
-| D-6 | Empty windows | No price event in a window: EMA unchanged, no output, no crossover check. | **accepted** | Emilia selected skip on 2026-09-28. The carry-forward alternative is an ablation. |
+| D-6 | Empty windows | No price event in a window: EMA unchanged, no output, no crossover check. | **accepted** | Emilia selected skip on 2026-09-28. The carry-forward alternative is an ablation (`--empty-windows carry-forward`, D-42). |
 | D-7 | EMA init | EMA₀ = 0 exactly as the spec says. | **accepted** | Kept unchanged by D-29. Causes a BUY in every symbol's first window: all 4,840 of Monday's advisories (D-27). Flag it in the viz and report. |
 | D-8 | Day boundaries | EMA state carries over across days and the weekend. | **accepted** | Emilia selected carry-over on 2026-09-28. |
 | D-9 | Subscriptions | EMAs are computed for all symbols. Results are emitted only for subscribed symbols, via a compacted `subscriptions` topic and broadcast state. | **accepted** | Implemented as D-28 (PR #27). |
@@ -34,8 +34,8 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 | ID | Topic | Decision | Status | Evidence / notes |
 |---|---|---|---|---|
-| D-13 | `ticks` content | The replayer forwards every CSV row as 7 raw columns (`ID, SecType, Date, Time, Last, Trading time, Trading date`). All parsing and normalization happen in Flink. | accepted | Normalization belongs to the system and is described in the report. Early filtering in the replayer is a later design comparison. |
-| D-14 | `ticks` encoding | UTF-8 CSV string, verbatim fields, empty = null, no quoting. | accepted | Compare against a binary encoding later as a design comparison. |
+| D-13 | `ticks` content | The replayer forwards every CSV row as 7 raw columns (`ID, SecType, Date, Time, Last, Trading time, Trading date`). All parsing and normalization happen in Flink. | accepted | Normalization belongs to the system and is described in the report. Early filtering in the replayer is a design comparison (`--early-filter`, D-42). |
+| D-14 | `ticks` encoding | UTF-8 CSV string, verbatim fields, empty = null, no quoting. | accepted | Compared against a binary encoding as a design comparison (`--encoding binary`, D-42). |
 | D-15 | `ticks` key and partitions | Key = symbol, default partitioner, 8 partitions locally. The record timestamp is the replayer's send time. | accepted | Revisit the partition count for the cloud runs. The Kafka offset gives per-symbol arrival order for D-4 ties. |
 | D-16 | Output records | JSON. `ema-results`: `symbol, secType, windowEnd, close, ema38, ema100, maxIngestTs, emitTs`. `advisories`: `symbol, secType, windowEnd, type (BUY/SELL), ema38, ema100, maxIngestTs, emitTs`. | accepted | D-40 defines the latency reported from them. `secType` enables equity/index filtering in the viz. |
 | D-17 | `subscriptions` | Key = trader ID. Value = JSON symbol list (`["*"]` = all). A tombstone removes the trader. Compacted topic. | accepted | Results are emitted once per symbol. Fan-out to traders happens in the viz backend. |
@@ -44,6 +44,40 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 ## Log
 
 Add later decisions below, newest first.
+
+### D-42: Design-comparison variants (2026-11-17, Emilia Repo, issue #23) — proposed
+Context: the roadmap's design-space ablations (§4) need the alternatives as selectable variants before #11 can measure them. D-6, D-13, D-14, D-19 and D-35 each left one of them for later. The watermark bound and idleness have been switches since D-38.
+Decision:
+- **Switches, the baseline by default.** The job takes `--operator process|window`, `--empty-windows skip|carry-forward`, `--state-backend hashmap|rocksdb` and `--ticks-encoding csv|binary`; the replayer takes `--early-filter` and `--encoding csv|binary`. A job without them is the baseline. The job sets the state backend even when the flag is missing, to `hashmap`, Flink's own default, so the record is explicit.
+- **Effective configuration.** The job publishes its resolved settings, defaults included, as global job parameters, which Flink's REST API serves at `/jobs/<id>/config`. A bench config's `variant` object picks the variant; `bench/run.py` passes the flags, records the variant in `effective`, reads the job's own record back after submission and fails the run if the two differ ([bench/README.md](../bench/README.md#variants-d-42)).
+- **Window API.** Flink's window operator over 5-minute tumbling event-time windows, with an aggregate function that keeps D-4's close by the same rule as `CloseCandidate`, and a process window function that keeps the EMAs in the key's global state. The window operator is constructed directly instead of through `.window().aggregate()`, so that it ends event time at end of input as `EndOfInputProcessOperator` does (D-38). It keeps the name `q1-ema`, so the metrics and the harness's lookups stay as they are. It has no `lateTicks` counter and no `openWindows` gauge; late price events still go to `late-ticks`.
+- **Early filtering.** The replayer drops the selected rows whose `Last` is empty, the quotes and housekeeping of D-2, and counts them as `filtered`. Every row with a `Last` still reaches the job, which classifies non-positive prices, malformed values and missing timestamps as before. The surviving records keep each symbol's order, so the offsets still break ties (D-23).
+- **Binary `ticks`.** A version byte, then the 7 projected fields, each a tag and its payload: dates as days since 1970, times as milliseconds of the day, `Last` as a binary64 ([interfaces.md](interfaces.md#binary-value-d-42)). The replayer writes a number only where the job's parser reads the same number from the text. Every other field stays text, and the job parses it with its CSV rules, so the binary value cannot classify a row differently from the CSV one. `fixtures/semantics/ticks-binary.tsv` holds every row the replayer sends from the semantics fixtures in both encodings; the replayer's, the job's and the export's tests read it. The output topics stay JSON.
+- **Carry-forward.** A window without a price event repeats the symbol's previous close: the EMAs move toward it, a result is published and the crossover check runs on it. Only the gaps between two windows of a symbol are filled, when the later window fires. Filled windows therefore carry that window's `maxIngestTs`, and nothing follows a symbol's last window.
+- **Semantics and references.** Each variant is compared with this reference, and checked against it on the hand-derived fixtures first (`VariantsTest`, `oracle/tests/test_semantics.py`):
+
+  | Variant | Output against the baseline's | Reference |
+  |---|---|---|
+  | Window API | the same | the admit-all oracle output (D-30), or the oracle at the job's bound (D-38) |
+  | RocksDB | the same | as above |
+  | Binary `ticks` | the same | as above |
+  | Early filtering | the same; the job's `nonPriceEvents` is 0 and the replay report's `filtered` holds those rows | as above, with `filtered` added to the job's non-price count |
+  | Carry-forward | more windows, and different EMAs and advisories after any gap | the oracle with `--empty-windows carry-forward` |
+  | Watermark bound and idleness | live runs reject late events (D-38) | the oracle at the job's bound (D-38) |
+
+Alternatives considered:
+- *Binary output records:* the issue asks for JSON against a binary representation, but `ticks` is CSV (D-14), the issue ties the binary variant to the replayer (#6), and #24 found the `ticks` source the busiest stage. Results and advisories are under 1% of the records, and the dashboard, the correctness export and the subscription tools read their JSON.
+- *Avro or Protobuf for `ticks`:* a schema library and its dependency for 7 fields.
+- *Parsing every field in the replayer and sending only typed values:* a row the job classifies as malformed would need its own encoding, which copies the job's rules into the replayer. The text fallback leaves the job's rules in charge.
+- *Carry-forward by a timer on every window end:* it would publish empty windows as the watermark passes them, but at end of input the maximum watermark has no last window, and every symbol would publish every 5 minutes through nights and weekends.
+- *A chained pass-through that ends event time before the window operator's `keyBy`:* when one source subtask finished while another was idle, it moved the window operator's watermark to the end and turned the idle subtask's later events late. `endInput` on the keyed operator runs only after all its inputs have ended.
+- *A keyed EMA operator after the window operator:* one more shuffle than the baseline has.
+
+Consequences / measurements ([evidence](validation/2026-11-17-variants/README.md)):
+- On the semantics fixtures, carry-forward turns 61 windows into 250: SPARSE.ETR's 3 empty windows and DAY.NL's night of 186. Its advisories stay the same there, because both gaps repeat a close at or above every earlier one. A full week would publish every window from each symbol's first to its last, including nights and the weekend. Not measured here.
+- The latency of carried windows is the latency of the window that ends the gap; the D-40 stages are not defined for them.
+- `ReplayVerifier` verifies CSV replays only and reports a binary replay as unverifiable. The dashboard's feed clock reads `ticks` as CSV, so it shows no feed time during a binary replay.
+- No performance is measured here; #11 does that.
 
 ### D-41: Advisories, markers and per-trader filtering on the dashboard (2026-11-10, Leo Immonen, issue #13) — proposed
 Context: D-33 built the dashboard over `ema-results` and left `advisories`, the advisory feed and per-trader delivery to #13. D-17 makes fan-out to traders the visualization's job. The roadmap (§5) asks for BUY/SELL markers, a feed filterable by exchange, SecType and subscription, and a heatmap sorted by most recent crossover.

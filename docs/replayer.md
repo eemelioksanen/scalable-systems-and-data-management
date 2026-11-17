@@ -36,6 +36,8 @@ docker compose run --rm -T --no-deps producer fi.aalto.cse4780.replay.Replayer -
 | `--rate K`, `--pace-from T` | Real-time only: K times faster than real time; rows before source time T are sent unpaced. |
 | `--exchanges FR,NL`, `--symbols …`, `--symbols-file F` | Replay only these exchanges (the `ID` suffix) or symbols. Both together means both must match. |
 | `--limit N` | Stop after N records. |
+| `--early-filter` | Send only rows with a `Last`; the rest count as `filtered` (D-42). |
+| `--encoding csv\|binary` | The value format, default `csv`. `binary` is [interfaces.md](interfaces.md#binary-value-d-42)'s, and the job needs `--ticks-encoding binary` (D-42). |
 | `--topic`, `--bootstrap-servers`, `--producer-property K=V` | Kafka target and producer overrides. The bootstrap default is `$BOOTSTRAP_SERVERS` (`kafka:9092` in Compose). |
 | `--dry-run [--partitions N]` | Read, project and assign partitions with Kafka's rule, without Kafka. |
 | `--report FILE`, `--run-id ID`, `--checksum` | Also write the report to a file; name the run; record each input's MD5. |
@@ -45,15 +47,13 @@ reading, flushes what was already sent, and reports `INTERRUPTED`.
 
 ## What it sends
 
-Every data row becomes one record, including quote and housekeeping rows: there is no early price
-filtering, so raw-event throughput stays comparable with the Flink job's input (an early-filtering
-variant is #23). Comment lines and the header are skipped. A row that is neither 39 fields nor 40 with
+Every data row becomes one record, including quote and housekeeping rows, so raw-event throughput stays comparable with the Flink job's input. `--early-filter` drops the rows without a `Last` instead, as a design comparison (D-42). Comment lines and the header are skipped. A row that is neither 39 fields nor 40 with
 an empty last one cannot be projected, so it is counted as `rejected` and not sent. The 08.11.2021 file
 has none.
 
 - **Key:** the symbol (`ID`), so Kafka's default partitioner puts each symbol in one partition.
 - **Value:** the 7-field projection, copied character for character. Prices and times are never
-  parsed, so no precision is lost (D-24).
+  parsed, so no precision is lost (D-24). With `--encoding binary`, dates, times and the price become numbers wherever the job would read the same number from the text, and every other field is copied as text (D-42).
 - **Header `src`:** `<file index>:<line number>`, the row's position in its source file.
 - **Timestamp:** the wall-clock time the row was handed to the producer: the ingest time for latency.
   Replay speed changes only this; the value, and so every calculation timestamp, is the same.
@@ -118,19 +118,19 @@ The report is the replay's completion record. A consumer treats a replay as a fi
 
 ```json
 {
-  "runId" : "preload-weekday", "status" : "COMPLETE", "mode" : "preload", "topic" : "ticks", "partitions" : 8,
+  "runId" : "preload-weekday", "status" : "COMPLETE", "mode" : "preload", "topic" : "ticks", "encoding" : "csv", "partitions" : 8,
   "files" : [ { "index" : 0, "path" : "/data/debs2022-gc-trading-day-08-11-21.csv", "bytes" : 4672671094,
                 "lines" : 53994567, "complete" : true, "md5" : "a08013f09a6b77355dae8b3ce141624d" } ],
   "counts" : { "lines" : 53994567, "comments" : 12, "headers" : 1, "rejected" : 0, "dataRows" : 53994554,
-               "excluded" : 0, "attempted" : 53994554, "acknowledged" : 53994554, "failed" : 0, … },
+               "excluded" : 0, "filtered" : 0, "attempted" : 53994554, "acknowledged" : 53994554, "failed" : 0, … },
   "offsets" : [ { "partition" : 0, "startOffset" : 0, "endOffset" : 7033232, "records" : 7033232 }, … ],
   "timing" : { "durationMs" : …, "recordsPerSecond" : …, … },
   "producerConfig" : { … }
 }
 ```
 
-- **Accounting:** `lines = comments + headers + rejected + dataRows`, `dataRows = excluded + attempted`,
-  and a completed replay has `attempted = acknowledged` and `failed = 0`.
+- **Accounting:** `lines = comments + headers + rejected + dataRows`, `dataRows = excluded + filtered + attempted`,
+  and a completed replay has `attempted = acknowledged` and `failed = 0`. `excluded` counts rows outside the selection, `filtered` the selected rows `--early-filter` dropped (`selection.earlyFilter`).
 - **Offsets:** each partition's `[startOffset, endOffset)` holds exactly this run's records when
   `endOffset - startOffset = records`, that is, when nothing else wrote to the topic meanwhile. A
   consumer reads those ranges, or, after a `COMPLETE` preload into an otherwise idle topic, simply up to
@@ -146,7 +146,7 @@ The report is the replay's completion record. A consumer treats a replay as a fi
 ## Verifying a replay
 
 `ReplayVerifier` reads a report's offset ranges back from Kafka with a plain consumer, and with
-`--source` re-reads the input files independently of the replayer's code:
+`--source` re-reads the input files independently of the replayer's code. It verifies CSV replays, early-filtered or not, and reports a binary one as unverifiable:
 
 ```bash
 docker compose run --rm -T producer fi.aalto.cse4780.replay.ReplayVerifier --report - --source \
