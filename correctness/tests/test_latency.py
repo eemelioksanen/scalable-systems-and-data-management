@@ -58,6 +58,25 @@ def test_a_binary_value_off_the_layout_is_not_a_price_event(value):
     assert price_event_binary(value, 0) is None
 
 
+VALID_BINARY = "01010004412e46520100014502000049fb0301ee66e304403347ae147ae1480301ee66cc00"
+
+
+def test_a_valid_binary_value_is_a_price_event():
+    assert price_event_binary(bytes.fromhex(VALID_BINARY), 0) == {"eventTime": 1636362001100}
+
+
+@pytest.mark.parametrize("hex_value", [
+    "010100000100014502000049fb0301ee66e304403347ae147ae1480301ee66cc00",
+    "01010004412e46520100014502000049fb0301ee66e304403347ae147ae1480305265c0000",
+    "01010004412e46520100014502000049fb0301ee66e304403347ae147ae14803ffffffff00",
+    "01010004412e46520100014502002cc0a10301ee66e304403347ae147ae1480301ee66cc00",
+    "01010004412e465201000145043ff00000000000000301ee66e304403347ae147ae1480301ee66cc02000049fb",
+    "01010004412e46520100014502000049fb02000049fb04403347ae147ae1480301ee66cc00",
+])
+def test_a_binary_value_no_csv_field_could_hold_is_not_a_price_event(hex_value):
+    assert price_event_binary(bytes.fromhex(hex_value), 0) is None
+
+
 def test_zone_offset_moves_event_time_back():
     assert price_event(tick(), 2 * 3_600_000)["eventTime"] == price_event(tick(), 0)["eventTime"] - 2 * 3_600_000
 

@@ -43,7 +43,7 @@ The replayer sends raw data and does no parsing. All parsing, timestamp normaliz
 - **Ordering:** the replayer keeps file order per symbol: day files in date order, lines in file order. It sends from one thread with an idempotent producer and `acks=all`, so retries don't reorder records.
   - Because the key is the symbol, all of a symbol's events land in one partition. **The Kafka offset is therefore the arrival order** used to break ties when picking a window's close (D-4).
   - The oracle uses (file date, line number) as the same arrival order.
-- **Early filtering (D-42):** with `--early-filter`, the replayer does not send rows whose `Last` is empty and counts them as `filtered` in its report. Every other row still goes to the job, which classifies it as above.
+- **Early filtering (D-42):** with `--early-filter`, the replayer does not send rows that have an `ID` but no `Last`, and counts them as `filtered` in its report. Every other row still goes to the job, which classifies it as above.
 - **Completion:** a finite replay ends with a JSON report (D-31). Only a report with `"status": "COMPLETE"` describes a whole input. Its `offsets` give each partition's `[startOffset, endOffset)`, which hold exactly this run's records when `endOffset - startOffset = records`. A `FAILED` replay leaves a partial input in the topic, so reset `ticks` before retrying.
 
 ### Binary value (D-42)
@@ -55,14 +55,14 @@ The value is a version byte, `1`, then the 7 fields in projection order. Each fi
 | Tag | Name | Payload | Used for |
 |---|---|---|---|
 | 0 | empty | none | an empty field |
-| 1 | text | unsigned 16-bit length, then that many bytes of UTF-8, as in the CSV | `ID` and `SecType`, and any field below that is not a number |
+| 1 | text | unsigned 16-bit length, at least 1, then that many bytes of UTF-8, as in the CSV | `ID` and `SecType`, and any field below that is not a number |
 | 2 | day | signed 32-bit days since 1970-01-01 | `Date`, `Trading date` |
 | 3 | time | signed 32-bit milliseconds since midnight | `Time`, `Trading time` |
 | 4 | number | IEEE 754 binary64 | `Last` |
 
 The replayer writes a date as a day only if it is `DD-MM-YYYY` with a valid date, a time as a time only if it is `HH:MM:SS` or `HH:MM:SS.mmm` within range, and `Last` as a number only if Java's `Double.parseDouble` reads it. These are the values the job's parser would read from the text. Any other non-empty field stays text, and the job parses it with the CSV rules. So the job classifies every row the same in both encodings, including the malformed ones. A field longer than 65,535 bytes cannot be encoded, and the replay fails on it.
 
-A value with another version, an unknown tag, a tag that does not fit its field, a text running past the end or bytes after the last field is `malformedEvents`.
+A value with another version, an unknown tag, a tag that does not fit its field, empty text, a day outside the years 0000 to 9999, a time outside the day, a text running past the end or bytes after the last field is `malformedEvents`. An empty `ID` is too, as in the CSV.
 
 `fixtures/semantics/ticks-binary.tsv` lists every row the replayer sends from the semantics fixtures: file index, line, CSV value and binary value in hex. The replayer's, the job's and the correctness export's tests check their encoder and decoders against it.
 

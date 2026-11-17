@@ -50,7 +50,7 @@ record ReplayReport(
 
     /**
      * Which rows were replayed. Empty lists mean all. {@code earlyFilter} drops the selected rows
-     * without a {@code Last}, which {@code counts.filtered} counts (D-42).
+     * with an {@code ID} but no {@code Last}, which {@code counts.filtered} counts (D-42).
      */
     record Selection(List<String> exchanges, List<String> symbols, Long limit, boolean limitReached,
             boolean earlyFilter) {}

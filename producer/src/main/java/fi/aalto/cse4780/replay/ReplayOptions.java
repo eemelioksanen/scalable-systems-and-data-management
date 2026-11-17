@@ -74,7 +74,7 @@ record ReplayOptions(
               --symbols RDSA.NL,AIR.FR      only these symbols
               --symbols-file PATH           only the symbols listed in the file, one per line
               --limit N                     stop after N records
-              --early-filter                send only rows with a Last (price rows), counting the rest as filtered
+              --early-filter                drop rows with an ID but no Last (non-price rows), counting them as filtered
 
             Encoding
               --encoding csv|binary         ticks value format (default csv); the job's --ticks-encoding must match

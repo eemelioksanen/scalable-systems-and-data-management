@@ -450,6 +450,12 @@ class Run:
         return self._collect("export", "manifest.json")
 
     def latency(self) -> dict:
+        if self.cfg.variant["emptyWindows"] == "carry-forward":
+            report = {"complete": False, "problems": [
+                "carried windows are published with the next window and have no admission of their own (D-42)"]}
+            (self.dir / "latency").mkdir()
+            self.save("latency/latency.json", report)
+            return report
         interval = self.interval()
         self.sh("correctness/run.sh", "latency", "--export", self.dir / "export",
                 "--replay-report", self.dir / "replay.json", "--metrics", self.dir / "metrics.json",

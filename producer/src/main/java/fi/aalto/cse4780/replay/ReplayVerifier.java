@@ -389,7 +389,8 @@ public final class ReplayVerifier {
                             || (!exchanges.isEmpty() && !exchanges.contains(exchange))) {
                         continue;
                     }
-                    if (report.selection().earlyFilter() && fields[columns[LAST_COLUMN]].isEmpty()) {
+                    if (report.selection().earlyFilter() && fields[columns[LAST_COLUMN]].isEmpty()
+                            && !symbol.isEmpty()) {
                         continue;
                     }
                     if (selected == limit) {

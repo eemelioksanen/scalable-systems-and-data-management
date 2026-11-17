@@ -197,6 +197,16 @@ class ReplayTest {
     }
 
     @Test
+    void anEarlyFilterLeavesRowsWithoutAnIdToTheJob() throws IOException {
+        TestCsv.write(dir, "debs2022-gc-trading-day-08-11-21.csv", quote("", "09:00:00.000"), quote("AIR.FR", "09:00:01.000"));
+        MockProducer<byte[], byte[]> producer = producer();
+        ReplayReport report = replay(producer, options("--input", dir.toString(), "--early-filter"));
+
+        assertEquals(List.of(""), producer.history().stream().map(r -> text(r.key())).toList());
+        assertEquals(1, report.counts().filtered());
+    }
+
+    @Test
     void aBinaryReplaySendsTheBinaryValues() throws IOException {
         MockProducer<byte[], byte[]> producer = producer();
         ReplayReport report = replay(producer, options("--input", week().toString(), "--encoding", "binary"));
