@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.connector.base.DeliveryGuarantee;
@@ -47,6 +48,7 @@ import org.apache.kafka.common.TopicPartitionInfo;
  *                                 0 = off; 0 with --bounded (D-38)
  *   --zone-offset         +02:00  offset of trading timestamps: literal CEST (D-3, D-32)
  *   --bounded                     stop both inputs at their startup offsets (finite replay)
+ *   --checkpoint-interval-ms 0    checkpoint every this many ms, 0 = off (the default)
  *
  *   Design-comparison variants (D-42); each default is the baseline:
  *   --operator            process  process | window: Query 1 as EmaCalculator or Flink windows
@@ -64,6 +66,11 @@ import org.apache.kafka.common.TopicPartitionInfo;
  * {@code lateTicks}, goes to the {@code late-ticks} side output and is left out of the
  * calculation. The watermark defaults decide which events those are, and they differ by mode
  * (D-38): see {@link #LIVE} and {@link #FINITE_REPLAY}.
+ *
+ * <p>Checkpointing is off by default: a failed job fails, and the supported way to run again is
+ * a clean replay. {@code --checkpoint-interval-ms} turns on periodic checkpoints, to measure their
+ * overhead and state size or to recover from a failure. Flink then restarts a failed job from
+ * its last checkpoint by default, and the at-least-once sinks can write some records again.
  *
  * <p>The job sets its effective configuration, defaults included, as the global job parameters,
  * so Flink's REST API shows it under {@code /jobs/<id>/config}.
@@ -110,6 +117,7 @@ public class TradingTrendsJob {
         ZoneOffset zoneOffset = ZoneOffset.of(params.get("zone-offset", "+02:00"));
         boolean bounded = params.has("bounded");
         Variant variant = Variant.from(params);
+        Duration checkpointInterval = checkpointInterval(params);
 
         Map<String, String> effective = new LinkedHashMap<>();
         effective.put("operator", variant.operator().flag());
@@ -120,8 +128,9 @@ public class TradingTrendsJob {
         effective.put("idlenessMs", String.valueOf(watermarking.idleness().toMillis()));
         effective.put("zoneOffset", zoneOffset.getId());
         effective.put("bounded", String.valueOf(bounded));
+        effective.put("checkpointIntervalMs", String.valueOf(checkpointInterval.toMillis()));
 
-        StreamExecutionEnvironment env = environment(variant);
+        StreamExecutionEnvironment env = environment(variant, checkpointInterval);
         env.getConfig().setGlobalJobParameters(ParameterTool.fromMap(effective));
 
         KafkaSourceBuilder<Tick> tickSource = KafkaSource.<Tick>builder()
@@ -185,11 +194,32 @@ public class TradingTrendsJob {
         env.execute("trading-trends");
     }
 
-    /** The execution environment, with {@code variant}'s state backend. */
+    /** The execution environment, with {@code variant}'s state backend and no checkpointing. */
     static StreamExecutionEnvironment environment(Variant variant) {
+        return environment(variant, Duration.ZERO);
+    }
+
+    /**
+     * The execution environment, with {@code variant}'s state backend, checkpointing every
+     * {@code checkpointInterval}, or not at all if it is zero.
+     */
+    static StreamExecutionEnvironment environment(Variant variant, Duration checkpointInterval) {
         Configuration config = new Configuration();
         config.set(StateBackendOptions.STATE_BACKEND, variant.stateBackend().flag());
+        if (!checkpointInterval.isZero()) {
+            config.set(CheckpointingOptions.CHECKPOINTING_INTERVAL, checkpointInterval);
+        }
         return StreamExecutionEnvironment.getExecutionEnvironment(config);
+    }
+
+    /** {@code --checkpoint-interval-ms}, zero by default, which turns checkpointing off. */
+    static Duration checkpointInterval(ParameterTool params) {
+        long millis = params.getLong("checkpoint-interval-ms", 0);
+        if (millis < 0) {
+            throw new IllegalArgumentException(
+                    "--checkpoint-interval-ms must be 0 (off) or positive: " + millis);
+        }
+        return Duration.ofMillis(millis);
     }
 
     /** Event time from the trading timestamp, with bounded out-of-orderness and optional idleness. */

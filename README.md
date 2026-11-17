@@ -195,6 +195,7 @@ docker compose up -d --scale taskmanager=2
 | `--zone-offset` | `+02:00` | The UTC offset of the trading timestamps, the literal CEST of D-3. |
 | `--watermark-bound-ms` | 1,000 live, 64,265,001 bounded | How long event time waits for out-of-order events (D-38). |
 | `--idleness-ms` | 30,000 live, 0 bounded | After how long without a price event a partition counts as idle; 0 turns it off. |
+| `--checkpoint-interval-ms` | 0 | Checkpoint every this many milliseconds; 0 turns checkpointing off. See [restart and replay](docs/interfaces.md#restart-and-replay-d-28). |
 
 A live job rejects Wednesday's 5,506 burst rows at 01:00 as late. The bounded defaults admit them, so a `--bounded` run meets the admit-all correctness target of D-30 ([full-week analysis](docs/eda-week.md#watermarks-and-downstream-effects)). [docs/interfaces.md](docs/interfaces.md#event-time-late-events-and-end-of-input-d-5-d-38) explains both modes, and [the subscriptions section](docs/interfaces.md#subscriptions-d-17) covers the format, when a change takes effect and how to rerun.
 

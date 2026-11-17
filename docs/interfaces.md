@@ -197,7 +197,7 @@ Each measurement and its query:
 - Podman reports a container under several cgroups. The largest is the container itself, which `max by (name)` picks; Docker should report one series per container, but no Docker run has checked that. Network series are per interface, so the network query takes the maximum per interface before summing; cAdvisor leaves out loopback.
 - A `[15s]` rate spans three scrapes, so it smooths bursts shorter than that.
 - Flink's own `busyTimeMsPerSecond`, `idleTimeMsPerSecond` and `backPressuredTimeMsPerSecond` are 60 s averages, and busy reads 1000 until a task's first 5 s update. The rates of the accumulated idle and backpressured times follow a run within about 5 s. Busy is taken as the rest: Flink computes `accumulateBusyTimeMs` as wall time minus an idle time that only updates every 5 s, so its rate can exceed 1000 ms/s.
-- To get state bytes, submit with `-Dexecution.checkpointing.interval=10s -Drestart-strategy.type=none`. Without the restart setting, checkpointing would also restart a failed job instead of failing it (D-28). The state gauges count from the job's start, so they are wrong after any restore from a checkpoint or savepoint.
+- To get state bytes, submit with `--checkpoint-interval-ms 10000` and `-Drestart-strategy.type=none` (or `-Dexecution.checkpointing.interval=10s` in place of the flag). Without the restart setting, checkpointing would also restart a failed job instead of failing it (D-28). The state gauges count from the job's start, so they are wrong after any restore from a checkpoint or savepoint.
 
 ## Variants (D-42)
 
@@ -210,16 +210,18 @@ The job's design-comparison flags, each defaulting to the baseline:
 | `--state-backend` | `hashmap` (default), `rocksdb` | Flink's `state.backend.type`. Same output. |
 | `--ticks-encoding` | `csv` (default), `binary` | The [`ticks` value](#binary-value-d-42), which must match the replayer's `--encoding`. Same output. |
 
-The job sets its effective configuration, these four with `watermarkBoundMs`, `idlenessMs`, `zoneOffset` and `bounded`, as its global job parameters. Flink's REST API serves them in `execution-config.user-config` of `/jobs/<id>/config`.
+The job sets its effective configuration, these four with `watermarkBoundMs`, `idlenessMs`, `zoneOffset`, `bounded` and `checkpointIntervalMs`, as its global job parameters. Flink's REST API serves them in `execution-config.user-config` of `/jobs/<id>/config`.
 
 ## Restart and replay (D-28)
 
-Checkpointing is not enabled, so the job does not recover from a failure: it fails. The supported way to run again is a **clean replay**:
+Checkpointing is off by default, so the job does not recover from a failure: it fails. The supported way to run again is a **clean replay**:
 
 1. Recreate `ema-results`, `advisories` and `late-ticks`, or write to new topics with `--ema-topic`, `--advisories-topic` and `--late-topic`.
 2. Submit the job again.
 
 Both inputs are read from the earliest offset, so the same `ticks` and a preloaded `subscriptions` give the same records apart from `emitTs`. Without step 1 the outputs hold a second copy of every record. The sinks are at-least-once, so a checkpoint restore would also be able to duplicate records if checkpointing were turned on later.
+
+`--checkpoint-interval-ms <ms>` turns on periodic checkpoints (`0`, the default, leaves them off), and the job records it as `checkpointIntervalMs`. Checkpoints use Flink's default storage, the JobManager's memory, so they survive a TaskManager failure but not a JobManager restart. With them, Flink restarts a failed job from its last checkpoint unless `-Drestart-strategy.type=none` is given. The sources resume at the checkpoint's offsets, and every result written since that checkpoint can be written again, since the sinks are at-least-once. A `--bounded` job also waits for a final checkpoint before it finishes. No correctness or performance run so far used this flag; the verified results above are all without checkpointing.
 
 ## Oracle output and correctness check (D-18)
 
