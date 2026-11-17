@@ -28,8 +28,8 @@ Full tables: [`analysis/out/profile.md`](../analysis/out/profile.md). Provenance
 | Sampling method | 21 byte ranges: an 8 MiB head plus 20 × 48 MiB evenly spaced |
 
 **Storage.** The seven daily files total ≈ 25 GB (weekdays 4.67–5.51 GB each; 13.11 and
-14.11 are a weekend and are 3.1 MB and 1.9 MB). A full-week Kafka preload needs roughly
-the same again, so plan for ≥ 100 GB free before pulling the whole set. Nothing bulky is
+14.11 are a weekend and are 3.1 MB and 1.9 MB). A full-week Kafka preload needs about
+5.1 GB with the replayer's lz4 compression, or 22 GB uncompressed ([replayer.md](replayer.md)), so plan for ≥ 100 GB free before pulling the whole set. Nothing bulky is
 committed: `data/` is gitignored.
 
 **Why stratified rather than a head slice.** Rows are in system-time order, so a prefix

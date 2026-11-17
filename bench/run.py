@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Runs a benchmark experiment on the Compose stack: reset, replay, job, collection (D-36).
 
-    python3 bench/run.py bench/configs/subset12-preload.json [--repeats N] [--no-build]
+    python3 bench/run.py bench/configs/subset12-preload-p2.json [--repeats N] [--no-build]
 
 Each repeat gets a fresh stack and its own directory under bench/results/raw/<name>-<UTC stamp>/.
 bench/README.md describes the config and every output file.

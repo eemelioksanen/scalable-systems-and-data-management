@@ -232,7 +232,7 @@ describe('first-window BUYs', () => {
     expect(isFirstWindowBuy('BUY', 19.2712, 19.2655)).toBe(false);
   });
 
-  it('carry their latency from admission to publication', () => {
+  it('carry their latency from admission to emission', () => {
     const a = s.advisories.get(`RDSA.NL|${w(0)}`);
     expect(a.firstWindow).toBe(true);
     expect(a.latencyMs).toBe(640);

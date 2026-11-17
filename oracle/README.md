@@ -125,8 +125,11 @@ a faster ablation, compared against its own matching reference.
    `lateRejected`. Paced replays of Monday to Wednesday at 1 s and at 60 s did (D-38).
 3. **Any other late count:** pass the job's own late events to `--exclude-events` as
    `(sourceFile, sourceLine)`. The replayer carries that position in the `src` header
-   (D-31), but the job does not read it yet: it counts its late events and does not export
-   them. Until it does, such a run cannot be matched exactly and is not a correctness result.
+   (D-31), and the job writes each late event with it to `late-ticks`.
+   `correctness/run.sh export --replay-report <the run's replay.json>` turns that topic into
+   `late_events.parquet`; without the report its `sourceFile` stays empty and nothing is
+   excluded. Run the oracle with `--exclude-events` on it, then compare
+   ([correctness/README.md](../correctness/README.md)).
 
 In every case the rejected events are in `rejected_events.parquet`, counted per file as
 `excluded` or `lateRejected`, and the comparer (#20) reports them beside the diff.

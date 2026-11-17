@@ -45,6 +45,16 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-44: Prometheus without Grafana (2026-11-17, Emilia Repo) — proposed
+Context: Compose ran Grafana with a Prometheus datasource and no dashboards. Nothing read from it except `scripts/verify-local-stack.py`, which checked that its datasource proxy answered. The benchmark harness queries Prometheus directly (D-35, D-36), `bench/summarize.py` draws the report's throughput and lag plots, and the #24 bottleneck runs (D-37) used neither Grafana nor a dashboard.
+Decision:
+- **Grafana is removed** from Compose, `infra/` and the stack check. Prometheus, its three scrape jobs and the D-35 queries stay. Its own UI at port 9090 graphs any of them ad hoc. Where D-41 and the dashboard said watermark lag is graphed in Grafana, it is now a Prometheus query.
+- **The dashboard's latency is admission to emission.** D-41 called `emitTs − maxIngestTs` latency to publication, but `emitTs` is when `q1-ema` evaluates the window, before the sink (D-40's `sinkHandoff`). The dashboard and its README now say emission.
+- **Late events are exported.** D-40's note that the job does not export its late events (#38) no longer holds: every late price event goes to `late-ticks`, which the correctness check and the harness read.
+
+Alternatives considered:
+- *A provisioned Grafana dashboard of the D-35 queries:* useful only for watching a run live, which no experiment or report figure needs. It would be about ten panels of JSON to keep in step with the metric names.
+
 ### D-43: Trading-terminal layout for the dashboard (2026-11-17, Emilia Repo) — proposed
 Context: D-33 and D-41 give the dashboard the right content, and the spec's §3.4 rewards a visualization that cuts through the noise. Three layouts were prototyped on a replay of the D-41 capture (branch `emiliar/fancy-trading-dashboard-prototypes`): a three-column terminal, a tile overview and a single-symbol focus page. The terminal was chosen.
 Decision ([viz/README.md](../viz/README.md)):
@@ -108,7 +118,7 @@ Decision ([viz/README.md](../viz/README.md)):
 - **Heatmap.** Sorted by the newest published advisory by default, with the D-33 sign-flip sort and an A–Z sort as options. An advisory's window is drawn in the darker line color.
 - **First-window BUYs hidden by default.** Every symbol's first window gives a BUY only because both EMAs start at 0 (D-7): 4,970 of the week's 11,355 advisories. They are published and correct, so the chart draws them hollow, but the feed and the crossover sort skip them unless shown, since they would bury the breakouts the spec's §3.4 asks to emphasize. A first window has EMA38 / EMA100 = 101/39 whatever the close, so the record alone identifies it; on the oracle's week output this rule picks exactly the 4,970 first windows and none of the other 6,385 advisories.
 - **Latency, not lag.** The feed shows each advisory's wall-clock latency from admission to publication (`emitTs − maxIngestTs`, D-40), which speaks to the spec's "immediately" and does not depend on the replay rate.
-- **Clock bar.** The main time is *results as of*, the newest published `windowEnd`. A status replaces D-33's "results N min behind feed": *window open*, *waiting for the next window*, or *feed idle*. That gap mostly measured the open window that §3.1 (7) requires, and in simulated minutes it scales with the replay rate (30 s of idleness wait reads as an hour at 120×). Watermark lag stays in Grafana. The sampled feed time is kept, smaller.
+- **Clock bar.** The main time is *results as of*, the newest published `windowEnd`. A status replaces D-33's "results N min behind feed": *window open*, *waiting for the next window*, or *feed idle*. That gap mostly measured the open window that §3.1 (7) requires, and in simulated minutes it scales with the replay rate (30 s of idleness wait reads as an hour at 120×). Watermark lag stays in Grafana (Prometheus since D-44). The sampled feed time is kept, smaller.
 - **Filters in the URL** (`?exchange=…&secType=…&trader=…&first=1&sort=…#symbol`), so a view can be linked and the report figures captured reproducibly.
 - **End-to-end check.** A Node script applies the WebSocket messages with the frontend's own reducer and dumps the views; `correctness/run.sh dashboard` compares them with the topic export and the oracle.
 
