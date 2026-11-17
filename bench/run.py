@@ -554,12 +554,12 @@ class Run:
         }
         if self.cfg.oracle:
             oracle = json.loads((ROOT / self.cfg.oracle / "manifest.json").read_text())["counts"]["total"]
-            # The oracle counts rows of the wrong field count as data; the replayer rejects them, and blank lines.
+            # The replayer rejects blank lines and rows of the wrong field count; the oracle counts blank
+            # lines apart and the rest as data.
             checks += [
-                ("replayed data rows = oracle data rows less its malformed rows", report["counts"]["dataRows"],
-                 oracle["dataRows"] - oracle.get("malformedRow", 0)),
-                ("rows the replayer rejected = oracle's malformed and blank rows", report["counts"]["rejected"],
-                 oracle.get("malformedRow", 0) + oracle.get("blank", 0)),
+                ("replayed data and rejected rows = oracle data and blank rows",
+                 report["counts"]["dataRows"] + report["counts"]["rejected"],
+                 oracle["dataRows"] + oracle.get("blank", 0)),
                 ("price events = oracle price events", total(source, "write-records"), oracle["accepted"]),
             ]
             if final["split"]:
