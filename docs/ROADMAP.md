@@ -80,7 +80,7 @@ flink-job/                    # Q1+Q2 job, operator tests
 oracle/                       # Python + DuckDB/Polars reference implementation
 analysis/                     # EDA notebooks, figures for the report
 viz/                          # dashboard backend + frontend
-bench/                        # run.py, summarize.py, configs; results/ is gitignored
+bench/                        # run.py, summarize.py, configs; results/raw/ is gitignored
 infra/                        # prometheus.yml, Kafka JMX exporter rules
 report/                       # ACM LaTeX (acmart), synced with Overleaf; not on main yet
 docs/decisions.md             # decision log (feeds the individual-contribution answers)

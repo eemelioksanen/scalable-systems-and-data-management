@@ -126,8 +126,9 @@ a faster ablation, compared against its own matching reference.
 3. **Any other late count:** pass the job's own late events to `--exclude-events` as
    `(sourceFile, sourceLine)`. The replayer carries that position in the `src` header
    (D-31), and the job writes each late event with it to `late-ticks`.
-   `correctness/run.sh export` turns that topic into `late_events.parquet`; run the oracle
-   with `--exclude-events` on it, then compare
+   `correctness/run.sh export --replay-report <the run's replay.json>` turns that topic into
+   `late_events.parquet`; without the report its `sourceFile` stays empty and nothing is
+   excluded. Run the oracle with `--exclude-events` on it, then compare
    ([correctness/README.md](../correctness/README.md)).
 
 In every case the rejected events are in `rejected_events.parquet`, counted per file as
