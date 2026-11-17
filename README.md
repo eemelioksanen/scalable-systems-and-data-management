@@ -65,9 +65,9 @@ Docker, or Podman with its Compose provider. No JDK, Maven or Node is needed on 
 
 | Resource | Needed for |
 |---|---|
-| ~25 GB disk | The seven day files |
+| ~25 GB disk | The seven day files; `fetch_day.py` also wants 20 GiB free beyond what is left to download |
 | ~5 GB in Docker's storage | A full week in Kafka, compressed with lz4 |
-| 8 GiB Docker VM | One TaskManager, the default |
+| 8 GiB Docker VM | Up to two TaskManagers |
 
 > [!TIP]
 > Under rootless Podman, cAdvisor cannot mount `/var/lib/docker`. Start the other services by name, as step 2 shows, and Prometheus goes without the per-container metrics.
@@ -166,7 +166,7 @@ Scale Flink out to two TaskManagers, four slots with the defaults:
 docker compose up -d --scale taskmanager=2
 ```
 
-`TICKS_PARTITIONS` defaults to 8, `TM_SLOTS` to 2 and `PARALLELISM` to 2. Changing the partition count does not resize existing topics, so reset the stack to apply it. More TaskManagers need more memory than the 8 GiB VM the two-TaskManager check was designed for.
+`TICKS_PARTITIONS` defaults to 8, `TM_SLOTS` to 2 and `PARALLELISM` to 2. Changing the partition count does not resize existing topics, so reset the stack to apply it. More TaskManagers need more Docker memory; the two-TaskManager check was designed for an 8 GiB Docker VM.
 
 `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS_HOST_PORT` and `VIZ_HOST_PORT` change the host ports. Kafka advertises the chosen host port, and clients inside Compose use `kafka:9092`. Every worktree uses the Compose project name `trading-trends`, so run a second stack with `docker compose -p <project>`, which also gives it its own image tags.
 
@@ -185,11 +185,13 @@ The design comparisons of the roadmap are switches of the job and the replayer: 
 
 ### Replayer options
 
+The producer is in the Compose `tools` profile, so the default start command does not build it. Its image holds the replayer at `/app/producer.jar`, and Compose mounts `data/` read-only at `/data`. A directory given to `--input` replays its day files in the calendar order of their names.
+
 `--mode preload` (the default) loads the input as fast as Kafka takes it, `--mode realtime --rate K` paces it at K times real time, and `--pace-from T` sends everything before source time T unpaced. `--exchanges`, `--symbols` and `--limit` select a subset. The JSON report on stdout says whether the replay completed and which offsets it wrote, and progress goes to stderr. [docs/replayer.md](docs/replayer.md) covers the modes, the report, how to verify a replay against Kafka and the source files, and how to reset `ticks`.
 
 ### Metrics
 
-Prometheus scrapes the job's counts, the Kafka broker through a JMX exporter agent, and cAdvisor for CPU, memory and network per container. [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query for each measurement, and [the counts section](docs/interfaces.md#counts-d-28) lists what the job counts. The parser's counts are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
+Prometheus scrapes the job's counts, the Kafka broker through a JMX exporter agent, and cAdvisor for CPU, memory and network per container and for the Docker host. [docs/interfaces.md](docs/interfaces.md#metrics-d-35) gives the query for each measurement, and [the counts section](docs/interfaces.md#counts-d-28) lists what the job counts. The parser's counts are under `flink_taskmanager_job_task_operator_deserializer_ticks_*`, the rest under `flink_taskmanager_job_task_operator_*`.
 
 ## Dashboard
 
@@ -200,7 +202,7 @@ The dashboard is a dark trading terminal over `ema-results` and `advisories` (D-
 - the advisories as they are published, with their latency
 - a clock bar with the results' time, the feed time and wall-clock time
 
-Filters by exchange, SecType and subscription apply to the watchlist and the advisories, and they live in the URL, so a view can be linked. Operational metrics stay in Prometheus.
+Filters by exchange, SecType and subscription apply to the watchlist and the advisories, and they live in the URL, so a view can be linked. `curl -s localhost:8088/health` reports what the backend has read, the symbols and sessions it holds, and both clock values. Operational metrics stay in Prometheus.
 
 [viz/README.md](viz/README.md) covers its options, the WebSocket protocol, frontend development, and the scripted end-to-end check that replays two days, changes subscriptions mid-run and compares what the dashboard shows with the topics and the oracle ([recorded run](docs/validation/2026-11-10-dashboard/README.md)).
 
@@ -244,7 +246,7 @@ bench/.venv/bin/python bench/summarize.py bench/results/raw/subset12-preload-p2-
 <details>
 <summary>What the script checks, and how to run it</summary>
 
-`scripts/verify-local-stack.py` builds the images, runs the containerized Maven target, tests both Kafka connection paths, runs a bounded Flink and Kafka roundtrip, checks the slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through Prometheus. It also proves that stop and start keep Kafka's records and a reset removes them. It uses its own Compose project, free host ports and synthetic topics, then removes its containers and images.
+`scripts/verify-local-stack.py` builds the images, runs the containerized Maven target, tests both Kafka connection paths, runs a bounded Flink and Kafka roundtrip, checks the slots before and after scaling, and queries real Flink, Kafka and cAdvisor metrics through Prometheus. It also proves that stop and start keep Kafka's records and a reset removes them. It uses its own Compose project, free host ports and synthetic topics, then removes its containers and images. Base images and build caches stay for later runs.
 
 It needs Python 3.9 or later and one Python Kafka client:
 
@@ -285,13 +287,13 @@ This builds `.devcontainer/devcontainer.json`, runs Maven `clean verify` inside 
 The dataset is CC BY-NC-SA 4.0 and is never committed. [docs/data-contract.md](docs/data-contract.md) holds the measured facts the queries rely on, [docs/eda-monday.md](docs/eda-monday.md) the Monday profile and [docs/eda-week.md](docs/eda-week.md) the full week. [analysis/README.md](analysis/README.md) explains how they are produced:
 
 ```bash
-bash analysis/daily.sh 2021-11-08                # one day's tables and figures, in a 4 GiB container
+bash analysis/daily.sh 2021-11-08                # one day's tables and figures
 analysis/src/fetch_slice.sh                      # a ~1 GB stratified sample into data/slice
 analysis/run.sh analysis/src/profile.py          # evidence tables into analysis/out/
 analysis/run.sh analysis/src/golden.py           # golden fixtures into fixtures/golden/
 ```
 
-`run.sh` uses the container in `analysis/Dockerfile`, which is what the report cites. `USE_VENV=1` runs the same scripts in a local virtualenv, which is faster for iteration because bind mounts on macOS are slow for multi-GB scans. Both produce the same output.
+`daily.sh` verifies the download, resumes from the day's parsed checkpoint, and regenerates its tables and figures in a 4 GiB container. `run.sh` uses the container in `analysis/Dockerfile`, which is what the report cites. `USE_VENV=1` runs the same scripts in a local virtualenv, which is faster for iteration because bind mounts on macOS are slow for multi-GB scans. Both produce the same output.
 
 The analysis container runs read-only, with `--network none`, `--cap-drop ALL` and `no-new-privileges`, and mounts the input data read-only. `run.sh` can write only `analysis/out/` and `fixtures/`, and `daily.sh` and `week.sh` write their output under `analysis/out/` and their cache in `data/analysis/`. Only `fetch_slice.sh` and `fetch_day.py` use the network, and both run on the host.
 
