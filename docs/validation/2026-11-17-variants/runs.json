@@ -186,9 +186,9 @@
       "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
     },
     "issue23-early-filter": {
-      "experiment": "issue23-early-filter-20261117T125937Z",
+      "experiment": "issue23-early-filter-20261117T130808Z",
       "status": "COMPLETE",
-      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "revision": "17c606f4ee0e27d4ab07f728e54918cad355a645",
       "dirty": false,
       "requested": {
         "operator": "process",
@@ -203,7 +203,7 @@
         "watermarkBoundMs": "86400000",
         "emptyWindows": "skip",
         "idlenessMs": "0",
-        "bounded": "true",
+        "bounded": "false",
         "operator": "process",
         "ticksEncoding": "csv"
       },
