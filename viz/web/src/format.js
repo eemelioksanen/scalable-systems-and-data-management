@@ -1,3 +1,5 @@
+import { DOWN, EQUAL, UP } from './state.js';
+
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const pad = (n, w = 2) => String(n).padStart(w, '0');
 
@@ -76,4 +78,27 @@ export function clockStatus(clock, wall, slotMs, connection) {
   if (idle) return { key: 'idle', text: 'feed idle' };
   if (feedMs == null || feedMs - resultsMs <= slotMs) return { key: 'live', text: 'window open', nextEnd: resultsMs + slotMs };
   return { key: 'wait', text: 'waiting for the next window' };
+}
+
+export function formatPrice(v) {
+  if (v == null || !Number.isFinite(v)) return '–';
+  const a = Math.abs(v);
+  return v.toFixed(a >= 1000 ? 1 : a >= 100 ? 2 : a >= 1 ? 3 : 4);
+}
+
+export function formatPct(v) {
+  if (v == null || !Number.isFinite(v)) return '–';
+  const a = Math.abs(v);
+  return `${v >= 0 ? '+' : '−'}${a.toFixed(a >= 10 ? 1 : a >= 1 ? 2 : 3)}%`;
+}
+
+// How each trend of trendOf is shown. NONE has no entry.
+export const TREND = {
+  [UP]: { cls: 'up', arrow: '▲', word: 'BULL' },
+  [DOWN]: { cls: 'dn', arrow: '▼', word: 'BEAR' },
+  [EQUAL]: { cls: 'dim', arrow: '=', word: 'EVEN' },
+};
+
+export function formatMinute(ms, zoneOffset) {
+  return ms == null ? '–' : formatDateTime(ms, zoneOffset).slice(0, -3);
 }

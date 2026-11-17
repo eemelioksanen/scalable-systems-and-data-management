@@ -45,6 +45,24 @@ Accepted 2026-09-28. The exact formats are in [interfaces.md](interfaces.md).
 
 Add later decisions below, newest first.
 
+### D-43: Trading-terminal layout for the dashboard (2026-11-17, Emilia Repo) — proposed
+Context: D-33 and D-41 give the dashboard the right content, and the spec's §3.4 rewards a visualization that cuts through the noise. Three layouts were prototyped on a replay of the D-41 capture (branch `emiliar/fancy-trading-dashboard-prototypes`): a three-column terminal, a tile overview and a single-symbol focus page. The terminal was chosen.
+Decision ([viz/README.md](../viz/README.md)):
+- **Three columns on a dark ground.** A watchlist (left), the selected symbol (centre) and the signals (right), under a top bar with the clock status and a ticker of the watchlist's first 40 symbols. It replaces the light layout and blue/orange pair of the spec: green is EMA38 above EMA100 and BUY, red is below and SELL, always with ▲ or ▼, so colour is never the only cue. Geist and Geist Mono are bundled, so the page needs no network.
+- **The heatmap becomes the watchlist.** Each row keeps all 288 windows as a trend strip, with advisory windows drawn solid, and adds the newest close and the EMA spread. The rows are virtualised, so the week's 5,493 symbols cost only the rows in view. Sorts, filters and the URL are D-41's.
+- **Two new charts, both from published results.** The *EMA spread*, EMA38 − EMA100 as a percentage of EMA100, sits under the price chart on the same time axis. A crossover of Query 2 is a change of its sign, so the crossovers read as zero-crossings, with their run-up visible; a first-window BUY needs none (D-7). *Market breadth* is the share of the listed symbols with EMA38 above EMA100 per window, from the heatmap's signs, a market-wide view of Query 1's trend.
+- **Signals.** D-41's feed as a blotter, newest first. A newly published advisory flashes once, then nothing moves: no repeating animation. The latency percentiles of the listed advisories sit under it.
+- **Newest window per symbol in the protocol.** A snapshot row carries `last`, its newest retained `[windowEnd, close, ema38, ema100]`, and a delta cell carries its window's close and EMAs, so the watchlist and ticker show prices without a series per symbol.
+
+Alternatives considered:
+- *Change since the span opened, as trading screens show:* the span's first close moves whenever the span does, with no new window to carry it, so the backend would have to send it for every symbol on every advance. The EMA spread changes only with a new window, and it is the quantity the queries decide on.
+- *Tile overview and focus page (the other prototypes):* the tiles hold a dozen symbols on a screen, not thousands, and the focus page hides the market while a symbol is open.
+
+Consequences / measurements:
+- A snapshot grows by one `last` array per symbol, about 0.25 to 0.45 MB for the week's 5,493, and a delta cell by three numbers.
+- Breadth rescans the signs of the listed symbols, 288 per symbol, whenever a sign or the span changes, not on clock-only deltas: about 1.6 million reads for the full week.
+- The reducer and the end-to-end capture keep their state shape, so `correctness/run.sh dashboard` reads them as before; it checks neither prices, breadth nor the rendering. The views were checked by eye on a replay of the D-41 capture through the new protocol, not with `scripts/validation/dashboard/run.sh`, which needs the day files and the oracle's output.
+
 ### D-42: Design-comparison variants (2026-11-17, Emilia Repo, issue #23) — proposed
 Context: the roadmap's design-space ablations (§4) need the alternatives as selectable variants before #11 can measure them. D-6, D-13, D-14, D-19 and D-35 each left one of them for later. The watermark bound and idleness have been switches since D-38.
 Decision:

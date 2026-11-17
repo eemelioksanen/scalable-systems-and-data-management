@@ -106,7 +106,7 @@ Host ports can be changed with `KAFKA_HOST_PORT`, `FLINK_HOST_PORT`, `PROMETHEUS
 
 ## Dashboard
 
-`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results` and `advisories`: a trend heatmap of every published symbol over the last 24 hours of five-minute windows, sorted by latest crossover; a chart of one symbol's close, EMA38 and EMA100 with ▲ BUY and ▼ SELL markers; a live advisory feed; and a replay clock with the feed time next to wall-clock time. The heatmap and the feed filter by exchange, SecType and subscription (a trader's current list in `subscriptions`). It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Grafana.
+`docker compose up` also starts the dashboard at http://localhost:8088. It shows what the job publishes to `ema-results` and `advisories` as a trading terminal: a watchlist of every published symbol with its trend over the last 24 hours of five-minute windows, sorted by latest crossover; one symbol's close, EMA38 and EMA100 with ▲ BUY and ▼ SELL markers, the EMA spread whose sign changes are the crossovers, and the market's breadth; the live advisories with their latency; and a replay clock with the feed time next to wall-clock time. The watchlist and the advisories filter by exchange, SecType and subscription (a trader's current list in `subscriptions`). It reads only published results and recomputes nothing, and it publishes nothing until the job does: write the subscription and submit the job as above first. Operational metrics stay in Grafana.
 
 To watch it fill, replay a subset live, for example:
 

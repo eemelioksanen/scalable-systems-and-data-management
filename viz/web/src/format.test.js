@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { clockStatus, formatDateTime, formatLag, formatLatency, formatTime, offsetMs, shiftedDate } from './format.js';
+import {
+  clockStatus, formatDateTime, formatLag, formatLatency, formatPct, formatPrice, formatTime, offsetMs, shiftedDate,
+} from './format.js';
 
 const T0 = 1636355100000; // 09:05 on 08-11-2021 at +02:00 (docs/interfaces.md)
 
@@ -56,3 +58,21 @@ describe('clock status', () => {
     expect(formatLatency(null)).toBe('–');
   });
 });
+
+describe('prices and spreads', () => {
+  it('keeps about four significant digits for small values and fewer decimals for large ones', () => {
+    expect(formatPrice(0.0110)).toBe('0.0110');
+    expect(formatPrice(6.38)).toBe('6.380');
+    expect(formatPrice(731.7)).toBe('731.70');
+    expect(formatPrice(3906.24)).toBe('3906.2');
+    expect(formatPrice(null)).toBe('–');
+  });
+
+  it('signs a percentage and shortens it as it grows', () => {
+    expect(formatPct(0.0059)).toBe('+0.006%');
+    expect(formatPct(-1.234)).toBe('−1.23%');
+    expect(formatPct(139.41)).toBe('+139.4%');
+    expect(formatPct(null)).toBe('–');
+  });
+});
+

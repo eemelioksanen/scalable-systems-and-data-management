@@ -3,8 +3,8 @@
 //
 //   node scripts/screenshot.mjs --url 'http://localhost:8088/#RDSA.NL' --out figure.png [--width 1600 --height 900]
 //
-// CHROME names the browser (default chromium). It waits until the advisory feed has a row, the
-// chart has drawn, and nothing has changed for a second.
+// CHROME names the browser (default chromium). It waits until the signals panel has a row, the
+// price chart has drawn, and nothing has changed for a second.
 
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -62,8 +62,8 @@ try {
 
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: scale, mobile: false });
   await send('Page.navigate', { url: args.url });
-  const ready = `(() => document.querySelectorAll('.feed-table tbody tr').length > 0
-    && document.querySelector('.chart-holder canvas') !== null) ? document.body.innerText.length : -1`;
+  const ready = `(() => document.querySelectorAll('.sg-row').length > 0
+    && document.querySelector('.pane-price canvas') !== null) ? document.body.innerText.length : -1`;
   let last = null;
   let stableSince = 0;
   for (let waited = 0; waited < 30000; waited += 250) {

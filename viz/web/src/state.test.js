@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DOWN, EQUAL, NONE, UP, applyDelta, applySeries, applySnapshot, cellAt, feedItems, indexAdvisories, initialState,
-  isFirstWindowBuy,
-  mergePoints, toChartData, traderScope, visibleRows,
+  breadth, isFirstWindowBuy,
+  mergePoints, quantile, spreadPct, toChartData, trendOf, traderScope, visibleRows,
 } from './state.js';
 
 const SLOT = 300000;
@@ -43,14 +43,36 @@ describe('delta', () => {
   it('adds new symbols and updates cells and flips', () => {
     const s = applyDelta(base(), {
       spanEnd: w(287),
-      cells: [['A.FR', w(287), '-', 'E', 'FR', w(287)], ['B.NL', w(286), '+', 'I', 'NL', w(286)]],
+      cells: [['A.FR', w(287), '-', 'E', 'FR', w(287)], ['B.NL', w(286), '+', 'I', 'NL', w(286), 5, 2, 1]],
       points: null,
       clock,
     });
     expect(cellAt(s, 0, 287)).toBe(DOWN);
     expect(s.rows[0].lastFlip).toBe(w(287));
-    expect(s.rows[1]).toEqual({ symbol: 'B.NL', secType: 'I', exchange: 'NL', lastFlip: w(286) });
+    expect(s.rows[1]).toEqual({ symbol: 'B.NL', secType: 'I', exchange: 'NL', lastFlip: w(286), last: [w(286), 5, 2, 1] });
     expect(cellAt(s, 1, 286)).toBe(UP);
+  });
+
+  it('keeps each row\'s newest window, ignoring a replaced older one', () => {
+    let s = snapshot([{ symbol: 'A.FR', secType: 'E', exchange: 'FR', lastFlip: null, cells: cells({ 287: '+' }), last: [w(287), 10, 2, 1] }]);
+    expect(s.rows[0].last).toEqual([w(287), 10, 2, 1]);
+    s = applyDelta(s, { spanEnd: w(287), cells: [['A.FR', w(286), '+', 'E', 'FR', null, 9, 2, 1]], points: null, clock });
+    expect(s.rows[0].last).toEqual([w(287), 10, 2, 1]);
+    s = applyDelta(s, { spanEnd: w(288), cells: [['A.FR', w(288), '-', 'E', 'FR', w(288), 11, 1, 2]], points: null, clock });
+    expect(s.rows[0].last).toEqual([w(288), 11, 1, 2]);
+  });
+
+  it('drops a row\'s newest window once it leaves the span', () => {
+    let s = snapshot([{ symbol: 'A.FR', secType: 'E', exchange: 'FR', lastFlip: null, cells: cells({ 287: '+' }), last: [w(287), 10, 2, 1] }]);
+    s = applyDelta(s, { spanEnd: w(287 + 287), cells: [], points: null, clock });
+    expect(s.rows[0].last).toEqual([w(287), 10, 2, 1]);
+    s = applyDelta(s, { spanEnd: w(287 + 288), cells: [], points: null, clock });
+    expect(s.rows[0].last).toBeNull();
+  });
+
+  it('keeps the sign version on a clock-only delta', () => {
+    const s = base();
+    expect(applyDelta(s, { spanEnd: w(287), cells: [], points: null, clock }).version).toBe(s.version);
   });
 
   it('clears the slots that leave the span when it advances', () => {
@@ -98,6 +120,32 @@ describe('helpers', () => {
     ];
     expect(visibleRows(rows, {}).map((i) => rows[i].symbol)).toEqual(['A.FR', 'B.NL', 'D.FR', 'C.FR']);
     expect(visibleRows(rows, { exchange: 'FR', secType: 'E' }).map((i) => rows[i].symbol)).toEqual(['D.FR', 'C.FR']);
+  });
+
+  it('gives the share above EMA100 per column, counting only symbols with a window there', () => {
+    const s = snapshot([
+      { symbol: 'A.FR', secType: 'E', exchange: 'FR', lastFlip: null, cells: cells({ 0: '+', 287: '+' }) },
+      { symbol: 'B.FR', secType: 'E', exchange: 'FR', lastFlip: null, cells: cells({ 287: '-' }) },
+      { symbol: 'C.FR', secType: 'E', exchange: 'FR', lastFlip: null, cells: cells({ 287: '0' }) },
+    ]);
+    const share = breadth(s, [0, 1, 2]);
+    expect(share[0]).toBe(1);
+    expect(share[1]).toBeNull();
+    expect(share[287]).toBeCloseTo(1 / 3);
+    expect(breadth(s, [1])[287]).toBe(0);
+  });
+
+  it('measures the EMA spread against EMA100, so it changes sign at a crossover', () => {
+    expect(spreadPct(101, 100)).toBeCloseTo(1);
+    expect(spreadPct(99, 100)).toBeCloseTo(-1);
+    expect(spreadPct(1, 0)).toBeNull();
+    expect([trendOf(0.1), trendOf(-0.1), trendOf(0), trendOf(null)]).toEqual([UP, DOWN, EQUAL, NONE]);
+  });
+
+  it('picks quantiles from an ascending array', () => {
+    expect(quantile([1, 2, 3, 4], 0.5)).toBe(3);
+    expect(quantile([1, 2, 3, 4], 0.95)).toBe(4);
+    expect(quantile([], 0.5)).toBeNull();
   });
 
   it('breaks chart lines across windows without trades', () => {
