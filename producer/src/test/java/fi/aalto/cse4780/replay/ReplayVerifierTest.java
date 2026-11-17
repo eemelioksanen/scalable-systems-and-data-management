@@ -4,6 +4,7 @@ import static fi.aalto.cse4780.replay.ReplayTest.PARTITIONS;
 import static fi.aalto.cse4780.replay.ReplayTest.partitionOf;
 import static fi.aalto.cse4780.replay.ReplayTest.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.IOException;
@@ -68,6 +69,31 @@ class ReplayVerifierTest {
 
         assertEquals(3, producer.history().size());
         assertEquals(digests(producer.history()), source.partitions());
+    }
+
+    @Test
+    void theReReadAppliesTheEarlyFilter() throws IOException {
+        Path week = TestCsv.week(dir);
+        MockProducer<byte[], byte[]> producer = ReplayTest.producer();
+        ReplayReport report = replay(producer, "--input", week.toString(), "--early-filter");
+
+        ReplayVerifier.SourceSide source = ReplayVerifier.readSource(report);
+
+        assertEquals(4, producer.history().size());
+        assertEquals(4, source.selected());
+        assertEquals(digests(producer.history()), source.partitions());
+    }
+
+    @Test
+    void aBinaryReplayIsReportedAsUnverifiable() throws IOException {
+        Path week = TestCsv.week(dir);
+        ReplayReport report = replay(ReplayTest.producer(), "--input", week.toString(), "--encoding", "binary");
+
+        ReplayVerifier.Verification verification = ReplayVerifier.verify(report, "unused:9092", true);
+
+        assertFalse(verification.passed());
+        assertEquals(List.of("only CSV values can be verified, and this replay wrote binary ones"),
+                verification.problems());
     }
 
     @Test

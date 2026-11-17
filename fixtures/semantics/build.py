@@ -208,12 +208,38 @@ VARIANTS = {
 }
 
 
-def ema_sequences():
+# --empty-windows carry-forward (D-42): every gap between two windows of a symbol is filled with
+# windows that repeat the earlier window's close and hold no price event. Only two symbols have
+# gaps: SPARSE.ETR's three empty windows, and DAY.NL's night from day 1 17:30 to day 2 09:05.
+# (symbol, secType, first filled window end, last filled window end, close, close file, close line)
+CARRY_FORWARD_GAPS = [
+    ("SPARSE.ETR", "E", (DATE1, "14:15"), (DATE1, "14:25"), 9, DAY1, 44),
+    ("DAY.NL", "I", (DATE1, "17:35"), (DATE2, "09:00"), 41, DAY2, 63),
+]
+# Both gaps repeat a close at or above every earlier one, so EMA38 stays above EMA100 and the
+# advisories are the same as when empty windows are skipped.
+CARRY_FORWARD_ADVISORIES = ADVISORIES
+
+
+def window_clock(epoch: int) -> tuple[str, str]:
+    t = dt.datetime.fromtimestamp(epoch / 1000, dt.UTC)
+    return t.strftime("%d-%m-%Y"), t.strftime("%H:%M")
+
+
+def carried_windows():
+    filled = []
+    for sym, sec, first, last, close, src_file, src_line in CARRY_FORWARD_GAPS:
+        for end in range(epoch_ms(*first), epoch_ms(*last) + 1, 300_000):
+            filled.append((sym, sec, *window_clock(end), close, src_file, src_line, 0))
+    return WINDOWS + filled
+
+
+def ema_sequences(windows=WINDOWS):
     """Exact EMAs per window, in rational arithmetic, from the hand-stated closes."""
     a38, a100 = Fraction(2, 39), Fraction(2, 101)
     state: dict[str, tuple[Fraction, Fraction]] = {}
     out = []
-    for sym, sec, date, clock, close, src_file, src_line, n in sorted(WINDOWS, key=lambda w: (w[0], epoch_ms(w[2], w[3]))):
+    for sym, sec, date, clock, close, src_file, src_line, n in sorted(windows, key=lambda w: (w[0], epoch_ms(w[2], w[3]))):
         p38, p100 = state.get(sym, (Fraction(0), Fraction(0)))
         c = Fraction(close)
         e38 = c * a38 + p38 * (1 - a38)
@@ -222,6 +248,14 @@ def ema_sequences():
         kind = "BUY" if e38 > e100 and p38 <= p100 else "SELL" if e38 < e100 and p38 >= p100 else None
         out.append(((sym, sec, epoch_ms(date, clock), float(c), float(e38), float(e100), src_file, src_line, n), kind))
     return out
+
+
+def window_record(w) -> dict:
+    return dict(zip(("symbol", "secType", "windowEnd", "close", "ema38", "ema100", "closeSourceFile", "closeSourceLine", "priceEvents"), w))
+
+
+def advisory_record(w, kind) -> dict:
+    return {"symbol": w[0], "secType": w[1], "windowEnd": w[2], "type": kind, "ema38": w[4], "ema100": w[5]}
 
 
 def main() -> None:
@@ -242,18 +276,26 @@ def main() -> None:
     stated_advisories = sorted((s, k, epoch_ms(d, c)) for s, k, d, c in ADVISORIES)
     assert computed_advisories == stated_advisories, (computed_advisories, stated_advisories)
 
+    carried = ema_sequences(carried_windows())
+    ends: dict[str, list[int]] = {}
+    for w, _ in carried:
+        ends.setdefault(w[0], []).append(w[2])
+    assert all(b - a == 300_000 for e in ends.values() for a, b in zip(e, e[1:])), "a gap is left unfilled"
+    assert len(carried) == len(seq) + 3 + 186
+    carried_advisories = sorted((w[0], k, w[2]) for w, k in carried if k)
+    stated_carried = sorted((s, k, epoch_ms(d, c)) for s, k, d, c in CARRY_FORWARD_ADVISORIES)
+    assert carried_advisories == stated_carried, (carried_advisories, stated_carried)
+    VARIANTS["emptyWindowsCarryForward"] = {
+        "windows": [window_record(w) for w, _ in carried],
+        "advisories": [advisory_record(w, k) for w, k in carried if k],
+    }
+
     expected = {
         "description": "Hand-derived expectations for the synthetic day files; see derivation.md.",
         "zoneOffset": "Z",
         "counts": COUNTS,
-        "windows": [
-            dict(zip(("symbol", "secType", "windowEnd", "close", "ema38", "ema100", "closeSourceFile", "closeSourceLine", "priceEvents"), w))
-            for w, _ in seq
-        ],
-        "advisories": [
-            {"symbol": w[0], "secType": w[1], "windowEnd": w[2], "type": k, "ema38": w[4], "ema100": w[5]}
-            for w, k in seq if k
-        ],
+        "windows": [window_record(w) for w, _ in seq],
+        "advisories": [advisory_record(w, k) for w, k in seq if k],
         "minBoundMs": MIN_BOUNDS,
         "variants": VARIANTS,
     }

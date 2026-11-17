@@ -119,6 +119,29 @@ def test_missing_trading_date_drop(tmp_path):
     _check_closes(out, variant["closes"])
 
 
+def test_carry_forward_fills_each_gap_with_the_previous_close(tmp_path):
+    variant = EXPECTED["variants"]["emptyWindowsCarryForward"]
+    manifest, out = oracle(tmp_path, empty_windows="carry-forward")
+    assert manifest["parameters"]["emptyWindows"] == "carry-forward"
+    got = pl.read_parquet(out / "ema_results.parquet").sort(["symbol", "windowEnd"])
+    want = pl.DataFrame(variant["windows"]).sort(["symbol", "windowEnd"])
+    exact = ["symbol", "secType", "windowEnd", "close", "closeSourceFile", "closeSourceLine", "priceEvents"]
+    assert got.select(exact).to_dicts() == want.select(exact).to_dicts()
+    for col in ("ema38", "ema100"):
+        assert (got[col] - want[col]).abs().max() <= EMA_TOL
+    advisories = pl.read_parquet(out / "advisories.parquet").sort(["symbol", "windowEnd"])
+    want_adv = pl.DataFrame(variant["advisories"]).sort(["symbol", "windowEnd"])
+    ident = ["symbol", "secType", "windowEnd", "type"]
+    assert advisories.select(ident).to_dicts() == want_adv.select(ident).to_dicts()
+    for col in ("ema38", "ema100"):
+        assert (advisories[col] - want_adv[col]).abs().max() <= EMA_TOL
+
+
+def test_skip_is_the_default_policy(default_run):
+    manifest, _ = default_run
+    assert manifest["parameters"]["emptyWindows"] == "skip"
+
+
 def test_zone_offset_shifts_window_ends_only(default_run, tmp_path):
     _, base_out = default_run
     _, out = oracle(tmp_path, zone_offset="+01:00")

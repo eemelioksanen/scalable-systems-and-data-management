@@ -3,10 +3,13 @@ package fi.aalto.cse4780.trading;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
@@ -43,6 +46,12 @@ import org.apache.kafka.common.TopicPartitionInfo;
  *                                 0 = off; 0 with --bounded (D-38)
  *   --zone-offset         +02:00  offset of trading timestamps: literal CEST (D-3, D-32)
  *   --bounded                     stop both inputs at their startup offsets (finite replay)
+ *
+ *   Design-comparison variants (D-42); each default is the baseline:
+ *   --operator            process  process | window: Query 1 as EmaCalculator or Flink windows
+ *   --empty-windows       skip     skip | carry-forward: empty windows (D-6)
+ *   --state-backend       hashmap  hashmap | rocksdb
+ *   --ticks-encoding      csv      csv | binary: must match the replayer's --encoding
  * </pre>
  *
  * <p>The job always reads {@code ticks} and {@code subscriptions} from the earliest offset, so
@@ -54,6 +63,9 @@ import org.apache.kafka.common.TopicPartitionInfo;
  * {@code lateTicks}, goes to the {@code late-ticks} side output and is left out of the
  * calculation. The watermark defaults decide which events those are, and they differ by mode
  * (D-38): see {@link #LIVE} and {@link #FINITE_REPLAY}.
+ *
+ * <p>The job sets its effective configuration, defaults included, as the global job parameters,
+ * so Flink's REST API shows it under {@code /jobs/<id>/config}.
  */
 public class TradingTrendsJob {
 
@@ -96,15 +108,28 @@ public class TradingTrendsJob {
         Watermarking watermarking = Watermarking.from(params);
         ZoneOffset zoneOffset = ZoneOffset.of(params.get("zone-offset", "+02:00"));
         boolean bounded = params.has("bounded");
+        Variant variant = Variant.from(params);
 
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        Map<String, String> effective = new LinkedHashMap<>();
+        effective.put("operator", variant.operator().flag());
+        effective.put("emptyWindows", variant.emptyWindows().flag());
+        effective.put("stateBackend", variant.stateBackend().flag());
+        effective.put("ticksEncoding", variant.ticksEncoding().flag());
+        effective.put("watermarkBoundMs", String.valueOf(watermarking.bound().toMillis()));
+        effective.put("idlenessMs", String.valueOf(watermarking.idleness().toMillis()));
+        effective.put("zoneOffset", zoneOffset.getId());
+        effective.put("bounded", String.valueOf(bounded));
+
+        StreamExecutionEnvironment env = environment(variant);
+        env.getConfig().setGlobalJobParameters(ParameterTool.fromMap(effective));
 
         KafkaSourceBuilder<Tick> tickSource = KafkaSource.<Tick>builder()
                 .setBootstrapServers(bootstrapServers)
                 .setTopics(params.get("ticks-topic", "ticks"))
                 .setGroupId(groupId)
                 .setStartingOffsets(OffsetsInitializer.earliest())
-                .setDeserializer(new TickDeserializer(new TickParser(zoneOffset)));
+                .setDeserializer(new TickDeserializer(
+                        new TickParser(zoneOffset), variant.ticksEncoding()));
         if (bounded) {
             tickSource.setBounded(OffsetsInitializer.latest());
         }
@@ -133,7 +158,7 @@ public class TradingTrendsJob {
                 .setParallelism(1)
                 .uid("subscriptions-source");
 
-        SingleOutputStreamOperator<EmaResult> results = emaResults(ticks);
+        SingleOutputStreamOperator<EmaResult> results = emaResults(ticks, variant);
         results.getSideOutput(EmaCalculator.LATE_TICKS)
                 .sinkTo(sink(bootstrapServers,
                         new LateTickSerializer(params.get("late-topic", "late-ticks"))))
@@ -159,6 +184,13 @@ public class TradingTrendsJob {
         env.execute("trading-trends");
     }
 
+    /** The execution environment, with {@code variant}'s state backend. */
+    static StreamExecutionEnvironment environment(Variant variant) {
+        Configuration config = new Configuration();
+        config.set(StateBackendOptions.STATE_BACKEND, variant.stateBackend().flag());
+        return StreamExecutionEnvironment.getExecutionEnvironment(config);
+    }
+
     /** Event time from the trading timestamp, with bounded out-of-orderness and optional idleness. */
     static WatermarkStrategy<Tick> watermarks(Duration outOfOrderness, Duration idleness) {
         WatermarkStrategy<Tick> strategy = WatermarkStrategy.<Tick>forBoundedOutOfOrderness(outOfOrderness)
@@ -167,17 +199,30 @@ public class TradingTrendsJob {
     }
 
     /**
-     * Query 1 and Query 2 on timestamped price events, for every symbol. End of input evaluates
-     * the windows still open, whether or not the sources were idle by then.
+     * Query 1 and Query 2 on timestamped price events, for every symbol, built as
+     * {@code variant}'s operator. End of input evaluates the windows still open, whether or not
+     * the sources were idle by then. Either way the keyed operator is named {@code q1-ema}, so
+     * its metrics keep their names, and late price events leave it as {@link
+     * EmaCalculator#LATE_TICKS}.
      */
-    static SingleOutputStreamOperator<EmaResult> emaResults(DataStream<Tick> ticks) {
-        return ticks
-                .keyBy(tick -> tick.symbol)
-                .transform(
-                        "q1-ema",
-                        TypeInformation.of(EmaResult.class),
-                        new EndOfInputProcessOperator<>(new EmaCalculator()))
-                .uid("q1-ema");
+    static SingleOutputStreamOperator<EmaResult> emaResults(DataStream<Tick> ticks, Variant variant) {
+        return switch (variant.operator()) {
+            case PROCESS -> ticks
+                    .keyBy(tick -> tick.symbol)
+                    .transform(
+                            "q1-ema",
+                            TypeInformation.of(EmaResult.class),
+                            new EndOfInputProcessOperator<>(new EmaCalculator(variant.emptyWindows())))
+                    .uid("q1-ema");
+            case WINDOW -> ticks
+                    .keyBy(tick -> tick.symbol)
+                    .transform(
+                            "q1-ema",
+                            TypeInformation.of(EmaResult.class),
+                            new EndOfInputWindowOperator(variant.emptyWindows(),
+                                    ticks.getExecutionConfig().getSerializerConfig()))
+                    .uid("q1-ema-window");
+        };
     }
 
     /**

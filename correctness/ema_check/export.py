@@ -20,7 +20,7 @@ from pathlib import Path
 import polars as pl
 from kafka import KafkaConsumer, TopicPartition
 
-from .latency import price_event, zone_offset_ms
+from .latency import price_event, price_event_binary, zone_offset_ms
 
 EMA_SCHEMA = {
     "symbol": pl.String, "secType": pl.String, "windowEnd": pl.Int64, "close": pl.Float64,
@@ -118,7 +118,7 @@ def resolve_sources(df: pl.DataFrame, replay_report: Path | None) -> pl.DataFram
 
 def export(bootstrap: str, ema_topic: str, advisories_topic: str, out: Path, zone_offset: str,
            stall_s: float = 30.0, late_topic: str = "late-ticks", replay_report: Path | None = None,
-           ticks_topic: str | None = None) -> dict:
+           ticks_topic: str | None = None, ticks_encoding: str = "csv") -> dict:
     out.mkdir(parents=True, exist_ok=True)
     consumer = KafkaConsumer(
         bootstrap_servers=bootstrap,
@@ -155,10 +155,11 @@ def export(bootstrap: str, ema_topic: str, advisories_topic: str, out: Path, zon
             manifest["topics"][topic] = {"file": f"{name}.parquet", **info}
         if ticks_topic:
             offset_ms = zone_offset_ms(zone_offset)
+            decode = price_event_binary if ticks_encoding == "binary" else price_event
             df, info = _read_topic(consumer, ticks_topic, PRICE_EVENT_SCHEMA, stall_s,
-                                   lambda rec: price_event(rec.value, offset_ms))
+                                   lambda rec: decode(rec.value, offset_ms))
             df.sort(["partition", "offset"]).write_parquet(out / "price_events.parquet")
-            manifest["topics"][ticks_topic] = {"file": "price_events.parquet", **info}
+            manifest["topics"][ticks_topic] = {"file": "price_events.parquet", "encoding": ticks_encoding, **info}
     finally:
         consumer.close()
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

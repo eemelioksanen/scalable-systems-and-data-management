@@ -26,8 +26,10 @@ import org.apache.flink.util.OutputTag;
  * (7)). Flink fires a key's timers in timestamp order, so windows are evaluated chronologically.
  *
  * <p>A window with no price events gets no timer, so it produces no result and leaves the EMAs
- * unchanged (D-6). It is not a crossover check's previous window either. EMA state is never reset,
- * so it carries over across days (D-8).
+ * unchanged (D-6). It is not a crossover check's previous window either. With
+ * {@link Variant.EmptyWindows#CARRY_FORWARD}, the next window's timer first evaluates the empty
+ * windows before it on the previous close (D-42). EMA state is never reset, so it carries over
+ * across days (D-8).
  */
 public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult> {
 
@@ -41,26 +43,40 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
     /** Price events whose window had already been evaluated when they arrived. */
     public static final OutputTag<Tick> LATE_TICKS = new OutputTag<>("late-ticks") {};
 
+    static final ValueStateDescriptor<EmaState> EMAS =
+            new ValueStateDescriptor<>("emas", TypeInformation.of(EmaState.class));
+    static final ValueStateDescriptor<LastWindow> LAST_WINDOW =
+            new ValueStateDescriptor<>("last-window", TypeInformation.of(LastWindow.class));
+
+    private final Variant.EmptyWindows emptyWindows;
+
     private transient MapState<Long, CloseCandidate> openWindows;
     private transient ValueState<EmaState> emas;
+    private transient ValueState<LastWindow> lastWindow;
+    private transient WindowEvaluator evaluator;
     private transient Counter lateTicks;
-    private transient Counter evaluatedWindows;
-    private transient Counter buyCrossovers;
-    private transient Counter sellCrossovers;
     private transient volatile long emaStateCount;
     private transient volatile long openWindowCount;
+
+    public EmaCalculator() {
+        this(Variant.EmptyWindows.SKIP);
+    }
+
+    public EmaCalculator(Variant.EmptyWindows emptyWindows) {
+        this.emptyWindows = emptyWindows;
+    }
 
     @Override
     public void open(OpenContext openContext) {
         openWindows = getRuntimeContext().getMapState(new MapStateDescriptor<>(
                 "open-windows", Types.LONG, TypeInformation.of(CloseCandidate.class)));
-        emas = getRuntimeContext().getState(
-                new ValueStateDescriptor<>("emas", TypeInformation.of(EmaState.class)));
+        emas = getRuntimeContext().getState(EMAS);
+        if (emptyWindows == Variant.EmptyWindows.CARRY_FORWARD) {
+            lastWindow = getRuntimeContext().getState(LAST_WINDOW);
+        }
         MetricGroup metrics = getRuntimeContext().getMetricGroup();
         lateTicks = metrics.counter("lateTicks");
-        evaluatedWindows = metrics.counter("evaluatedWindows");
-        buyCrossovers = metrics.counter("buyCrossovers");
-        sellCrossovers = metrics.counter("sellCrossovers");
+        evaluator = new WindowEvaluator(metrics);
         metrics.gauge("emaStates", () -> emaStateCount);
         metrics.gauge("openWindows", () -> openWindowCount);
     }
@@ -99,29 +115,18 @@ public class EmaCalculator extends KeyedProcessFunction<String, Tick, EmaResult>
             state = new EmaState();
             emaStateCount++;
         }
-        double previousEma38 = state.ema38;
-        double previousEma100 = state.ema100;
-        state.ema38 = close.price * ALPHA_38 + state.ema38 * (1 - ALPHA_38);
-        state.ema100 = close.price * ALPHA_100 + state.ema100 * (1 - ALPHA_100);
-        emas.update(state);
-
-        EmaResult result = new EmaResult(
-                ctx.getCurrentKey(),
-                close.secType,
-                windowEnd,
-                close.price,
-                state.ema38,
-                state.ema100,
-                close.maxIngestTimeMillis,
-                System.currentTimeMillis());
-        result.crossover =
-                Crossover.detect(previousEma38, previousEma100, state.ema38, state.ema100);
-        evaluatedWindows.inc();
-        if (result.crossover == Crossover.BUY) {
-            buyCrossovers.inc();
-        } else if (result.crossover == Crossover.SELL) {
-            sellCrossovers.inc();
+        String symbol = ctx.getCurrentKey();
+        if (lastWindow != null) {
+            LastWindow last = lastWindow.value();
+            if (last != null) {
+                evaluator.carryForward(
+                        symbol, state, last, windowEnd, close.maxIngestTimeMillis, out);
+            }
+            lastWindow.update(new LastWindow(windowEnd, close.price, close.secType));
         }
+        EmaResult result = evaluator.evaluate(symbol, state, close.secType, windowEnd, close.price,
+                close.maxIngestTimeMillis);
+        emas.update(state);
         out.collect(result);
     }
 

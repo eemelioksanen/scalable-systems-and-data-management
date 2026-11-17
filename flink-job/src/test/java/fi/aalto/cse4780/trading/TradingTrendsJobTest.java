@@ -22,6 +22,8 @@ import org.apache.flink.test.junit5.MiniClusterExtension;
 import org.apache.flink.util.CloseableIterator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 /** Runs the pipeline (watermarks → keyBy → EmaCalculator → subscription filter) on a mini cluster. */
 class TradingTrendsJobTest {
@@ -33,8 +35,9 @@ class TradingTrendsJobTest {
                     .setNumberSlotsPerTaskManager(2)
                     .build());
 
-    @Test
-    void finiteInputEvaluatesEveryWindowIncludingTheLast() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Variant.Operator.class)
+    void finiteInputEvaluatesEveryWindowIncludingTheLast(Variant.Operator operator) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(2);
 
@@ -52,7 +55,7 @@ class TradingTrendsJobTest {
 
         List<EmaResult> results = new ArrayList<>();
         try (CloseableIterator<EmaResult> it =
-                TradingTrendsJob.emaResults(ticks).executeAndCollect()) {
+                TradingTrendsJob.emaResults(ticks, baselineWith(operator)).executeAndCollect()) {
             it.forEachRemaining(results::add);
         }
 
@@ -70,8 +73,9 @@ class TradingTrendsJobTest {
                 new double[] {0.594059405940594, 1.2357611998823645});
     }
 
-    @Test
-    void endOfInputEvaluatesEveryWindowAlthoughTheSourceIsIdle() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Variant.Operator.class)
+    void endOfInputEvaluatesEveryWindowAlthoughTheSourceIsIdle(Variant.Operator operator) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(2);
 
@@ -90,7 +94,7 @@ class TradingTrendsJobTest {
 
         List<EmaResult> results = new ArrayList<>();
         try (CloseableIterator<EmaResult> it =
-                TradingTrendsJob.emaResults(ticks).executeAndCollect()) {
+                TradingTrendsJob.emaResults(ticks, baselineWith(operator)).executeAndCollect()) {
             it.forEachRemaining(results::add);
         }
 
@@ -160,11 +164,16 @@ class TradingTrendsJobTest {
 
         List<EmaResult> results = new ArrayList<>();
         try (CloseableIterator<EmaResult> it = TradingTrendsJob.published(
-                TradingTrendsJob.emaResults(ticks), subscriptions, Map.of(0, 5L))
+                TradingTrendsJob.emaResults(ticks, Variant.BASELINE), subscriptions, Map.of(0, 5L))
                 .executeAndCollect()) {
             it.forEachRemaining(results::add);
         }
         return results;
+    }
+
+    private static Variant baselineWith(Variant.Operator operator) {
+        return new Variant(operator, Variant.BASELINE.emptyWindows(), Variant.BASELINE.stateBackend(),
+                Variant.BASELINE.ticksEncoding());
     }
 
     /** Every published field except the wall-clock emit time, in a stable order. */

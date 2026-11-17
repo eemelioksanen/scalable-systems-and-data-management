@@ -27,8 +27,9 @@ COPY --from=viz-web /web/dist/ viz/src/main/resources/static/
 RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp package -DskipTests
 
 FROM build AS test
-# Hand-worked EMA sequences used by GoldenFixturesTest.
+# Hand-worked fixtures: GoldenFixturesTest, VariantsTest and the binary ticks contract (D-42).
 COPY fixtures/golden/ fixtures/golden/
+COPY fixtures/semantics/ fixtures/semantics/
 RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp clean verify
 
 # Flink image with the job jar baked in; used for both JobManager and TaskManagers.

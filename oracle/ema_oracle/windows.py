@@ -4,6 +4,7 @@
   a window is identified by its exclusive end (interfaces.md, D-16).
 - The close is `max by (eventTime, source position)` over the window's admitted events
   (D-4, D-23), where source position is (file order, physical line).
+- Empty windows are skipped (D-6). `carry_forward` gives the D-42 alternative.
 - Admission: a batch run sees every event, a streaming run does not. For each event the
   oracle records `minBoundMs`, the smallest watermark bound that admits it when the price
   events arrive one at a time in source order. See README.md, "Late events".
@@ -14,6 +15,7 @@ from __future__ import annotations
 import polars as pl
 
 WINDOW_MS = 300_000
+EMPTY_WINDOW_POLICIES = ("skip", "carry-forward")
 
 
 def window_end(event_time: pl.Expr) -> pl.Expr:
@@ -82,4 +84,27 @@ def select_closes(candidates: list[pl.DataFrame], file_names: list[str]) -> pl.D
             closeSourceLine=pl.col("sourceLine").cast(pl.Int64),
         )
         .sort(["symbol", "windowEnd"])
+    )
+
+
+def carry_forward(closes: pl.DataFrame) -> pl.DataFrame:
+    """Fill each gap between a symbol's consecutive windows with windows that repeat the earlier close.
+
+    A filled window keeps the earlier window's close, secType and close diagnostics, with
+    priceEvents 0. Nothing is added after a symbol's last window. `closes` is sorted by
+    (symbol, windowEnd), and so is the result.
+    """
+    return (
+        closes.with_columns(
+            windowEnd=pl.int_ranges(
+                pl.col("windowEnd"),
+                pl.col("windowEnd").shift(-1).over("symbol").fill_null(pl.col("windowEnd") + WINDOW_MS),
+                WINDOW_MS,
+                dtype=pl.Int64,
+            ),
+            carriedFrom=pl.col("windowEnd"),
+        )
+        .explode("windowEnd", empty_as_null=False)
+        .with_columns(priceEvents=pl.when(pl.col("windowEnd") == pl.col("carriedFrom")).then(pl.col("priceEvents")).otherwise(0))
+        .drop("carriedFrom")
     )

@@ -20,7 +20,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
  * {@code priceEvents}.
  *
  * <p>The record offset becomes {@link Tick#sourceOrder} and the record timestamp becomes
- * {@link Tick#ingestTimeMillis}.
+ * {@link Tick#ingestTimeMillis}. Values are CSV or binary, as the replayer wrote them (D-42);
+ * both are classified by the same rules.
  */
 public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> {
 
@@ -28,6 +29,7 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
     private static final Pattern SOURCE_POSITION = Pattern.compile("[0-9]+:[0-9]+");
 
     private final TickParser parser;
+    private final Variant.TicksEncoding encoding;
 
     private transient Counter priceEvents;
     private transient Counter systemDateEvents;
@@ -37,7 +39,12 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
     private transient Counter malformedEvents;
 
     public TickDeserializer(TickParser parser) {
+        this(parser, Variant.TicksEncoding.CSV);
+    }
+
+    public TickDeserializer(TickParser parser, Variant.TicksEncoding encoding) {
         this.parser = parser;
+        this.encoding = encoding;
     }
 
     @Override
@@ -58,8 +65,9 @@ public class TickDeserializer implements KafkaRecordDeserializationSchema<Tick> 
             return;
         }
         Tick tick = new Tick();
-        TickParser.Outcome outcome =
-                parser.parse(new String(record.value(), StandardCharsets.UTF_8), tick);
+        TickParser.Outcome outcome = encoding == Variant.TicksEncoding.CSV
+                ? parser.parse(new String(record.value(), StandardCharsets.UTF_8), tick)
+                : parser.parseBinary(record.value(), tick);
         switch (outcome) {
             case PRICE, PRICE_SYSTEM_DATE -> {
                 if (outcome == TickParser.Outcome.PRICE_SYSTEM_DATE) {
