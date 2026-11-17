@@ -1,0 +1,362 @@
+{
+  "checks": {
+    "everyRunComplete": true,
+    "everyCorrectnessPass": true,
+    "jobRanTheRequestedVariant": true,
+    "sameOutputAsBaseline": {
+      "issue23-window": true,
+      "issue23-rocksdb": true,
+      "issue23-binary": true,
+      "issue23-early-filter": true
+    },
+    "carryForwardDiffersFromBaseline": true,
+    "allVariantsEqualsCarryForward": true
+  },
+  "runs": {
+    "issue23-baseline": {
+      "experiment": "issue23-baseline-20261117T125633Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "process",
+        "emptyWindows": "skip",
+        "stateBackend": "hashmap",
+        "ticksEncoding": "csv",
+        "filtering": "flink"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "hashmap",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "skip",
+        "idlenessMs": "0",
+        "bounded": "true",
+        "operator": "process",
+        "ticksEncoding": "csv"
+      },
+      "replay": {
+        "encoding": "csv",
+        "earlyFilter": false,
+        "attempted": 80,
+        "filtered": 0
+      },
+      "taskmanagerBackendLog": "hashmap",
+      "outputs": {
+        "ema-results": 61,
+        "advisories": 11,
+        "late-ticks": 0
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "d03b7e05d64098524c3e0f59d0f70cff53f9f33a3f0ef44f9a404dd47d4933b9",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    },
+    "issue23-window": {
+      "experiment": "issue23-window-20261117T125721Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "window",
+        "emptyWindows": "skip",
+        "stateBackend": "hashmap",
+        "ticksEncoding": "csv",
+        "filtering": "flink"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "hashmap",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "skip",
+        "idlenessMs": "0",
+        "bounded": "true",
+        "operator": "window",
+        "ticksEncoding": "csv"
+      },
+      "replay": {
+        "encoding": "csv",
+        "earlyFilter": false,
+        "attempted": 80,
+        "filtered": 0
+      },
+      "taskmanagerBackendLog": "hashmap",
+      "outputs": {
+        "ema-results": 61,
+        "advisories": 11,
+        "late-ticks": 0
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "d03b7e05d64098524c3e0f59d0f70cff53f9f33a3f0ef44f9a404dd47d4933b9",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    },
+    "issue23-rocksdb": {
+      "experiment": "issue23-rocksdb-20261117T125809Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "process",
+        "emptyWindows": "skip",
+        "stateBackend": "rocksdb",
+        "ticksEncoding": "csv",
+        "filtering": "flink"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "rocksdb",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "skip",
+        "idlenessMs": "0",
+        "bounded": "true",
+        "operator": "process",
+        "ticksEncoding": "csv"
+      },
+      "replay": {
+        "encoding": "csv",
+        "earlyFilter": false,
+        "attempted": 80,
+        "filtered": 0
+      },
+      "taskmanagerBackendLog": "rocksdb",
+      "outputs": {
+        "ema-results": 61,
+        "advisories": 11,
+        "late-ticks": 0
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "d03b7e05d64098524c3e0f59d0f70cff53f9f33a3f0ef44f9a404dd47d4933b9",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    },
+    "issue23-binary": {
+      "experiment": "issue23-binary-20261117T125849Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "process",
+        "emptyWindows": "skip",
+        "stateBackend": "hashmap",
+        "ticksEncoding": "binary",
+        "filtering": "flink"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "hashmap",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "skip",
+        "idlenessMs": "0",
+        "bounded": "true",
+        "operator": "process",
+        "ticksEncoding": "binary"
+      },
+      "replay": {
+        "encoding": "binary",
+        "earlyFilter": false,
+        "attempted": 80,
+        "filtered": 0
+      },
+      "taskmanagerBackendLog": "hashmap",
+      "outputs": {
+        "ema-results": 61,
+        "advisories": 11,
+        "late-ticks": 0
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "d03b7e05d64098524c3e0f59d0f70cff53f9f33a3f0ef44f9a404dd47d4933b9",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    },
+    "issue23-early-filter": {
+      "experiment": "issue23-early-filter-20261117T125937Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "process",
+        "emptyWindows": "skip",
+        "stateBackend": "hashmap",
+        "ticksEncoding": "csv",
+        "filtering": "replayer"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "hashmap",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "skip",
+        "idlenessMs": "0",
+        "bounded": "true",
+        "operator": "process",
+        "ticksEncoding": "csv"
+      },
+      "replay": {
+        "encoding": "csv",
+        "earlyFilter": true,
+        "attempted": 78,
+        "filtered": 2
+      },
+      "taskmanagerBackendLog": "hashmap",
+      "outputs": {
+        "ema-results": 61,
+        "advisories": 11,
+        "late-ticks": 0
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "d03b7e05d64098524c3e0f59d0f70cff53f9f33a3f0ef44f9a404dd47d4933b9",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    },
+    "issue23-carry-forward": {
+      "experiment": "issue23-carry-forward-20261117T130018Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "process",
+        "emptyWindows": "carry-forward",
+        "stateBackend": "hashmap",
+        "ticksEncoding": "csv",
+        "filtering": "flink"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "hashmap",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "carry-forward",
+        "idlenessMs": "0",
+        "bounded": "true",
+        "operator": "process",
+        "ticksEncoding": "csv"
+      },
+      "replay": {
+        "encoding": "csv",
+        "earlyFilter": false,
+        "attempted": 80,
+        "filtered": 0
+      },
+      "taskmanagerBackendLog": "hashmap",
+      "outputs": {
+        "ema-results": 250,
+        "advisories": 11,
+        "late-ticks": 0
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "3e1740e3200ad203f259affd0f57a7000b6e8024049e1adae1896c57c280b0a5",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    },
+    "issue23-all": {
+      "experiment": "issue23-all-20261117T130108Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "window",
+        "emptyWindows": "carry-forward",
+        "stateBackend": "rocksdb",
+        "ticksEncoding": "binary",
+        "filtering": "replayer"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "rocksdb",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "carry-forward",
+        "idlenessMs": "0",
+        "bounded": "true",
+        "operator": "window",
+        "ticksEncoding": "binary"
+      },
+      "replay": {
+        "encoding": "binary",
+        "earlyFilter": true,
+        "attempted": 78,
+        "filtered": 2
+      },
+      "taskmanagerBackendLog": "rocksdb",
+      "outputs": {
+        "ema-results": 250,
+        "advisories": 11,
+        "late-ticks": 0
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "3e1740e3200ad203f259affd0f57a7000b6e8024049e1adae1896c57c280b0a5",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    },
+    "issue23-live-binary": {
+      "experiment": "issue23-live-binary-20261117T130157Z",
+      "status": "COMPLETE",
+      "revision": "ba5c1c21f9826957f13d22e8f57e33bb0cbd9cbb",
+      "dirty": false,
+      "requested": {
+        "operator": "window",
+        "emptyWindows": "skip",
+        "stateBackend": "hashmap",
+        "ticksEncoding": "binary",
+        "filtering": "flink"
+      },
+      "jobEffective": {
+        "zoneOffset": "+02:00",
+        "stateBackend": "hashmap",
+        "watermarkBoundMs": "86400000",
+        "emptyWindows": "skip",
+        "idlenessMs": "30000",
+        "bounded": "false",
+        "operator": "window",
+        "ticksEncoding": "binary"
+      },
+      "replay": {
+        "encoding": "binary",
+        "earlyFilter": false,
+        "attempted": 80,
+        "filtered": 0
+      },
+      "taskmanagerBackendLog": "hashmap",
+      "outputs": {
+        "ema-results": 61,
+        "advisories": 11,
+        "late-ticks": 0,
+        "ticks": 80
+      },
+      "lateTicks": 0,
+      "reconciliation": true,
+      "failedChecks": [],
+      "correctness": "pass",
+      "emaDifferences": 0,
+      "advisoryDifferences": 0,
+      "emaDigest": "d03b7e05d64098524c3e0f59d0f70cff53f9f33a3f0ef44f9a404dd47d4933b9",
+      "advisoryDigest": "b4569daaae079bf85054de445e1b491a1524dbadf23d59e269b6263d00f26747"
+    }
+  }
+}
