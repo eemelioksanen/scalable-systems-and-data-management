@@ -27,5 +27,6 @@
   "oracle": "oracle/out/issue23-skip",
   "variant": {
     "filtering": "replayer"
-  }
+  },
+  "finish": "drain"
 }
