@@ -1,0 +1,31 @@
+{
+  "throughput": {
+    "solo-p4": 4674393.666666667,
+    "conc-p4": 3222488.6,
+    "neighbour-p4": 3232110.966666667
+  },
+  "runs": {
+    "solo-p4": [
+      4701392.1,
+      4653117.6,
+      4668671.3
+    ],
+    "conc-p4": [
+      3275257.5,
+      3026197.0,
+      3366011.3
+    ],
+    "neighbour-p4": [
+      3305552.1,
+      3081710.2,
+      3309070.6
+    ]
+  },
+  "throughputChange": -0.31060821364282476,
+  "tolerances": {
+    "throughput": 0.03,
+    "queueingP95Ms": 25
+  },
+  "parallel": false,
+  "note": "Concurrent lanes cut lane A's job throughput by 31%, far outside the 3% tolerance. The concurrent live check (calib-conc-live-300x) was stopped part-way because it could not change the verdict; the remaining lane configs ran serially on the whole host."
+}

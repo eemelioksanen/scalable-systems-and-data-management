@@ -1,0 +1,546 @@
+{
+  "runId": "lane-variant-replayer-20261118T030402Z-r3",
+  "status": "COMPLETE",
+  "job": {
+    "id": "805f77c0464b7c91be25605f6eb709c9",
+    "bounded": true,
+    "flinkRunFlags": [],
+    "args": [
+      "--watermark-bound-ms",
+      "64265001",
+      "--idleness-ms",
+      "0",
+      "--zone-offset",
+      "+02:00",
+      "--bounded",
+      "--operator",
+      "process",
+      "--empty-windows",
+      "skip",
+      "--state-backend",
+      "hashmap",
+      "--ticks-encoding",
+      "csv"
+    ],
+    "effective": {
+      "zoneOffset": "+02:00",
+      "stateBackend": "hashmap",
+      "watermarkBoundMs": "64265001",
+      "emptyWindows": "skip",
+      "idlenessMs": "0",
+      "bounded": "true",
+      "operator": "process",
+      "ticksEncoding": "csv"
+    }
+  },
+  "stack": {
+    "containers": [
+      {
+        "name": "trading-trends-cadvisor-1",
+        "image": "ghcr.io/google/cadvisor:v0.60.6",
+        "imageId": "sha256:d280a05f4391d4707f3d2407114e47083989c8dcfb1c6de976676620c2c0d1dd",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-grafana-1",
+        "image": "grafana/grafana:12.2",
+        "imageId": "sha256:0adce8f7de17701d90ae100ba69a249bd7708ab5a7b4ad9a47ae2d0951f0729d",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-jobmanager-1",
+        "image": "trading-trends/flink-job:dev",
+        "imageId": "sha256:1f33011f9d40bd462da0bf1bf8b43f7bab2269d68ae88da313416d3162f232fa",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-kafka-1",
+        "image": "trading-trends/kafka:dev",
+        "imageId": "sha256:8c30a8bbafa3e61dcd536e67da38bd4de17167b84ea08a49f952eae58a12c08b",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-prometheus-1",
+        "image": "prom/prometheus:v3.11.2",
+        "imageId": "sha256:232e2ff3a14b9112baec11036481e25097b41157f17e1f911a37118e7b288468",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-taskmanager-1",
+        "image": "trading-trends/flink-job:dev",
+        "imageId": "sha256:1f33011f9d40bd462da0bf1bf8b43f7bab2269d68ae88da313416d3162f232fa",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      },
+      {
+        "name": "trading-trends-viz-1",
+        "image": "trading-trends/viz:dev",
+        "imageId": "sha256:98ab7e1ae12d71143a2d43e67ef960638492b42de48ce15c4d1f1ac7804cc6e1",
+        "nanoCpus": 0,
+        "cpuQuota": 0,
+        "memoryBytes": 0
+      }
+    ],
+    "taskmanagers": [
+      {
+        "id": "172.18.0.6:44541-65bc19",
+        "path": "pekko.tcp://flink@172.18.0.6:44541/user/rpc/taskmanager_0",
+        "dataPort": 34959,
+        "jmxPort": -1,
+        "timeSinceLastHeartbeat": 1794971687486,
+        "slotsNumber": 4,
+        "freeSlots": 4,
+        "totalResource": {
+          "cpuCores": 4.0,
+          "taskHeapMemory": 383,
+          "taskOffHeapMemory": 0,
+          "managedMemory": 512,
+          "networkMemory": 128,
+          "extendedResources": {}
+        },
+        "freeResource": {
+          "cpuCores": 4.0,
+          "taskHeapMemory": 383,
+          "taskOffHeapMemory": 0,
+          "managedMemory": 512,
+          "networkMemory": 128,
+          "extendedResources": {}
+        },
+        "hardware": {
+          "cpuCores": 16,
+          "physicalMemory": 67136720896,
+          "freeMemory": 536870912,
+          "managedMemory": 536870920
+        },
+        "memoryConfiguration": {
+          "frameworkHeap": 134217728,
+          "taskHeap": 402653174,
+          "frameworkOffHeap": 134217728,
+          "taskOffHeap": 0,
+          "networkMemory": 134217730,
+          "managedMemory": 536870920,
+          "jvmMetaspace": 268435456,
+          "jvmOverhead": 201326592,
+          "totalFlinkMemory": 1342177280,
+          "totalProcessMemory": 1811939328
+        }
+      }
+    ],
+    "flinkConfig": [
+      {
+        "key": "blob.server.port",
+        "value": "6124"
+      },
+      {
+        "key": "taskmanager.memory.process.size",
+        "value": "1728m"
+      },
+      {
+        "key": "metrics.reporter.prom.port",
+        "value": "9249"
+      },
+      {
+        "key": "taskmanager.bind-host",
+        "value": "0.0.0.0"
+      },
+      {
+        "key": "jobmanager.execution.failover-strategy",
+        "value": "region"
+      },
+      {
+        "key": "jobmanager.rpc.address",
+        "value": "jobmanager"
+      },
+      {
+        "key": "jobmanager.memory.off-heap.size",
+        "value": "134217728b"
+      },
+      {
+        "key": "jobmanager.memory.jvm-overhead.min",
+        "value": "201326592b"
+      },
+      {
+        "key": "metrics.reporter.prom.factory.class",
+        "value": "org.apache.flink.metrics.prometheus.PrometheusReporterFactory"
+      },
+      {
+        "key": "jobmanager.memory.process.size",
+        "value": "1600m"
+      },
+      {
+        "key": "web.tmpdir",
+        "value": "/tmp/flink-web-adaf8de4-b522-45ea-86fd-1471230ac5f3"
+      },
+      {
+        "key": "jobmanager.rpc.port",
+        "value": "6123"
+      },
+      {
+        "key": "query.server.port",
+        "value": "6125"
+      },
+      {
+        "key": "jobmanager.bind-host",
+        "value": "0.0.0.0"
+      },
+      {
+        "key": "parallelism.default",
+        "value": "4"
+      },
+      {
+        "key": "taskmanager.numberOfTaskSlots",
+        "value": "4"
+      },
+      {
+        "key": "rest.address",
+        "value": "0.0.0.0"
+      },
+      {
+        "key": "jobmanager.memory.jvm-metaspace.size",
+        "value": "268435456b"
+      },
+      {
+        "key": "env.java.opts.all",
+        "value": "--add-exports=java.rmi/sun.rmi.registry=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED"
+      },
+      {
+        "key": "jobmanager.memory.heap.size",
+        "value": "1073741824b"
+      },
+      {
+        "key": "jobmanager.memory.jvm-overhead.max",
+        "value": "201326592b"
+      }
+    ],
+    "flinkVersion": "2.2.1",
+    "clock": {
+      "containerMinusHostMs": 28,
+      "roundTripMs": 60
+    }
+  },
+  "experiment": "lane-variant-replayer-20261118T030402Z",
+  "config": {
+    "name": "lane-variant-replayer",
+    "mode": "preload",
+    "repeats": 3,
+    "input": [
+      "data/daily"
+    ],
+    "warmupS": 15,
+    "job": {
+      "watermarkBoundMs": 64265001,
+      "idlenessMs": 0,
+      "zoneOffset": "+02:00"
+    },
+    "stack": {
+      "partitions": 8,
+      "taskmanagers": 1,
+      "slots": 4,
+      "parallelism": 4
+    },
+    "subscriptions": [
+      {
+        "trader": "all",
+        "symbols": [
+          "*"
+        ]
+      }
+    ],
+    "oracle": "oracle/out/week",
+    "variant": {
+      "filtering": "replayer"
+    }
+  },
+  "configFile": "bench/configs/issue11/lane/lane-variant-replayer.json",
+  "code": {
+    "revision": "0bbcfc901901492d04494d9b612e8f7461ef3178",
+    "branch": "main",
+    "dirty": false
+  },
+  "checkpointing": false,
+  "hardware": {
+    "host": {
+      "platform": "Linux-7.2.14-arch1-1-x86_64-with-glibc2.44",
+      "machine": "x86_64",
+      "cpus": 16,
+      "cpuModel": "11th Gen Intel(R) Core(TM) i7-11700K @ 3.60GHz",
+      "memoryBytes": 67136720896
+    },
+    "engine": {
+      "ID": "OFMN:WIE2:F2JK:TUL6:IIOH:BIQ7:RAH7:7KIX:YDIU:7GR2:4H3T:FMJ5",
+      "Containers": 8,
+      "ContainersRunning": 7,
+      "ContainersPaused": 0,
+      "ContainersStopped": 1,
+      "Images": 58,
+      "Driver": "overlay2",
+      "DriverStatus": [
+        [
+          "Backing Filesystem",
+          "extfs"
+        ],
+        [
+          "Supports d_type",
+          "true"
+        ],
+        [
+          "Using metacopy",
+          "true"
+        ],
+        [
+          "Native Overlay Diff",
+          "false"
+        ],
+        [
+          "userxattr",
+          "false"
+        ]
+      ],
+      "Plugins": {
+        "Volume": [
+          "local"
+        ],
+        "Network": [
+          "bridge",
+          "host",
+          "ipvlan",
+          "macvlan",
+          "null",
+          "overlay"
+        ],
+        "Authorization": null,
+        "Log": [
+          "awslogs",
+          "fluentd",
+          "gcplogs",
+          "gelf",
+          "journald",
+          "json-file",
+          "local",
+          "splunk",
+          "syslog"
+        ]
+      },
+      "MemoryLimit": true,
+      "SwapLimit": true,
+      "CpuCfsPeriod": true,
+      "CpuCfsQuota": true,
+      "CPUShares": true,
+      "CPUSet": true,
+      "PidsLimit": true,
+      "IPv4Forwarding": true,
+      "Debug": false,
+      "NFd": 98,
+      "OomKillDisable": false,
+      "NGoroutines": 107,
+      "SystemTime": "2026-11-18T05:04:03.013937049+02:00",
+      "LoggingDriver": "json-file",
+      "CgroupDriver": "systemd",
+      "CgroupVersion": "2",
+      "NEventsListener": 0,
+      "KernelVersion": "7.2.14-arch1-1",
+      "OperatingSystem": "Arch Linux",
+      "OSVersion": "",
+      "OSType": "linux",
+      "Architecture": "x86_64",
+      "IndexServerAddress": "https://index.docker.io/v1/",
+      "RegistryConfig": {
+        "InsecureRegistryCIDRs": [
+          "127.0.0.0/8",
+          "::1/128"
+        ],
+        "IndexConfigs": {
+          "docker.io": {
+            "Name": "docker.io",
+            "Mirrors": [],
+            "Secure": true,
+            "Official": true
+          }
+        },
+        "Mirrors": []
+      },
+      "NCPU": 16,
+      "MemTotal": 67136720896,
+      "GenericResources": null,
+      "DockerRootDir": "/var/lib/docker",
+      "HttpProxy": "",
+      "HttpsProxy": "",
+      "NoProxy": "",
+      "Name": "arch",
+      "Labels": [],
+      "ExperimentalBuild": false,
+      "ServerVersion": "29.9.3",
+      "Runtimes": {
+        "io.containerd.runc.v2": {
+          "path": "runc",
+          "status": {
+            "org.opencontainers.runtime-spec.features": "{\"ociVersionMin\":\"1.0.0\",\"ociVersionMax\":\"1.3.0\",\"hooks\":[\"prestart\",\"createRuntime\",\"createContainer\",\"startContainer\",\"poststart\",\"poststop\"],\"mountOptions\":[\"async\",\"atime\",\"bind\",\"defaults\",\"dev\",\"diratime\",\"dirsync\",\"exec\",\"iversion\",\"lazytime\",\"loud\",\"mand\",\"noatime\",\"nodev\",\"nodiratime\",\"noexec\",\"noiversion\",\"nolazytime\",\"nomand\",\"norelatime\",\"nostrictatime\",\"nosuid\",\"nosymfollow\",\"private\",\"ratime\",\"rbind\",\"rdev\",\"rdiratime\",\"relatime\",\"remount\",\"rexec\",\"rnoatime\",\"rnodev\",\"rnodiratime\",\"rnoexec\",\"rnorelatime\",\"rnostrictatime\",\"rnosuid\",\"rnosymfollow\",\"ro\",\"rprivate\",\"rrelatime\",\"rro\",\"rrw\",\"rshared\",\"rslave\",\"rstrictatime\",\"rsuid\",\"rsymfollow\",\"runbindable\",\"rw\",\"shared\",\"silent\",\"slave\",\"strictatime\",\"suid\",\"symfollow\",\"sync\",\"tmpcopyup\",\"unbindable\"],\"linux\":{\"namespaces\":[\"cgroup\",\"ipc\",\"mount\",\"network\",\"pid\",\"time\",\"user\",\"uts\"],\"capabilities\":[\"CAP_CHOWN\",\"CAP_DAC_OVERRIDE\",\"CAP_DAC_READ_SEARCH\",\"CAP_FOWNER\",\"CAP_FSETID\",\"CAP_KILL\",\"CAP_SETGID\",\"CAP_SETUID\",\"CAP_SETPCAP\",\"CAP_LINUX_IMMUTABLE\",\"CAP_NET_BIND_SERVICE\",\"CAP_NET_BROADCAST\",\"CAP_NET_ADMIN\",\"CAP_NET_RAW\",\"CAP_IPC_LOCK\",\"CAP_IPC_OWNER\",\"CAP_SYS_MODULE\",\"CAP_SYS_RAWIO\",\"CAP_SYS_CHROOT\",\"CAP_SYS_PTRACE\",\"CAP_SYS_PACCT\",\"CAP_SYS_ADMIN\",\"CAP_SYS_BOOT\",\"CAP_SYS_NICE\",\"CAP_SYS_RESOURCE\",\"CAP_SYS_TIME\",\"CAP_SYS_TTY_CONFIG\",\"CAP_MKNOD\",\"CAP_LEASE\",\"CAP_AUDIT_WRITE\",\"CAP_AUDIT_CONTROL\",\"CAP_SETFCAP\",\"CAP_MAC_OVERRIDE\",\"CAP_MAC_ADMIN\",\"CAP_SYSLOG\",\"CAP_WAKE_ALARM\",\"CAP_BLOCK_SUSPEND\",\"CAP_AUDIT_READ\",\"CAP_PERFMON\",\"CAP_BPF\",\"CAP_CHECKPOINT_RESTORE\"],\"cgroup\":{\"v1\":true,\"v2\":true,\"systemd\":true,\"systemdUser\":true,\"rdma\":true},\"seccomp\":{\"enabled\":true,\"actions\":[\"SCMP_ACT_ALLOW\",\"SCMP_ACT_ERRNO\",\"SCMP_ACT_KILL\",\"SCMP_ACT_KILL_PROCESS\",\"SCMP_ACT_KILL_THREAD\",\"SCMP_ACT_LOG\",\"SCMP_ACT_NOTIFY\",\"SCMP_ACT_TRACE\",\"SCMP_ACT_TRAP\"],\"operators\":[\"SCMP_CMP_EQ\",\"SCMP_CMP_GE\",\"SCMP_CMP_GT\",\"SCMP_CMP_LE\",\"SCMP_CMP_LT\",\"SCMP_CMP_MASKED_EQ\",\"SCMP_CMP_NE\"],\"archs\":[\"SCMP_ARCH_AARCH64\",\"SCMP_ARCH_ARM\",\"SCMP_ARCH_LOONGARCH64\",\"SCMP_ARCH_MIPS\",\"SCMP_ARCH_MIPS64\",\"SCMP_ARCH_MIPS64N32\",\"SCMP_ARCH_MIPSEL\",\"SCMP_ARCH_MIPSEL64\",\"SCMP_ARCH_MIPSEL64N32\",\"SCMP_ARCH_PPC\",\"SCMP_ARCH_PPC64\",\"SCMP_ARCH_PPC64LE\",\"SCMP_ARCH_RISCV64\",\"SCMP_ARCH_S390\",\"SCMP_ARCH_S390X\",\"SCMP_ARCH_X32\",\"SCMP_ARCH_X86\",\"SCMP_ARCH_X86_64\"],\"knownFlags\":[\"SECCOMP_FILTER_FLAG_TSYNC\",\"SECCOMP_FILTER_FLAG_SPEC_ALLOW\",\"SECCOMP_FILTER_FLAG_LOG\",\"SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV\"],\"supportedFlags\":[\"SECCOMP_FILTER_FLAG_TSYNC\",\"SECCOMP_FILTER_FLAG_SPEC_ALLOW\",\"SECCOMP_FILTER_FLAG_LOG\",\"SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV\"]},\"apparmor\":{\"enabled\":true},\"selinux\":{\"enabled\":true},\"intelRdt\":{\"enabled\":true,\"schemata\":true,\"monitoring\":true},\"memoryPolicy\":{\"modes\":[\"MPOL_BIND\",\"MPOL_DEFAULT\",\"MPOL_INTERLEAVE\",\"MPOL_LOCAL\",\"MPOL_PREFERRED\",\"MPOL_PREFERRED_MANY\",\"MPOL_WEIGHTED_INTERLEAVE\"],\"flags\":[\"MPOL_F_NUMA_BALANCING\",\"MPOL_F_RELATIVE_NODES\",\"MPOL_F_STATIC_NODES\"]},\"mountExtensions\":{\"idmap\":{\"enabled\":true}},\"netDevices\":{\"enabled\":true}},\"annotations\":{\"com.cyphar.pathrs.libpathrs.version\":\"0.2.6\",\"io.github.seccomp.libseccomp.version\":\"2.6.0\",\"org.opencontainers.runc.checkpoint.enabled\":\"true\",\"org.opencontainers.runc.commit\":\"\",\"org.opencontainers.runc.version\":\"1.5.2\"},\"potentiallyUnsafeConfigAnnotations\":[\"bundle\",\"org.systemd.property.\",\"org.criu.config\"]}"
+          }
+        },
+        "runc": {
+          "path": "runc",
+          "status": {
+            "org.opencontainers.runtime-spec.features": "{\"ociVersionMin\":\"1.0.0\",\"ociVersionMax\":\"1.3.0\",\"hooks\":[\"prestart\",\"createRuntime\",\"createContainer\",\"startContainer\",\"poststart\",\"poststop\"],\"mountOptions\":[\"async\",\"atime\",\"bind\",\"defaults\",\"dev\",\"diratime\",\"dirsync\",\"exec\",\"iversion\",\"lazytime\",\"loud\",\"mand\",\"noatime\",\"nodev\",\"nodiratime\",\"noexec\",\"noiversion\",\"nolazytime\",\"nomand\",\"norelatime\",\"nostrictatime\",\"nosuid\",\"nosymfollow\",\"private\",\"ratime\",\"rbind\",\"rdev\",\"rdiratime\",\"relatime\",\"remount\",\"rexec\",\"rnoatime\",\"rnodev\",\"rnodiratime\",\"rnoexec\",\"rnorelatime\",\"rnostrictatime\",\"rnosuid\",\"rnosymfollow\",\"ro\",\"rprivate\",\"rrelatime\",\"rro\",\"rrw\",\"rshared\",\"rslave\",\"rstrictatime\",\"rsuid\",\"rsymfollow\",\"runbindable\",\"rw\",\"shared\",\"silent\",\"slave\",\"strictatime\",\"suid\",\"symfollow\",\"sync\",\"tmpcopyup\",\"unbindable\"],\"linux\":{\"namespaces\":[\"cgroup\",\"ipc\",\"mount\",\"network\",\"pid\",\"time\",\"user\",\"uts\"],\"capabilities\":[\"CAP_CHOWN\",\"CAP_DAC_OVERRIDE\",\"CAP_DAC_READ_SEARCH\",\"CAP_FOWNER\",\"CAP_FSETID\",\"CAP_KILL\",\"CAP_SETGID\",\"CAP_SETUID\",\"CAP_SETPCAP\",\"CAP_LINUX_IMMUTABLE\",\"CAP_NET_BIND_SERVICE\",\"CAP_NET_BROADCAST\",\"CAP_NET_ADMIN\",\"CAP_NET_RAW\",\"CAP_IPC_LOCK\",\"CAP_IPC_OWNER\",\"CAP_SYS_MODULE\",\"CAP_SYS_RAWIO\",\"CAP_SYS_CHROOT\",\"CAP_SYS_PTRACE\",\"CAP_SYS_PACCT\",\"CAP_SYS_ADMIN\",\"CAP_SYS_BOOT\",\"CAP_SYS_NICE\",\"CAP_SYS_RESOURCE\",\"CAP_SYS_TIME\",\"CAP_SYS_TTY_CONFIG\",\"CAP_MKNOD\",\"CAP_LEASE\",\"CAP_AUDIT_WRITE\",\"CAP_AUDIT_CONTROL\",\"CAP_SETFCAP\",\"CAP_MAC_OVERRIDE\",\"CAP_MAC_ADMIN\",\"CAP_SYSLOG\",\"CAP_WAKE_ALARM\",\"CAP_BLOCK_SUSPEND\",\"CAP_AUDIT_READ\",\"CAP_PERFMON\",\"CAP_BPF\",\"CAP_CHECKPOINT_RESTORE\"],\"cgroup\":{\"v1\":true,\"v2\":true,\"systemd\":true,\"systemdUser\":true,\"rdma\":true},\"seccomp\":{\"enabled\":true,\"actions\":[\"SCMP_ACT_ALLOW\",\"SCMP_ACT_ERRNO\",\"SCMP_ACT_KILL\",\"SCMP_ACT_KILL_PROCESS\",\"SCMP_ACT_KILL_THREAD\",\"SCMP_ACT_LOG\",\"SCMP_ACT_NOTIFY\",\"SCMP_ACT_TRACE\",\"SCMP_ACT_TRAP\"],\"operators\":[\"SCMP_CMP_EQ\",\"SCMP_CMP_GE\",\"SCMP_CMP_GT\",\"SCMP_CMP_LE\",\"SCMP_CMP_LT\",\"SCMP_CMP_MASKED_EQ\",\"SCMP_CMP_NE\"],\"archs\":[\"SCMP_ARCH_AARCH64\",\"SCMP_ARCH_ARM\",\"SCMP_ARCH_LOONGARCH64\",\"SCMP_ARCH_MIPS\",\"SCMP_ARCH_MIPS64\",\"SCMP_ARCH_MIPS64N32\",\"SCMP_ARCH_MIPSEL\",\"SCMP_ARCH_MIPSEL64\",\"SCMP_ARCH_MIPSEL64N32\",\"SCMP_ARCH_PPC\",\"SCMP_ARCH_PPC64\",\"SCMP_ARCH_PPC64LE\",\"SCMP_ARCH_RISCV64\",\"SCMP_ARCH_S390\",\"SCMP_ARCH_S390X\",\"SCMP_ARCH_X32\",\"SCMP_ARCH_X86\",\"SCMP_ARCH_X86_64\"],\"knownFlags\":[\"SECCOMP_FILTER_FLAG_TSYNC\",\"SECCOMP_FILTER_FLAG_SPEC_ALLOW\",\"SECCOMP_FILTER_FLAG_LOG\",\"SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV\"],\"supportedFlags\":[\"SECCOMP_FILTER_FLAG_TSYNC\",\"SECCOMP_FILTER_FLAG_SPEC_ALLOW\",\"SECCOMP_FILTER_FLAG_LOG\",\"SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV\"]},\"apparmor\":{\"enabled\":true},\"selinux\":{\"enabled\":true},\"intelRdt\":{\"enabled\":true,\"schemata\":true,\"monitoring\":true},\"memoryPolicy\":{\"modes\":[\"MPOL_BIND\",\"MPOL_DEFAULT\",\"MPOL_INTERLEAVE\",\"MPOL_LOCAL\",\"MPOL_PREFERRED\",\"MPOL_PREFERRED_MANY\",\"MPOL_WEIGHTED_INTERLEAVE\"],\"flags\":[\"MPOL_F_NUMA_BALANCING\",\"MPOL_F_RELATIVE_NODES\",\"MPOL_F_STATIC_NODES\"]},\"mountExtensions\":{\"idmap\":{\"enabled\":true}},\"netDevices\":{\"enabled\":true}},\"annotations\":{\"com.cyphar.pathrs.libpathrs.version\":\"0.2.6\",\"io.github.seccomp.libseccomp.version\":\"2.6.0\",\"org.opencontainers.runc.checkpoint.enabled\":\"true\",\"org.opencontainers.runc.commit\":\"\",\"org.opencontainers.runc.version\":\"1.5.2\"},\"potentiallyUnsafeConfigAnnotations\":[\"bundle\",\"org.systemd.property.\",\"org.criu.config\"]}"
+          }
+        }
+      },
+      "DefaultRuntime": "runc",
+      "Swarm": {
+        "NodeID": "",
+        "NodeAddr": "",
+        "LocalNodeState": "inactive",
+        "ControlAvailable": false,
+        "Error": "",
+        "RemoteManagers": null
+      },
+      "LiveRestoreEnabled": false,
+      "Isolation": "",
+      "InitBinary": "docker-init",
+      "ContainerdCommit": {
+        "ID": "b7a25261e029d68978bbf290df0a62fc819b3c51.m"
+      },
+      "RuncCommit": {
+        "ID": ""
+      },
+      "InitCommit": {
+        "ID": "de40ad0"
+      },
+      "SecurityOptions": [
+        "name=seccomp,profile=builtin",
+        "name=cgroupns"
+      ],
+      "FirewallBackend": {
+        "Driver": "iptables",
+        "Info": [
+          [
+            "EnableUserlandProxy",
+            "true"
+          ],
+          [
+            "UserlandProxyPath",
+            "/usr/bin/docker-proxy"
+          ]
+        ]
+      },
+      "CDISpecDirs": [
+        "/etc/cdi",
+        "/var/run/cdi"
+      ],
+      "Containerd": {
+        "Address": "/run/containerd/containerd.sock",
+        "Namespaces": {
+          "Containers": "moby",
+          "Plugins": "plugins.moby"
+        }
+      },
+      "Warnings": null,
+      "ClientInfo": {
+        "Debug": false,
+        "Version": "29.9.3",
+        "DefaultAPIVersion": "1.56",
+        "GitCommit": "5457199aa5",
+        "GoVersion": "go1.27.3-X:nodwarf5",
+        "Os": "linux",
+        "Arch": "amd64",
+        "BuildTime": "Wed Nov  4 13:44:59 2026",
+        "Context": "default",
+        "Plugins": [
+          {
+            "SchemaVersion": "0.1.0",
+            "Vendor": "Docker Inc.",
+            "Version": "0.39.0",
+            "ShortDescription": "Docker Buildx",
+            "Name": "buildx",
+            "Path": "/usr/lib/docker/cli-plugins/docker-buildx"
+          },
+          {
+            "SchemaVersion": "0.1.0",
+            "Vendor": "Docker Inc.",
+            "Version": "5.7.1",
+            "ShortDescription": "Docker Compose",
+            "Name": "compose",
+            "Path": "/usr/lib/docker/cli-plugins/docker-compose"
+          }
+        ],
+        "Warnings": null
+      }
+    }
+  },
+  "effective": {
+    "mode": "preload",
+    "finish": "bounded",
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4,
+    "watermarkBoundMs": 64265001,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00",
+    "warmupS": 15.0,
+    "subscribers": 1,
+    "variant": {
+      "operator": "process",
+      "emptyWindows": "skip",
+      "stateBackend": "hashmap",
+      "ticksEncoding": "csv",
+      "filtering": "replayer"
+    }
+  },
+  "times": {
+    "resetStart": 1794971521605,
+    "resetEnd": 1794971540154,
+    "replayStart": 1794971549102,
+    "replayEnd": 1794971654376,
+    "jobSubmitted": 1794971656757,
+    "jobStart": 1794971656453,
+    "jobEnd": 1794971678030
+  },
+  "inputs": [
+    {
+      "path": "data/daily/debs2022-gc-trading-day-08-11-21.csv",
+      "bytes": 4672671094,
+      "md5": "a08013f09a6b77355dae8b3ce141624d"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-09-11-21.csv",
+      "bytes": 5057964097,
+      "md5": "3e1b7a79c63c71e03f4cef82fbda94a2"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-10-11-21.csv",
+      "bytes": 5512236266,
+      "md5": "bed2f79e124f68da54929500f115a820"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-11-11-21.csv",
+      "bytes": 4790117848,
+      "md5": "943b8b04853c3fe70477b5aa1e5c6533"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-12-11-21.csv",
+      "bytes": 4836178492,
+      "md5": "4d9d0529948879e581cbe047eb23bfb7"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-13-11-21.csv",
+      "bytes": 3106841,
+      "md5": "64f57410de31c5753b848bf4eeee7bc4"
+    },
+    {
+      "path": "data/daily/debs2022-gc-trading-day-14-11-21.csv",
+      "bytes": 1905658,
+      "md5": "adfc75f72d9348209d602baa72af44b5"
+    }
+  ]
+}

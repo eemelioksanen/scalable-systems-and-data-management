@@ -1,0 +1,47 @@
+{
+  "name": "lane-traders-1-uniform",
+  "mode": "preload",
+  "repeats": 3,
+  "input": [
+    "data/daily"
+  ],
+  "warmupS": 15,
+  "job": {
+    "watermarkBoundMs": 64265001,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4
+  },
+  "subscriptions": [
+    {
+      "trader": "trader-0001",
+      "symbols": [
+        "854161.ETR",
+        "855009.ETR",
+        "A0LR93.ETR",
+        "A0SNAE.ETR",
+        "A13PJJ.ETR",
+        "A1EXLC.ETR",
+        "A2L0MX.ETR",
+        "BANKD.NL",
+        "ESG.NL",
+        "ESG5G.NL",
+        "IAMDS.FR",
+        "IAWSR.FR",
+        "IJPNH.FR",
+        "INCHM.FR",
+        "INHBZ.FR",
+        "IQVFE.FR",
+        "ISSHO.NL",
+        "VRLA.FR",
+        "VSOL.NL",
+        "WAF301.ETR"
+      ]
+    }
+  ]
+}

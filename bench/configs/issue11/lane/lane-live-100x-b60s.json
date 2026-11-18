@@ -1,0 +1,35 @@
+{
+  "name": "lane-live-100x-b60s",
+  "mode": "live",
+  "repeats": 3,
+  "input": [
+    "data/daily/debs2022-gc-trading-day-08-11-21.csv"
+  ],
+  "replayArgs": [
+    "--rate",
+    "100",
+    "--pace-from",
+    "2021-11-08T09:00"
+  ],
+  "warmupS": 25,
+  "job": {
+    "watermarkBoundMs": 60000,
+    "idlenessMs": 30000,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "oracle": "oracle/out/mon-bound60s"
+}
