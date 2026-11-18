@@ -1,0 +1,133 @@
+{
+  "runId" : "scale-p8-8part-20261117T172244Z-r2",
+  "status" : "COMPLETE",
+  "mode" : "preload",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks",
+  "encoding" : "csv",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false,
+    "earlyFilter" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/daily/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 53994567,
+    "complete" : true
+  }, {
+    "index" : 1,
+    "path" : "/data/daily/debs2022-gc-trading-day-09-11-21.csv",
+    "bytes" : 5057964097,
+    "lines" : 58811883,
+    "complete" : true
+  }, {
+    "index" : 2,
+    "path" : "/data/daily/debs2022-gc-trading-day-10-11-21.csv",
+    "bytes" : 5512236266,
+    "lines" : 64591857,
+    "complete" : true
+  }, {
+    "index" : 3,
+    "path" : "/data/daily/debs2022-gc-trading-day-11-11-21.csv",
+    "bytes" : 4790117848,
+    "lines" : 55547859,
+    "complete" : true
+  }, {
+    "index" : 4,
+    "path" : "/data/daily/debs2022-gc-trading-day-12-11-21.csv",
+    "bytes" : 4836178492,
+    "lines" : 56111196,
+    "complete" : true
+  }, {
+    "index" : 5,
+    "path" : "/data/daily/debs2022-gc-trading-day-13-11-21.csv",
+    "bytes" : 3106841,
+    "lines" : 33411,
+    "complete" : true
+  }, {
+    "index" : 6,
+    "path" : "/data/daily/debs2022-gc-trading-day-14-11-21.csv",
+    "bytes" : 1905658,
+    "lines" : 26126,
+    "complete" : true
+  } ],
+  "counts" : {
+    "lines" : 289116899,
+    "comments" : 84,
+    "headers" : 7,
+    "rejected" : 0,
+    "dataRows" : 289116808,
+    "excluded" : 0,
+    "filtered" : 0,
+    "attempted" : 289116808,
+    "acknowledged" : 289116808,
+    "failed" : 0,
+    "keyBytes" : 2073374958,
+    "valueBytes" : 12797219103,
+    "headerBytes" : 3702762775
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 38859547,
+    "records" : 38859547
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 37590149,
+    "records" : 37590149
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 35611353,
+    "records" : 35611353
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 29207413,
+    "records" : 29207413
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 29131862,
+    "records" : 29131862
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 33487106,
+    "records" : 33487106
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 39972808,
+    "records" : 39972808
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 45256570,
+    "records" : 45256570
+  } ],
+  "timing" : {
+    "startedAt" : "2026-11-17T17:29:36.940Z",
+    "finishedAt" : "2026-11-17T17:33:19.590Z",
+    "durationMs" : 222650,
+    "flushMs" : 4,
+    "recordsPerSecond" : 1298524.37,
+    "payloadMegabytesPerSecond" : 83.42
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "scale-p8-8part-20261117T172244Z-r2",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4",
+    "linger.ms" : "50",
+    "batch.size" : "1048576"
+  }
+}

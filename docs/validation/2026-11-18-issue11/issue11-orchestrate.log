@@ -1,0 +1,83 @@
+2026-11-17T17:18:36 orchestrate ['oracles', 'scale', 'calibrate', 'lanes', 'restore']
+2026-11-17T17:18:36 [oracle-week] start: oracle/run.sh --out /out/week data/daily/debs2022-gc-trading-day-08-11-21.csv data/daily/debs2022-gc-trading-day-09-11-21.csv data/daily/debs2022-gc-trading-day-10-11-21.csv data/daily/debs2022-gc-trading-day-11-11-21.csv data/daily/debs2022-gc-trading-day-12-11-21.csv data/daily/debs2022-gc-trading-day-13-11-21.csv data/daily/debs2022-gc-trading-day-14-11-21.csv
+2026-11-17T17:18:36 [oracle-week-carry-forward] start: oracle/run.sh --out /out/week-carry-forward --empty-windows carry-forward data/daily/debs2022-gc-trading-day-08-11-21.csv data/daily/debs2022-gc-trading-day-09-11-21.csv data/daily/debs2022-gc-trading-day-10-11-21.csv data/daily/debs2022-gc-trading-day-11-11-21.csv data/daily/debs2022-gc-trading-day-12-11-21.csv data/daily/debs2022-gc-trading-day-13-11-21.csv data/daily/debs2022-gc-trading-day-14-11-21.csv
+2026-11-17T17:18:36 [oracle-mon-bound1s] start: oracle/run.sh --out /out/mon-bound1s --watermark-bound-ms 1000 data/daily/debs2022-gc-trading-day-08-11-21.csv
+2026-11-17T17:18:36 [oracle-mon-bound60s] start: oracle/run.sh --out /out/mon-bound60s --watermark-bound-ms 60000 data/daily/debs2022-gc-trading-day-08-11-21.csv
+2026-11-17T17:19:27 [oracle-mon-bound60s] exit 0 after 51s: oracle/run.sh --out /out/mon-bound60s --watermark-bound-ms 60000 data/daily/debs2022-gc-trading-day-08-11-21.csv
+2026-11-17T17:19:27 [oracle-mon-bound1s] exit 0 after 51s: oracle/run.sh --out /out/mon-bound1s --watermark-bound-ms 1000 data/daily/debs2022-gc-trading-day-08-11-21.csv
+2026-11-17T17:21:02 [oracle-week] exit 0 after 146s: oracle/run.sh --out /out/week data/daily/debs2022-gc-trading-day-08-11-21.csv data/daily/debs2022-gc-trading-day-09-11-21.csv data/daily/debs2022-gc-trading-day-10-11-21.csv data/daily/debs2022-gc-trading-day-11-11-21.csv data/daily/debs2022-gc-trading-day-12-11-21.csv data/daily/debs2022-gc-trading-day-13-11-21.csv data/daily/debs2022-gc-trading-day-14-11-21.csv
+2026-11-17T17:21:26 [oracle-week-carry-forward] exit 0 after 170s: oracle/run.sh --out /out/week-carry-forward --empty-windows carry-forward data/daily/debs2022-gc-trading-day-08-11-21.csv data/daily/debs2022-gc-trading-day-09-11-21.csv data/daily/debs2022-gc-trading-day-10-11-21.csv data/daily/debs2022-gc-trading-day-11-11-21.csv data/daily/debs2022-gc-trading-day-12-11-21.csv data/daily/debs2022-gc-trading-day-13-11-21.csv data/daily/debs2022-gc-trading-day-14-11-21.csv
+2026-11-17T17:21:26 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p1-8part.json
+2026-11-17T17:42:37 [host] exit 0 after 1271s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p1-8part.json
+2026-11-17T17:42:37 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p16-16part.json
+2026-11-17T18:01:16 [host] exit 1 after 1119s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p16-16part.json
+2026-11-17T18:01:16 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p2-8part.json
+2026-11-17T18:21:02 [host] exit 0 after 1185s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p2-8part.json
+2026-11-17T18:21:02 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p4-16part.json
+2026-11-17T18:41:41 [host] exit 0 after 1240s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p4-16part.json
+2026-11-17T18:41:41 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p4-8part.json
+2026-11-17T19:01:06 [host] exit 0 after 1165s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p4-8part.json
+2026-11-17T19:01:06 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p8-16part.json
+2026-11-17T19:22:19 [host] exit 0 after 1273s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p8-16part.json
+2026-11-17T19:22:19 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p8-8part.json
+2026-11-17T19:41:53 [host] exit 0 after 1174s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p8-8part.json
+2026-11-17T19:41:56 [a] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-solo-p4.json
+2026-11-17T20:02:10 [a] exit 0 after 1214s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-solo-p4.json
+2026-11-17T20:02:10 [a] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-solo-live-300x.json
+2026-11-17T20:51:55 [a] exit 0 after 2985s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-solo-live-300x.json
+2026-11-17T20:51:55 [b] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-neighbour-p4.json
+2026-11-17T20:52:00 [a] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-conc-p4.json
+2026-11-17T21:14:34 [b] exit 0 after 1359s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-neighbour-p4.json
+2026-11-17T21:14:56 [a] exit 0 after 1376s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-conc-p4.json
+2026-11-17T21:14:56 [b] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-neighbour-live-300x.json
+2026-11-17T21:15:01 [a] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/calib/calib-conc-live-300x.json
+2026-11-17T21:16:06 orchestrate ['lanes-host', 'scale-2tm']
+2026-11-17T21:16:06 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-1x-slice.json
+2026-11-17T22:11:08 [host] exit 0 after 3302s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-1x-slice.json
+2026-11-17T22:11:08 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-100x.json
+2026-11-17T23:18:01 [host] exit 0 after 4013s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-100x.json
+2026-11-17T23:18:01 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-100x-b60s.json
+2026-11-18T00:25:06 [host] exit 0 after 4025s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-100x-b60s.json
+2026-11-18T00:25:06 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1000-uniform.json
+2026-11-18T00:44:25 [host] exit 0 after 1159s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1000-uniform.json
+2026-11-18T00:44:25 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1000-skewed.json
+2026-11-18T01:03:39 [host] exit 0 after 1154s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1000-skewed.json
+2026-11-18T01:03:39 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-100-skewed.json
+2026-11-18T01:20:59 [host] exit 0 after 1040s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-100-skewed.json
+2026-11-18T01:20:59 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-10-uniform.json
+2026-11-18T01:37:23 [host] exit 0 after 984s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-10-uniform.json
+2026-11-18T01:37:23 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-exch-fr.json
+2026-11-18T01:51:08 [host] exit 0 after 824s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-exch-fr.json
+2026-11-18T01:51:08 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-window.json
+2026-11-18T02:10:53 [host] exit 0 after 1185s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-window.json
+2026-11-18T02:10:53 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-100-uniform.json
+2026-11-18T02:28:18 [host] exit 0 after 1045s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-100-uniform.json
+2026-11-18T02:28:18 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-binary.json
+2026-11-18T02:48:23 [host] exit 0 after 1205s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-binary.json
+2026-11-18T02:48:23 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-exch-fr-nl.json
+2026-11-18T03:05:01 [host] exit 0 after 997s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-exch-fr-nl.json
+2026-11-18T03:05:01 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-10-skewed.json
+2026-11-18T03:21:52 [host] exit 0 after 1012s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-10-skewed.json
+2026-11-18T03:21:52 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-carry-forward.json
+2026-11-18T03:50:16 [host] exit 0 after 1703s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-carry-forward.json
+2026-11-18T03:50:16 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-rocksdb.json
+2026-11-18T04:11:08 [host] exit 0 after 1253s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-rocksdb.json
+2026-11-18T04:11:08 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-base-p4.json
+2026-11-18T04:30:54 [host] exit 0 after 1186s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-base-p4.json
+2026-11-18T04:30:54 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1-uniform.json
+2026-11-18T04:47:06 [host] exit 0 after 972s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1-uniform.json
+2026-11-18T04:47:06 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1-skewed.json
+2026-11-18T05:03:37 [host] exit 0 after 991s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-traders-1-skewed.json
+2026-11-18T05:03:37 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-replayer.json
+2026-11-18T05:16:00 [host] exit 0 after 743s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-variant-replayer.json
+2026-11-18T05:16:00 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-300x.json
+2026-11-18T06:06:34 [host] exit 0 after 3034s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-300x.json
+2026-11-18T06:06:34 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-10x-slice.json
+2026-11-18T06:16:24 [host] exit 0 after 590s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-10x-slice.json
+2026-11-18T06:16:24 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-1000x.json
+2026-11-18T07:01:12 [host] exit 0 after 2688s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/lane/lane-live-1000x.json
+2026-11-18T07:01:15 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p16-16part-2tm.json
+2026-11-18T07:22:14 [host] exit 0 after 1260s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p16-16part-2tm.json
+2026-11-18T07:22:14 [host] start: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p8-16part-2tm.json
+2026-11-18T07:42:56 [host] exit 0 after 1241s: /usr/bin/python3 bench/run.py --no-build bench/configs/issue11/scale/scale-p8-16part-2tm.json
+2026-11-18T07:42:58 orchestrate done

@@ -1,0 +1,215 @@
+{
+  "pass": true,
+  "problems": [],
+  "parameters": {
+    "tolerance": 1e-09,
+    "driftUlps": 66
+  },
+  "oracle": {
+    "dir": "/repo/oracle/out/issue11-week-traders-100-uniform",
+    "command": [
+      "python",
+      "-m",
+      "ema_oracle",
+      "--out",
+      "/out/week",
+      "/data/daily/debs2022-gc-trading-day-08-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-09-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-10-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-11-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-12-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-13-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-14-11-21.csv"
+    ],
+    "zoneOffset": "+02:00",
+    "watermarkBoundMs": null,
+    "excludeEvents": null,
+    "excluded": 0,
+    "lateRejected": 0
+  },
+  "job": {
+    "dir": "/repo/bench/results/raw/lane-traders-100-uniform-20261118T001119Z/r2/export",
+    "zoneOffset": "+02:00",
+    "lateTicks": 0,
+    "lateEventsListed": 0,
+    "topics": {
+      "ema-results": {
+        "file": "ema_results.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 78428,
+            "records": 78428
+          },
+          "1": {
+            "startOffset": 0,
+            "endOffset": 76417,
+            "records": 76417
+          },
+          "2": {
+            "startOffset": 0,
+            "endOffset": 74759,
+            "records": 74759
+          },
+          "3": {
+            "startOffset": 0,
+            "endOffset": 66241,
+            "records": 66241
+          },
+          "4": {
+            "startOffset": 0,
+            "endOffset": 82502,
+            "records": 82502
+          },
+          "5": {
+            "startOffset": 0,
+            "endOffset": 78877,
+            "records": 78877
+          },
+          "6": {
+            "startOffset": 0,
+            "endOffset": 74916,
+            "records": 74916
+          },
+          "7": {
+            "startOffset": 0,
+            "endOffset": 70554,
+            "records": 70554
+          }
+        },
+        "records": 602694,
+        "rows": 602694,
+        "complete": true
+      },
+      "advisories": {
+        "file": "advisories.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 472,
+            "records": 472
+          },
+          "1": {
+            "startOffset": 0,
+            "endOffset": 436,
+            "records": 436
+          },
+          "2": {
+            "startOffset": 0,
+            "endOffset": 455,
+            "records": 455
+          },
+          "3": {
+            "startOffset": 0,
+            "endOffset": 431,
+            "records": 431
+          },
+          "4": {
+            "startOffset": 0,
+            "endOffset": 516,
+            "records": 516
+          },
+          "5": {
+            "startOffset": 0,
+            "endOffset": 503,
+            "records": 503
+          },
+          "6": {
+            "startOffset": 0,
+            "endOffset": 433,
+            "records": 433
+          },
+          "7": {
+            "startOffset": 0,
+            "endOffset": 432,
+            "records": 432
+          }
+        },
+        "records": 3678,
+        "rows": 3678,
+        "complete": true
+      },
+      "late-ticks": {
+        "file": "late_events.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "1": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "2": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "3": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "4": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "5": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "6": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "7": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          }
+        },
+        "records": 0,
+        "rows": 0,
+        "complete": true
+      }
+    }
+  },
+  "ema": {
+    "oracleRows": 602694,
+    "jobRows": 602694,
+    "differences": 0,
+    "byKind": {},
+    "byClass": {},
+    "symbolsWithDifferences": 0,
+    "duplicateRows": {
+      "oracle": 0,
+      "job": 0
+    },
+    "maxAbsDiffBeyondTolerance": {
+      "ema38": null,
+      "ema100": null
+    },
+    "maxUlpsBeyondTolerance": {
+      "ema38": null,
+      "ema100": null
+    }
+  },
+  "advisories": {
+    "oracle": 3678,
+    "job": 3678,
+    "common": 3678,
+    "precision": 1.0,
+    "recall": 1.0,
+    "byKind": {},
+    "byClass": {},
+    "duplicateRows": {
+      "oracle": 0,
+      "job": 0
+    }
+  }
+}

@@ -1,0 +1,1479 @@
+{
+  "runId": "lane-exch-fr-20261117T233749Z-r1",
+  "mode": "preload",
+  "finish": "bounded",
+  "jobState": "FINISHED",
+  "measurementInterval": {
+    "startMs": 1794958879071,
+    "endMs": 1794958887017
+  },
+  "replay": {
+    "records": 158331078,
+    "durationMs": 161160,
+    "recordsPerSecond": 982445.23,
+    "pacing": null
+  },
+  "job": {
+    "durationMs": 22946,
+    "sourceSpanMs": 22626,
+    "recordsRead": 158331078,
+    "recordsPerSecond": 6997749.4,
+    "vertices": {
+      "Source: ticks": {
+        "parallelism": 4,
+        "readRecords": [
+          39839738,
+          44479290,
+          32716946,
+          41295104
+        ],
+        "writeRecords": [
+          4958226,
+          5488951,
+          5393744,
+          5526496
+        ],
+        "busyMs": [
+          18682.0,
+          19811.0,
+          16454.0,
+          19286.0
+        ],
+        "idleMs": [
+          1307,
+          1402,
+          1068,
+          1333
+        ],
+        "backPressuredMs": [
+          1106,
+          1142,
+          1021,
+          1060
+        ],
+        "durationMs": [
+          21369,
+          22624,
+          18813,
+          21948
+        ],
+        "readSkew": 1.1237
+      },
+      "Source: subscriptions": {
+        "parallelism": 1,
+        "readRecords": [
+          1
+        ],
+        "writeRecords": [
+          1
+        ],
+        "busyMs": [
+          625.0
+        ],
+        "idleMs": [
+          192
+        ],
+        "backPressuredMs": [
+          0
+        ],
+        "durationMs": [
+          1149
+        ],
+        "readSkew": 1.0
+      },
+      "q1-ema": {
+        "parallelism": 4,
+        "readRecords": [
+          5584654,
+          4869917,
+          5618653,
+          5294193
+        ],
+        "writeRecords": [
+          273218,
+          252096,
+          274384,
+          245380
+        ],
+        "busyMs": [
+          6574.0,
+          5944.0,
+          6570.0,
+          6292.0
+        ],
+        "idleMs": [
+          15023,
+          15659,
+          15110,
+          15401
+        ],
+        "backPressuredMs": [
+          755,
+          751,
+          672,
+          656
+        ],
+        "durationMs": [
+          22625,
+          22625,
+          22623,
+          22623
+        ],
+        "readSkew": 1.0518
+      },
+      "late-ticks: Writer": {
+        "parallelism": 4,
+        "readRecords": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "writeRecords": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "busyMs": [
+          13.0,
+          28.0,
+          21.0,
+          23.0
+        ],
+        "idleMs": [
+          22226,
+          22225,
+          22214,
+          22171
+        ],
+        "backPressuredMs": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "durationMs": [
+          22631,
+          22627,
+          22633,
+          22629
+        ],
+        "readSkew": null
+      },
+      "late-ticks: Committer": {
+        "parallelism": 4,
+        "readRecords": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "writeRecords": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "busyMs": [
+          8.0,
+          18.0,
+          19.0,
+          23.0
+        ],
+        "idleMs": [
+          22352,
+          22342,
+          22351,
+          22338
+        ],
+        "backPressuredMs": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "durationMs": [
+          22630,
+          22628,
+          22636,
+          22630
+        ],
+        "readSkew": 1.0
+      },
+      "subscription-filter -> (ema-results: Writer -> ema-results: Committer, crossovers -> advisories: Writer -> advisories: Committer)": {
+        "parallelism": 4,
+        "readRecords": [
+          273219,
+          252097,
+          274385,
+          245381
+        ],
+        "writeRecords": [
+          274784,
+          253609,
+          275927,
+          246811
+        ],
+        "busyMs": [
+          1867.0,
+          1870.0,
+          1878.0,
+          1748.0
+        ],
+        "idleMs": [
+          20341,
+          20326,
+          20327,
+          20449
+        ],
+        "backPressuredMs": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "durationMs": [
+          22635,
+          22635,
+          22633,
+          22633
+        ],
+        "readSkew": 1.0502
+      }
+    }
+  },
+  "counters": {
+    "priceEvents": 19225473,
+    "nonPriceEvents": 121199964,
+    "nonPositivePriceEvents": 12294,
+    "missingTimestampEvents": 0,
+    "malformedEvents": 0,
+    "systemDateEvents": 16389218,
+    "lateTicks": 0,
+    "evaluatedWindows": 1045078,
+    "buyCrossovers": 3972,
+    "sellCrossovers": 2081,
+    "publishedResults": 1045078,
+    "publishedAdvisories": 6026,
+    "suppressedResults": 0
+  },
+  "reconciliation": {
+    "ok": true,
+    "checks": [
+      {
+        "check": "replayed records = records the job read",
+        "left": 158331078,
+        "right": 158331078,
+        "ok": true
+      },
+      {
+        "check": "price events out of the source = into q1-ema",
+        "left": 21367417,
+        "right": 21367417,
+        "ok": true
+      },
+      {
+        "check": "records the job wrote = records exported",
+        "left": 1051131,
+        "right": 1051131,
+        "ok": true
+      },
+      {
+        "check": "q1 outputs = exported ema-results + late-ticks",
+        "left": 1045078,
+        "right": 1045078,
+        "ok": true
+      }
+    ],
+    "countersFinal": {
+      "split": false,
+      "lateTicks": true
+    }
+  },
+  "outputs": {
+    "ema-results": 1045078,
+    "advisories": 6053,
+    "late-ticks": 0
+  },
+  "metrics": {
+    "ticksIntoKafka": [
+      {
+        "labels": {},
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      }
+    ],
+    "ticksReadPerSubtask": [
+      {
+        "labels": {
+          "subtask_index": "0"
+        },
+        "points": 2,
+        "mean": 2025448.55,
+        "max": 2124905.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1"
+        },
+        "points": 2,
+        "mean": 2025095.5000000002,
+        "max": 2125921.8000000003
+      },
+      {
+        "labels": {
+          "subtask_index": "2"
+        },
+        "points": 2,
+        "mean": 1953186.4000000001,
+        "max": 2038045.9000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "3"
+        },
+        "points": 2,
+        "mean": 2029845.8000000003,
+        "max": 2140842.3000000003
+      }
+    ],
+    "priceEventsPerS": [
+      {
+        "labels": {},
+        "points": 2,
+        "mean": 1085281.1,
+        "max": 1125696.7000000002
+      }
+    ],
+    "lag": [
+      {
+        "labels": {},
+        "points": 2,
+        "mean": 51457406.5,
+        "max": 72962617.0
+      }
+    ],
+    "lagFromBrokerOffsets": [
+      {
+        "labels": {},
+        "points": 2,
+        "mean": 51399668.0,
+        "max": 72902505.0
+      }
+    ],
+    "idleMsPerS": [
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 50.900000000000006,
+        "max": 51.6
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 1000.95,
+        "max": 1001.0
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 999.8000000000001,
+        "max": 999.9000000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 664.7,
+        "max": 697.6
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 922.4000000000001,
+        "max": 957.8000000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 54.150000000000006,
+        "max": 56.800000000000004
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 1000.8,
+        "max": 1001.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 999.4000000000001,
+        "max": 999.4000000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 693.45,
+        "max": 728.9000000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 919.85,
+        "max": 957.5
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 47.5,
+        "max": 49.5
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 1000.8000000000001,
+        "max": 1000.9000000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 999.85,
+        "max": 1000.0
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 667.1,
+        "max": 695.7
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 920.1000000000001,
+        "max": 957.8000000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 53.75,
+        "max": 53.900000000000006
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 1001.2,
+        "max": 1001.4000000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 999.6500000000001,
+        "max": 999.7
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 678.1500000000001,
+        "max": 707.5
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 925.3000000000001,
+        "max": 960.3000000000001
+      }
+    ],
+    "backPressuredMsPerS": [
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 51.18028333333334,
+        "max": 81.96056666666668
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 37.52001333333334,
+        "max": 61.840026666666674
+      },
+      {
+        "labels": {
+          "subtask_index": "0",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 53.073433333333334,
+        "max": 85.74686666666666
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 39.877253333333336,
+        "max": 65.25450666666667
+      },
+      {
+        "labels": {
+          "subtask_index": "1",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 52.08785,
+        "max": 83.5757
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 36.57927666666667,
+        "max": 59.65855333333334
+      },
+      {
+        "labels": {
+          "subtask_index": "2",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "Source:_ticks"
+        },
+        "points": 2,
+        "mean": 49.27030333333334,
+        "max": 80.34060666666667
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "late_ticks:_Committer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "late_ticks:_Writer"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "q1_ema"
+        },
+        "points": 2,
+        "mean": 36.207620000000006,
+        "max": 58.61524000000001
+      },
+      {
+        "labels": {
+          "subtask_index": "3",
+          "task_name": "subscription_filter_____ema_results:_Writer____ema_results:_Committer__crossovers____advisories:_Writer____advisories:_Committer_"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      }
+    ],
+    "q1RecordsInPerSubtask": [
+      {
+        "labels": {
+          "subtask_index": "0"
+        },
+        "points": 2,
+        "mean": 3892652.5,
+        "max": 4688626.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1"
+        },
+        "points": 2,
+        "mean": 3357852.5,
+        "max": 4032246.0
+      },
+      {
+        "labels": {
+          "subtask_index": "2"
+        },
+        "points": 2,
+        "mean": 3904457.0,
+        "max": 4683305.0
+      },
+      {
+        "labels": {
+          "subtask_index": "3"
+        },
+        "points": 2,
+        "mean": 3671231.0,
+        "max": 4404002.0
+      }
+    ],
+    "emaStates": [
+      {
+        "labels": {
+          "subtask_index": "0"
+        },
+        "points": 2,
+        "mean": 584.0,
+        "max": 586.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1"
+        },
+        "points": 2,
+        "mean": 544.0,
+        "max": 545.0
+      },
+      {
+        "labels": {
+          "subtask_index": "2"
+        },
+        "points": 2,
+        "mean": 583.5,
+        "max": 585.0
+      },
+      {
+        "labels": {
+          "subtask_index": "3"
+        },
+        "points": 2,
+        "mean": 531.5,
+        "max": 534.0
+      }
+    ],
+    "openWindows": [
+      {
+        "labels": {
+          "subtask_index": "0"
+        },
+        "points": 2,
+        "mean": 90253.0,
+        "max": 121416.0
+      },
+      {
+        "labels": {
+          "subtask_index": "1"
+        },
+        "points": 2,
+        "mean": 80510.0,
+        "max": 108699.0
+      },
+      {
+        "labels": {
+          "subtask_index": "2"
+        },
+        "points": 2,
+        "mean": 88983.5,
+        "max": 119812.0
+      },
+      {
+        "labels": {
+          "subtask_index": "3"
+        },
+        "points": 2,
+        "mean": 79738.0,
+        "max": 107509.0
+      }
+    ],
+    "stateBytes": [
+      {
+        "labels": {
+          "__name__": "flink_jobmanager_job_lastCheckpointFullSize",
+          "host": "jobmanager",
+          "instance": "172.18.0.3:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends"
+        },
+        "points": 2,
+        "mean": -1.0,
+        "max": -1.0
+      }
+    ],
+    "cpuCores": [
+      {
+        "labels": {
+          "name": "lane-exch-fr-20261117T233749Z-r1-replay"
+        },
+        "points": 0,
+        "mean": null,
+        "max": null
+      },
+      {
+        "labels": {
+          "name": "trading-trends-cadvisor-1"
+        },
+        "points": 2,
+        "mean": 0.0025836471129626094,
+        "max": 0.003314280178260034
+      },
+      {
+        "labels": {
+          "name": "trading-trends-grafana-1"
+        },
+        "points": 2,
+        "mean": 0.0020936999136973995,
+        "max": 0.0020936999136973995
+      },
+      {
+        "labels": {
+          "name": "trading-trends-jobmanager-1"
+        },
+        "points": 2,
+        "mean": 0.2109516650930436,
+        "max": 0.23737809705388765
+      },
+      {
+        "labels": {
+          "name": "trading-trends-kafka-1"
+        },
+        "points": 1,
+        "mean": 0.8896019843342036,
+        "max": 0.8896019843342036
+      },
+      {
+        "labels": {
+          "name": "trading-trends-prometheus-1"
+        },
+        "points": 2,
+        "mean": 0.0035903407045686907,
+        "max": 0.004118026065309714
+      },
+      {
+        "labels": {
+          "name": "trading-trends-taskmanager-1"
+        },
+        "points": 1,
+        "mean": 8.968337726019,
+        "max": 8.968337726019
+      },
+      {
+        "labels": {
+          "name": "trading-trends-viz-1"
+        },
+        "points": 2,
+        "mean": 0.3163222182949904,
+        "max": 0.36550731998804886
+      }
+    ],
+    "hostCpuCores": [
+      {
+        "labels": {
+          "cpu": "total",
+          "id": "/",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "points": 2,
+        "mean": 9.411637641377377,
+        "max": 11.088975368842092
+      }
+    ],
+    "memoryBytes": [
+      {
+        "labels": {
+          "name": "lane-exch-fr-20261117T233749Z-r1-replay"
+        },
+        "points": 2,
+        "mean": 1619050496.0,
+        "max": 1619050496.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-cadvisor-1"
+        },
+        "points": 2,
+        "mean": 27074560.0,
+        "max": 27074560.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-grafana-1"
+        },
+        "points": 2,
+        "mean": 109236224.0,
+        "max": 109236224.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-jobmanager-1"
+        },
+        "points": 2,
+        "mean": 903282688.0,
+        "max": 903282688.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-kafka-1"
+        },
+        "points": 2,
+        "mean": 1250134016.0,
+        "max": 1255788544.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-kafka-init-1"
+        },
+        "points": 2,
+        "mean": 5783552.0,
+        "max": 5783552.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-prometheus-1"
+        },
+        "points": 2,
+        "mean": 50391040.0,
+        "max": 52506624.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-taskmanager-1"
+        },
+        "points": 2,
+        "mean": 1432276992.0,
+        "max": 1432276992.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-viz-1"
+        },
+        "points": 2,
+        "mean": 434819072.0,
+        "max": 434819072.0
+      }
+    ],
+    "hostMemoryBytes": [
+      {
+        "labels": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "points": 2,
+        "mean": 13741139968.0,
+        "max": 13773451264.0
+      }
+    ],
+    "flinkHeapBytes": [
+      {
+        "labels": {
+          "__name__": "flink_taskmanager_Status_JVM_Memory_Heap_Used",
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 331019140.0,
+        "max": 384334312.0
+      }
+    ],
+    "kafkaHeapBytes": [
+      {
+        "labels": {
+          "__name__": "jvm_memory_used_bytes",
+          "area": "heap",
+          "instance": "kafka:9404",
+          "job": "kafka"
+        },
+        "points": 2,
+        "mean": 441248128.0,
+        "max": 465889664.0
+      }
+    ],
+    "flinkGcMsPerS": [
+      {
+        "labels": {
+          "__name__": "flink_taskmanager_Status_JVM_GarbageCollector_All_TimeMsPerSecond",
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 22.28333333333333,
+        "max": 27.116666666666667
+      }
+    ],
+    "kafkaGcSPerS": [
+      {
+        "labels": {
+          "gc": "G1 Concurrent GC",
+          "instance": "kafka:9404",
+          "job": "kafka"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "gc": "G1 Old Generation",
+          "instance": "kafka:9404",
+          "job": "kafka"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "gc": "G1 Young Generation",
+          "instance": "kafka:9404",
+          "job": "kafka"
+        },
+        "points": 2,
+        "mean": 0.00014,
+        "max": 0.00015999999999999988
+      }
+    ],
+    "networkReceiveBytesPerS": [
+      {
+        "labels": {
+          "name": "lane-exch-fr-20261117T233749Z-r1-replay"
+        },
+        "points": 0,
+        "mean": null,
+        "max": null
+      },
+      {
+        "labels": {
+          "name": "trading-trends-cadvisor-1"
+        },
+        "points": 2,
+        "mean": 94.40394303429568,
+        "max": 121.10056190660724
+      },
+      {
+        "labels": {
+          "name": "trading-trends-grafana-1"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-jobmanager-1"
+        },
+        "points": 2,
+        "mean": 49361.41840212938,
+        "max": 58265.62341972776
+      },
+      {
+        "labels": {
+          "name": "trading-trends-kafka-1"
+        },
+        "points": 1,
+        "mean": 6409167.415143603,
+        "max": 6409167.415143603
+      },
+      {
+        "labels": {
+          "name": "trading-trends-prometheus-1"
+        },
+        "points": 2,
+        "mean": 11058.588925124746,
+        "max": 11871.168185584092
+      },
+      {
+        "labels": {
+          "name": "trading-trends-taskmanager-1"
+        },
+        "points": 1,
+        "mean": 125128182.65399939,
+        "max": 125128182.65399939
+      },
+      {
+        "labels": {
+          "name": "trading-trends-viz-1"
+        },
+        "points": 2,
+        "mean": 6449144.686819042,
+        "max": 7451925.45563191
+      }
+    ],
+    "networkTransmitBytesPerS": [
+      {
+        "labels": {
+          "name": "lane-exch-fr-20261117T233749Z-r1-replay"
+        },
+        "points": 0,
+        "mean": null,
+        "max": null
+      },
+      {
+        "labels": {
+          "name": "trading-trends-cadvisor-1"
+        },
+        "points": 2,
+        "mean": 1284.3467641929858,
+        "max": 1647.5489246270101
+      },
+      {
+        "labels": {
+          "name": "trading-trends-grafana-1"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "name": "trading-trends-jobmanager-1"
+        },
+        "points": 2,
+        "mean": 6907.055070455082,
+        "max": 8017.096361309197
+      },
+      {
+        "labels": {
+          "name": "trading-trends-kafka-1"
+        },
+        "points": 1,
+        "mean": 140520634.0469974,
+        "max": 140520634.0469974
+      },
+      {
+        "labels": {
+          "name": "trading-trends-prometheus-1"
+        },
+        "points": 2,
+        "mean": 595.533026702851,
+        "max": 617.3363711681856
+      },
+      {
+        "labels": {
+          "name": "trading-trends-taskmanager-1"
+        },
+        "points": 1,
+        "mean": 6820152.048278679,
+        "max": 6820152.048278679
+      },
+      {
+        "labels": {
+          "name": "trading-trends-viz-1"
+        },
+        "points": 2,
+        "mean": 15630.16039737078,
+        "max": 18060.50194203765
+      }
+    ],
+    "topicBytesInPerS": [
+      {
+        "labels": {
+          "topic": "advisories"
+        },
+        "points": 2,
+        "mean": 5187.548638978163,
+        "max": 5190.538107621524
+      },
+      {
+        "labels": {
+          "topic": "ema-results"
+        },
+        "points": 2,
+        "mean": 5704437.078120775,
+        "max": 6289350.451500601
+      },
+      {
+        "labels": {
+          "topic": "subscriptions"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "topic": "ticks"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      }
+    ],
+    "topicBytesOutPerS": [
+      {
+        "labels": {
+          "topic": "advisories"
+        },
+        "points": 2,
+        "mean": 24856.984253810766,
+        "max": 44523.430400000005
+      },
+      {
+        "labels": {
+          "topic": "ema-results"
+        },
+        "points": 2,
+        "mean": 5628559.785299732,
+        "max": 6123132.9732800005
+      },
+      {
+        "labels": {
+          "topic": "subscriptions"
+        },
+        "points": 2,
+        "mean": 0.0,
+        "max": 0.0
+      },
+      {
+        "labels": {
+          "topic": "ticks"
+        },
+        "points": 2,
+        "mean": 130302314.67309462,
+        "max": 136453230.94618922
+      }
+    ],
+    "brokerRequestHandlerIdle": [
+      {
+        "labels": {
+          "__name__": "kafka_server_request_handler_avg_idle_ratio",
+          "instance": "kafka:9404",
+          "job": "kafka"
+        },
+        "points": 2,
+        "mean": 0.9953877932450657,
+        "max": 0.9954098667660599
+      }
+    ],
+    "brokerNetworkIdle": [
+      {
+        "labels": {
+          "__name__": "kafka_network_processor_avg_idle_ratio",
+          "instance": "kafka:9404",
+          "job": "kafka"
+        },
+        "points": 2,
+        "mean": 0.9999272005487339,
+        "max": 1.0
+      }
+    ],
+    "q1InputWatermark": [
+      {
+        "labels": {
+          "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "0",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_0_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1636480174086.5,
+        "max": 1636495000138.0
+      },
+      {
+        "labels": {
+          "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "1",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_1_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1636479712242.5,
+        "max": 1636495000138.0
+      },
+      {
+        "labels": {
+          "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "2",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_2_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1636479712242.5,
+        "max": 1636495000138.0
+      },
+      {
+        "labels": {
+          "__name__": "flink_taskmanager_job_task_operator_currentInputWatermark",
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "3",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_3_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1636480174086.5,
+        "max": 1636495000138.0
+      }
+    ],
+    "q1InputWatermarkScrapeTs": [
+      {
+        "labels": {
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "0",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_0_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1794958879.141,
+        "max": 1794958881.641
+      },
+      {
+        "labels": {
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "1",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_1_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1794958879.141,
+        "max": 1794958881.641
+      },
+      {
+        "labels": {
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "2",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_2_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1794958879.141,
+        "max": 1794958881.641
+      },
+      {
+        "labels": {
+          "host": "172_18_0_6",
+          "instance": "172.18.0.6:9249",
+          "job": "flink",
+          "job_id": "2ab18615fe4758cd45a342ff76af92e6",
+          "job_name": "trading_trends",
+          "operator_id": "1877e02b13cc07282565b290dd39ae5b",
+          "operator_name": "q1_ema",
+          "subtask_index": "3",
+          "task_attempt_id": "685c97c7d2758ef9513d0e06ecde6b89_1877e02b13cc07282565b290dd39ae5b_3_0",
+          "task_attempt_num": "0",
+          "task_id": "1877e02b13cc07282565b290dd39ae5b",
+          "task_name": "q1_ema",
+          "tm_id": "172_18_0_6:37213_842751"
+        },
+        "points": 2,
+        "mean": 1794958879.141,
+        "max": 1794958881.641
+      }
+    ]
+  }
+}

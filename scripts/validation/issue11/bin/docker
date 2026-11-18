@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Pins the one-off containers of correctness/run.sh and oracle/run.sh (`docker run`) to the lane's cores, so a
+# lane's export and comparison do not run on the other lane's cores.
+real=/usr/bin/docker
+if [[ "${1:-}" == run && -n "${LANE_CPUSET:-}" ]]; then
+  shift
+  exec "$real" run --cpuset-cpus "$LANE_CPUSET" "$@"
+fi
+exec "$real" "$@"

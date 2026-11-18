@@ -1,0 +1,133 @@
+{
+  "runId" : "lane-variant-replayer-20261118T030402Z-r3",
+  "status" : "COMPLETE",
+  "mode" : "preload",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks",
+  "encoding" : "csv",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false,
+    "earlyFilter" : true
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/daily/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 53994567,
+    "complete" : true
+  }, {
+    "index" : 1,
+    "path" : "/data/daily/debs2022-gc-trading-day-09-11-21.csv",
+    "bytes" : 5057964097,
+    "lines" : 58811883,
+    "complete" : true
+  }, {
+    "index" : 2,
+    "path" : "/data/daily/debs2022-gc-trading-day-10-11-21.csv",
+    "bytes" : 5512236266,
+    "lines" : 64591857,
+    "complete" : true
+  }, {
+    "index" : 3,
+    "path" : "/data/daily/debs2022-gc-trading-day-11-11-21.csv",
+    "bytes" : 4790117848,
+    "lines" : 55547859,
+    "complete" : true
+  }, {
+    "index" : 4,
+    "path" : "/data/daily/debs2022-gc-trading-day-12-11-21.csv",
+    "bytes" : 4836178492,
+    "lines" : 56111196,
+    "complete" : true
+  }, {
+    "index" : 5,
+    "path" : "/data/daily/debs2022-gc-trading-day-13-11-21.csv",
+    "bytes" : 3106841,
+    "lines" : 33411,
+    "complete" : true
+  }, {
+    "index" : 6,
+    "path" : "/data/daily/debs2022-gc-trading-day-14-11-21.csv",
+    "bytes" : 1905658,
+    "lines" : 26126,
+    "complete" : true
+  } ],
+  "counts" : {
+    "lines" : 289116899,
+    "comments" : 84,
+    "headers" : 7,
+    "rejected" : 0,
+    "dataRows" : 289116808,
+    "excluded" : 0,
+    "filtered" : 229408756,
+    "attempted" : 59708052,
+    "acknowledged" : 59708052,
+    "failed" : 0,
+    "keyBytes" : 531802845,
+    "valueBytes" : 3632063734,
+    "headerBytes" : 762374438
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 8430218,
+    "records" : 8430218
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 6235729,
+    "records" : 6235729
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 7495162,
+    "records" : 7495162
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 6783916,
+    "records" : 6783916
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 7080112,
+    "records" : 7080112
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 7835412,
+    "records" : 7835412
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 7177780,
+    "records" : 7177780
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 8669723,
+    "records" : 8669723
+  } ],
+  "timing" : {
+    "startedAt" : "2026-11-18T03:12:29.102Z",
+    "finishedAt" : "2026-11-18T03:14:14.376Z",
+    "durationMs" : 105274,
+    "flushMs" : 0,
+    "recordsPerSecond" : 567163.39,
+    "payloadMegabytesPerSecond" : 46.79
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "lane-variant-replayer-20261118T030402Z-r3",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4",
+    "linger.ms" : "50",
+    "batch.size" : "1048576"
+  }
+}

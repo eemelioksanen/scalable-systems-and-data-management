@@ -1,0 +1,47 @@
+{
+  "name": "lane-traders-1-skewed",
+  "mode": "preload",
+  "repeats": 3,
+  "input": [
+    "data/daily"
+  ],
+  "warmupS": 15,
+  "job": {
+    "watermarkBoundMs": 64265001,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 8,
+    "taskmanagers": 1,
+    "slots": 4,
+    "parallelism": 4
+  },
+  "subscriptions": [
+    {
+      "trader": "trader-0001",
+      "symbols": [
+        "A0S29W.ETR",
+        "A0S3E0.ETR",
+        "A0V8CD.ETR",
+        "A0Z3JF.ETR",
+        "A0Z3K8.ETR",
+        "A0Z3LH.ETR",
+        "A161DS.ETR",
+        "A1EX3A.ETR",
+        "A2NB65.ETR",
+        "ENVF.NL",
+        "EVEWG.FR",
+        "EZENV.NL",
+        "I500H.FR",
+        "IEJAP.FR",
+        "INBRE.FR",
+        "INGA.NL",
+        "INICO.NL",
+        "IROAI.FR",
+        "ITNAE.FR",
+        "IUBUW.FR"
+      ]
+    }
+  ]
+}

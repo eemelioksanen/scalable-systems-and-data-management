@@ -1,0 +1,135 @@
+{
+  "complete": true,
+  "interval": {
+    "startMs": 1794975450374,
+    "endMs": 1794975476585
+  },
+  "drainStartMs": 1794975488317,
+  "model": {
+    "boundMs": 1000,
+    "idlenessMs": 30000,
+    "partitions": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "idleFromMs": 1794975417961,
+    "priceEvents": 11794520,
+    "watermarkChanges": 369710
+  },
+  "timestampTypes": {
+    "admission": [
+      "CreateTime"
+    ],
+    "output": [
+      "CreateTime"
+    ]
+  },
+  "exported": 373126,
+  "measured": 198195,
+  "excluded": {
+    "beforeInterval": 174834,
+    "afterInterval": 0,
+    "drain": 97
+  },
+  "unmodelled": 0,
+  "negativeQueueing": 0,
+  "stagesMs": {
+    "windowWait": {
+      "n": 198195,
+      "mean": 38.81237165417897,
+      "p50": 18,
+      "p95": 192,
+      "p99": 394,
+      "max": 877
+    },
+    "boundWait": {
+      "n": 198195,
+      "mean": 4.654158783016726,
+      "p50": 4,
+      "p95": 12,
+      "p99": 19,
+      "max": 19
+    },
+    "alignmentWait": {
+      "n": 198195,
+      "mean": 0.03220061050985141,
+      "p50": 0,
+      "p95": 0,
+      "p99": 1,
+      "max": 1
+    },
+    "queueing": {
+      "n": 198195,
+      "mean": 129.36982264941093,
+      "p50": 129,
+      "p95": 220,
+      "p99": 234,
+      "max": 241
+    },
+    "sinkHandoff": {
+      "n": 198195,
+      "mean": 7.5135699689699535,
+      "p50": 1,
+      "p95": 42,
+      "p99": 96,
+      "max": 100
+    },
+    "watermarkWait": {
+      "n": 198195,
+      "mean": 4.686359393526577,
+      "p50": 4,
+      "p95": 12,
+      "p99": 19,
+      "max": 19
+    },
+    "emitLatency": {
+      "n": 198195,
+      "mean": 172.86855369711648,
+      "p50": 168,
+      "p95": 342,
+      "p99": 557,
+      "max": 1054
+    },
+    "outputLatency": {
+      "n": 198195,
+      "mean": 180.38212366608644,
+      "p50": 175,
+      "p95": 350,
+      "p99": 561,
+      "max": 1073
+    }
+  },
+  "watermarkLag": {
+    "samples": 24,
+    "eventMs": {
+      "n": 24,
+      "mean": 181258.33333333334,
+      "p50": 125274,
+      "p95": 481001,
+      "p99": 481001,
+      "max": 481001
+    },
+    "wallMs": {
+      "n": 24,
+      "mean": 170.5,
+      "p50": 172,
+      "p95": 175,
+      "p99": 175,
+      "max": 175
+    },
+    "modelAheadEventMs": {
+      "n": 24,
+      "mean": 180163.33333333334,
+      "p50": 124190,
+      "p95": 480000,
+      "p99": 480000,
+      "max": 480000
+    }
+  }
+}

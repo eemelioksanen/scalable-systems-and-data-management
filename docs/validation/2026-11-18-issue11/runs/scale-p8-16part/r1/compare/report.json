@@ -1,0 +1,335 @@
+{
+  "pass": true,
+  "problems": [],
+  "parameters": {
+    "tolerance": 1e-09,
+    "driftUlps": 66
+  },
+  "oracle": {
+    "dir": "/repo/oracle/out/week",
+    "command": [
+      "python",
+      "-m",
+      "ema_oracle",
+      "--out",
+      "/out/week",
+      "/data/daily/debs2022-gc-trading-day-08-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-09-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-10-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-11-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-12-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-13-11-21.csv",
+      "/data/daily/debs2022-gc-trading-day-14-11-21.csv"
+    ],
+    "zoneOffset": "+02:00",
+    "watermarkBoundMs": null,
+    "excludeEvents": null,
+    "excluded": 0,
+    "lateRejected": 0
+  },
+  "job": {
+    "dir": "/repo/bench/results/raw/scale-p8-16part-20261117T170131Z/r1/export",
+    "zoneOffset": "+02:00",
+    "lateTicks": 0,
+    "lateEventsListed": 0,
+    "topics": {
+      "ema-results": {
+        "file": "ema_results.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 128087,
+            "records": 128087
+          },
+          "1": {
+            "startOffset": 0,
+            "endOffset": 113930,
+            "records": 113930
+          },
+          "2": {
+            "startOffset": 0,
+            "endOffset": 111853,
+            "records": 111853
+          },
+          "3": {
+            "startOffset": 0,
+            "endOffset": 100183,
+            "records": 100183
+          },
+          "4": {
+            "startOffset": 0,
+            "endOffset": 114170,
+            "records": 114170
+          },
+          "5": {
+            "startOffset": 0,
+            "endOffset": 125539,
+            "records": 125539
+          },
+          "6": {
+            "startOffset": 0,
+            "endOffset": 118163,
+            "records": 118163
+          },
+          "7": {
+            "startOffset": 0,
+            "endOffset": 118873,
+            "records": 118873
+          },
+          "8": {
+            "startOffset": 0,
+            "endOffset": 108475,
+            "records": 108475
+          },
+          "9": {
+            "startOffset": 0,
+            "endOffset": 120236,
+            "records": 120236
+          },
+          "10": {
+            "startOffset": 0,
+            "endOffset": 110365,
+            "records": 110365
+          },
+          "11": {
+            "startOffset": 0,
+            "endOffset": 112302,
+            "records": 112302
+          },
+          "12": {
+            "startOffset": 0,
+            "endOffset": 114697,
+            "records": 114697
+          },
+          "13": {
+            "startOffset": 0,
+            "endOffset": 119448,
+            "records": 119448
+          },
+          "14": {
+            "startOffset": 0,
+            "endOffset": 110786,
+            "records": 110786
+          },
+          "15": {
+            "startOffset": 0,
+            "endOffset": 130350,
+            "records": 130350
+          }
+        },
+        "records": 1857457,
+        "rows": 1857457,
+        "complete": true
+      },
+      "advisories": {
+        "file": "advisories.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 802,
+            "records": 802
+          },
+          "1": {
+            "startOffset": 0,
+            "endOffset": 682,
+            "records": 682
+          },
+          "2": {
+            "startOffset": 0,
+            "endOffset": 698,
+            "records": 698
+          },
+          "3": {
+            "startOffset": 0,
+            "endOffset": 622,
+            "records": 622
+          },
+          "4": {
+            "startOffset": 0,
+            "endOffset": 747,
+            "records": 747
+          },
+          "5": {
+            "startOffset": 0,
+            "endOffset": 769,
+            "records": 769
+          },
+          "6": {
+            "startOffset": 0,
+            "endOffset": 684,
+            "records": 684
+          },
+          "7": {
+            "startOffset": 0,
+            "endOffset": 789,
+            "records": 789
+          },
+          "8": {
+            "startOffset": 0,
+            "endOffset": 666,
+            "records": 666
+          },
+          "9": {
+            "startOffset": 0,
+            "endOffset": 671,
+            "records": 671
+          },
+          "10": {
+            "startOffset": 0,
+            "endOffset": 675,
+            "records": 675
+          },
+          "11": {
+            "startOffset": 0,
+            "endOffset": 690,
+            "records": 690
+          },
+          "12": {
+            "startOffset": 0,
+            "endOffset": 695,
+            "records": 695
+          },
+          "13": {
+            "startOffset": 0,
+            "endOffset": 755,
+            "records": 755
+          },
+          "14": {
+            "startOffset": 0,
+            "endOffset": 635,
+            "records": 635
+          },
+          "15": {
+            "startOffset": 0,
+            "endOffset": 775,
+            "records": 775
+          }
+        },
+        "records": 11355,
+        "rows": 11355,
+        "complete": true
+      },
+      "late-ticks": {
+        "file": "late_events.parquet",
+        "partitions": {
+          "0": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "1": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "2": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "3": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "4": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "5": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "6": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "7": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "8": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "9": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "10": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "11": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "12": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "13": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "14": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          },
+          "15": {
+            "startOffset": 0,
+            "endOffset": 0,
+            "records": 0
+          }
+        },
+        "records": 0,
+        "rows": 0,
+        "complete": true
+      }
+    }
+  },
+  "ema": {
+    "oracleRows": 1857457,
+    "jobRows": 1857457,
+    "differences": 0,
+    "byKind": {},
+    "byClass": {},
+    "symbolsWithDifferences": 0,
+    "duplicateRows": {
+      "oracle": 0,
+      "job": 0
+    },
+    "maxAbsDiffBeyondTolerance": {
+      "ema38": null,
+      "ema100": null
+    },
+    "maxUlpsBeyondTolerance": {
+      "ema38": null,
+      "ema100": null
+    }
+  },
+  "advisories": {
+    "oracle": 11355,
+    "job": 11355,
+    "common": 11355,
+    "precision": 1.0,
+    "recall": 1.0,
+    "byKind": {},
+    "byClass": {},
+    "duplicateRows": {
+      "oracle": 0,
+      "job": 0
+    }
+  }
+}

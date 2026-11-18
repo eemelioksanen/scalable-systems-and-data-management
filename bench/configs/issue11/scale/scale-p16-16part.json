@@ -1,0 +1,29 @@
+{
+  "name": "scale-p16-16part",
+  "mode": "preload",
+  "repeats": 3,
+  "input": [
+    "data/daily"
+  ],
+  "warmupS": 15,
+  "job": {
+    "watermarkBoundMs": 64265001,
+    "idlenessMs": 0,
+    "zoneOffset": "+02:00"
+  },
+  "stack": {
+    "partitions": 16,
+    "taskmanagers": 1,
+    "slots": 16,
+    "parallelism": 16
+  },
+  "subscriptions": [
+    {
+      "trader": "all",
+      "symbols": [
+        "*"
+      ]
+    }
+  ],
+  "oracle": "oracle/out/week"
+}

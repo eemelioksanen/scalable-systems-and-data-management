@@ -1,0 +1,107 @@
+{
+  "runId" : "lane-live-100x-b60s-20261117T211806Z-r1",
+  "status" : "COMPLETE",
+  "mode" : "realtime",
+  "rate" : 100.0,
+  "paceFrom" : "2021-11-08T09:00",
+  "dryRun" : false,
+  "bootstrapServers" : "kafka:9092",
+  "topic" : "ticks",
+  "encoding" : "csv",
+  "partitions" : 8,
+  "selection" : {
+    "exchanges" : [ ],
+    "symbols" : [ ],
+    "limit" : null,
+    "limitReached" : false,
+    "earlyFilter" : false
+  },
+  "files" : [ {
+    "index" : 0,
+    "path" : "/data/daily/debs2022-gc-trading-day-08-11-21.csv",
+    "bytes" : 4672671094,
+    "lines" : 53994567,
+    "complete" : true
+  } ],
+  "counts" : {
+    "lines" : 53994567,
+    "comments" : 12,
+    "headers" : 1,
+    "rejected" : 0,
+    "dataRows" : 53994554,
+    "excluded" : 0,
+    "filtered" : 0,
+    "attempted" : 53994554,
+    "acknowledged" : 53994554,
+    "failed" : 0,
+    "keyBytes" : 386611778,
+    "valueBytes" : 2405601649,
+    "headerBytes" : 690818186
+  },
+  "offsets" : [ {
+    "partition" : 0,
+    "startOffset" : 0,
+    "endOffset" : 7033232,
+    "records" : 7033232
+  }, {
+    "partition" : 1,
+    "startOffset" : 0,
+    "endOffset" : 6703534,
+    "records" : 6703534
+  }, {
+    "partition" : 2,
+    "startOffset" : 0,
+    "endOffset" : 6786622,
+    "records" : 6786622
+  }, {
+    "partition" : 3,
+    "startOffset" : 0,
+    "endOffset" : 5438045,
+    "records" : 5438045
+  }, {
+    "partition" : 4,
+    "startOffset" : 0,
+    "endOffset" : 5588276,
+    "records" : 5588276
+  }, {
+    "partition" : 5,
+    "startOffset" : 0,
+    "endOffset" : 6279337,
+    "records" : 6279337
+  }, {
+    "partition" : 6,
+    "startOffset" : 0,
+    "endOffset" : 7590504,
+    "records" : 7590504
+  }, {
+    "partition" : 7,
+    "startOffset" : 0,
+    "endOffset" : 8575004,
+    "records" : 8575004
+  } ],
+  "timing" : {
+    "startedAt" : "2026-11-17T21:18:43.654Z",
+    "finishedAt" : "2026-11-17T21:26:48.438Z",
+    "durationMs" : 484784,
+    "flushMs" : 0,
+    "recordsPerSecond" : 111378.42,
+    "payloadMegabytesPerSecond" : 7.18
+  },
+  "pacing" : {
+    "clockStart" : "2021-11-08T01:01:07",
+    "paceStart" : "2021-11-08T09:00",
+    "clockEnd" : "2021-11-08T22:25:15",
+    "pacedRecords" : 53249082,
+    "achievedRate" : 100.0,
+    "lagP50Ms" : 1,
+    "lagP99Ms" : 12,
+    "lagMaxMs" : 91
+  },
+  "producerConfig" : {
+    "bootstrap.servers" : "kafka:9092",
+    "client.id" : "lane-live-100x-b60s-20261117T211806Z-r1",
+    "acks" : "all",
+    "enable.idempotence" : "true",
+    "compression.type" : "lz4"
+  }
+}
