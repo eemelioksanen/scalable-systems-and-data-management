@@ -18,5 +18,3 @@ services:
       - ./scripts/validation/issue11/prometheus-lane-a.yml:/etc/prometheus/prometheus.yml:ro
   cadvisor:
     cpuset: "0-3,8-11"
-  grafana:
-    cpuset: "0-3,8-11"
